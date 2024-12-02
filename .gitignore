@@ -1,0 +1,11 @@
+# CMake
+build/
+.idea/
+cmake-build-debug/
+
+# Visual Studio
+.vs
+
+# Xcode
+XcodeProject/
+.DS_Store
