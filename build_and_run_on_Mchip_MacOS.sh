@@ -19,4 +19,4 @@ cmake ..
 make
 
 # Run the compiled executable
-./MyBoostProject
+./AlphaStreamer3.1Cpp
