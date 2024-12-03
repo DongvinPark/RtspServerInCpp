@@ -83,7 +83,7 @@ vcpkg 깃허브 리포지토리를 정확하게 C 드라이브 최상위 디렉�
 cmake_minimum_required(VERSION 3.10)
 
 # Project name and version
-project(MyBoostAsioProject VERSION 1.0)
+project(AlphaStreamer3.1Cpp VERSION 1.0)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -102,10 +102,10 @@ file(GLOB_RECURSE SOURCES
 )
 
 # Create the executable
-add_executable(MyBoostAsioProject ${SOURCES})
+add_executable(AlphaStreamer3.1Cpp ${SOURCES})
 
 # Link Boost libraries to the project
-target_link_libraries(MyBoostAsioProject ${Boost_LIBRARIES})
+target_link_libraries(AlphaStreamer3.1Cpp ${Boost_LIBRARIES})
 ```
 5. 리눅스 환경이라면, build_and_run_on_linux로 시작하는 .sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 된다.<br>
 6. MacOS 환경이라면, 프로젝트 root 디렉토리 내에 build 디렉토리를 만든 다음, 그 디렉토리로 이동해서 'cmake ..', 'make' 명령어를 순서대로 실행하여 실행파일을 만든다. 그 후 실행파일을 './실행파일이름' 명령어로 수동으로 실행하면 된다.<br>
@@ -120,7 +120,7 @@ target_link_libraries(MyBoostAsioProject ${Boost_LIBRARIES})
 cmake_minimum_required(VERSION 3.10)
 
 # Project name and version
-project(MyBoostAsioProject VERSION 1.0)
+project(AlphaStreamer3.1Cpp VERSION 1.0)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -140,15 +140,15 @@ file(GLOB_RECURSE SOURCES
 )
 
 # Create the executable
-add_executable(MyBoostAsioProject ${SOURCES})
+add_executable(AlphaStreamer3.1Cpp ${SOURCES})
 
 # Link Boost libraries to the project
-target_link_libraries(MyBoostAsioProject ${Boost_LIBRARIES})
+target_link_libraries(AlphaStreamer3.1Cpp ${Boost_LIBRARIES})
 ```
 4. 깃 클론 완료한 본 프로젝트의 root 디렉토리로 이동해서 아래의 명령어를 실행한다. 그러면 본 프로젝트를 바탕으로 XcodeProject라는 폴더가 만들어진다.
 ```text
 cmake -G Xcode -B XcodeProject
 ```
-5. XcodeProject 폴더에 들어가서 MyBoostAsioProject.xcodeproj라는 Xcode 프로젝트 파일을 실행한다. 그러면 Xcode IDE가 열린다.
-6. Xcode 최상단 메뉴에서 Product >> Scheme >> Edit Scheme에 진입한 후, 왼쪽의 Run 탭에서 Executable 메뉴에서 MyBoostAsioProject라는 본 프로젝트를 선택한 후 close 한다.
+5. XcodeProject 폴더에 들어가서 AlphaStreamer3.1Cpp.xcodeproj라는 Xcode 프로젝트 파일을 실행한다. 그러면 Xcode IDE가 열린다.
+6. Xcode 최상단 메뉴에서 Product >> Scheme >> Edit Scheme에 진입한 후, 왼쪽의 Run 탭에서 Executable 메뉴에서 AlphaStreamer3.1Cpp라는 본 프로젝트를 선택한 후 close 한다.
 7. 그 후, IDE 왼쪽 상단의 'Run' 버튼(재생버튼 모양으로 생김)을 눌러서 실행한다.
