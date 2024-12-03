@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 
+// singleton design was used.
 class Logger {
 public:
     static std::shared_ptr<Logger> getLogger(const std::string& className);
