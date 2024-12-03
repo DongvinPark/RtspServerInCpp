@@ -27,6 +27,14 @@ void Logger::info(const std::string& msg) {
     print(makeString(msg, "INFO", ANSI_WHITE));
 }
 
+void Logger::info2(const std::string& msg) {
+    print(makeString(msg, "INFO", ANSI_YELLOW));
+}
+
+void Logger::info3(const std::string& msg) {
+    print(makeString(msg, "INFO", ANSI_PURPLE));
+}
+
 void Logger::debug(const std::string& msg) {
     print(makeString(msg, "DEBUG", ANSI_GREEN));
 }
