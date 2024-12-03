@@ -152,3 +152,42 @@ cmake -G Xcode -B XcodeProject
 5. XcodeProject 폴더에 들어가서 AlphaStreamer3.1Cpp.xcodeproj라는 Xcode 프로젝트 파일을 실행한다. 그러면 Xcode IDE가 열린다.
 6. Xcode 최상단 메뉴에서 Product >> Scheme >> Edit Scheme에 진입한 후, 왼쪽의 Run 탭에서 Executable 메뉴에서 AlphaStreamer3.1Cpp라는 본 프로젝트를 선택한 후 close 한다.
 7. 그 후, IDE 왼쪽 상단의 'Run' 버튼(재생버튼 모양으로 생김)을 눌러서 실행한다.
+<br><br>
+
+## MacOS(M series chip) Visual Studio Code 실행방법
+1. mac에 Xcode, GCC, G++, CMake를 설치해준다. homebrew가 없다면 설치해준다. boost 라이브러리는 homebrew를 이용해서 설치해준다.
+2. 본 프로젝트를 깃 클론한다.
+3. 본 프로젝트 내의 CMakeLists.txt를 아래의 내용으로 통째로 교체한다.
+```CMake
+cmake_minimum_required(VERSION 3.16)
+
+# Project name and version
+project(AlphaStreamer3.1Cpp VERSION 1.0)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Find Boost (assumes installed via Homebrew)
+find_package(Boost REQUIRED)
+
+# Include directories
+include_directories(${Boost_INCLUDE_DIRS} src)
+
+# Add the executable
+add_executable(AlphaStreamer3.1Cpp
+    src/main.cpp
+    src/util/Logger.cpp
+)
+
+# Link Boost libraries (if necessary)
+target_link_libraries(AlphaStreamer3.1Cpp ${Boost_LIBRARIES})
+```
+4. 아래의 명령으로 build_and_run_on_Mchip_MacOs.sh 스크립트에 실행 권한을 준다.
+```text
+sudo chmod +x build_and_run_on_Mchip_MacOS.sh
+```
+5. 스크립트를 실행한다.
+```text
+./build_and_run_on_Mchip_MacOS.sh
+```

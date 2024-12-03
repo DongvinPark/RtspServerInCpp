@@ -1,5 +1,5 @@
-# ������ CMakeLists.txt�� ������  WindowOS Visual Stuido IDE���̴�.
-# Linux�� M Series Chip MacOS�� ���� CMakeLists.txt�� README.md�� ����� �ִ�.
+# 아래의 CMakeLists.txt 파일은  WindowOS Visual Stuido IDE를 위한 것이다..
+# Linux 및 M Series Chip MacOS를 위한 CMakeLists.txt은 README.md에 별도로 기재하였다.
 cmake_minimum_required(VERSION 3.29)
 project(AlphaStreamer3.1Cpp)
 
