@@ -9,3 +9,6 @@ cmake-build-debug/
 # Xcode
 XcodeProject/
 .DS_Store
+
+# Visual Studio Code
+.vscode/
