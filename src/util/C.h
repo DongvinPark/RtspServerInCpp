@@ -120,6 +120,7 @@ namespace C {
     constexpr int RTP_CHANNEL_INFO_META_LENGTH = 4;
     constexpr int VIEW_NUM_FACTOR = 1;
     constexpr char HYBRID_META_PAYLOAD_PREFIX[] = "local:";
+    constexpr int HYBRID_META_FACTOR_FOR_AUDIO = -1;
 
     // Inline methods
     inline uint8_t getAvptSampleQChannel(int vid) {
