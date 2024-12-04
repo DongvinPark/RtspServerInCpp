@@ -1,5 +1,5 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#ifndef C_H
+#define C_H
 
 #include <string>
 #include <vector>
@@ -140,4 +140,4 @@ namespace C {
     constexpr int TX_BITRATE_SAMPLING_PERIOD_MS = 1000;
 }
 
-#endif // CONSTANTS_H
+#endif // C_H
