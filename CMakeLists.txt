@@ -13,7 +13,8 @@ find_package(Boost REQUIRED COMPONENTS system)
 add_executable(
 	AlphaStreamer3.1Cpp src/main.cpp
 	"src/util/Logger.cpp"
-	"src/util/Logger.h")
+	"src/util/Logger.h"
+	"src/util/C.h")
 
 # Link Boost.System and Winsock (ws2_32)
 target_link_libraries(AlphaStreamer3.1Cpp Boost::system ws2_32)
