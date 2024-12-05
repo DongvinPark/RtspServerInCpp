@@ -41,8 +41,8 @@ public:
     int peekByte() const;
     int peekByte(int offset) const;
     int readUnsignedShort();
-    int16_t readShort();
-    uint32_t readUnsignedInt();
+    int16_t readShort(); // int16_t type means fixed 16 bit size int.
+    uint32_t readUnsignedInt();// uint32_t type means fixed 32 bit size unsigned int.
     int32_t readInt();
     uint64_t readLong();
 

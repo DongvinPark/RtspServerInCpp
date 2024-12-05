@@ -38,7 +38,10 @@ add_executable(AlphaStreamer3.1Cpp
 	src/util/Buffer.cpp
     src/util/ParsableByteArray.h
     src/util/ParsableByteArray.cpp
-)
+    src/util/RtpInfo.h
+    src/util/RtpInfo.cpp
+    src/util/RtpMetaInfo.h
+    src/util/RtpMetaInfo.cpp)
 
 # Link Boost libraries and platform-specific libraries only for Windows
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
