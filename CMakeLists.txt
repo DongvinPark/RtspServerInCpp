@@ -36,6 +36,8 @@ add_executable(AlphaStreamer3.1Cpp
     src/util/Logger.cpp
 	src/util/Buffer.h
 	src/util/Buffer.cpp
+    src/util/ParsableByteArray.h
+    src/util/ParsableByteArray.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows
