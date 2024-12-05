@@ -3,13 +3,12 @@
 
 #include <vector>
 #include <string>
-#include <cstddef>  // For std::byte
 #include <functional> // For std::function
 #include "C.h"
 
 class Buffer {
 public:
-    std::vector<std::byte> buf;
+    std::vector<unsigned char> buf;
     int len;
     int offset;
     int limit;
@@ -18,9 +17,9 @@ public:
     int mediaType = C::UNSET;
     std::function<void()> afterTx;
 
-    Buffer(const std::vector<std::byte>& buf);
+    Buffer(const std::vector<unsigned char>& buf);
 
-    Buffer(const std::vector<std::byte>& buf, const int offset, const int len); 
+    Buffer(const std::vector<unsigned char>& buf, const int offset, const int len); 
 
     static Buffer kill();
 

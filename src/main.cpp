@@ -26,7 +26,7 @@ int main() {
     }
     std::cout << "\n";
 
-    std::vector<std::byte> data = {std::byte{'H'}, std::byte{'e'}, std::byte{'l'}, std::byte{'l'}, std::byte{'o'}};
+    std::vector<unsigned char> data = {'H', 'e', 'l', 'l', 'o'};
     Buffer buffer(data);
 
     // Assign a lambda function to afterTx
@@ -38,6 +38,8 @@ int main() {
     if (buffer.afterTx) {
         buffer.afterTx();
     }
+
+    std::cout << "buffer.toString() result : " << buffer.toString() << "\n";
 
     try {
         boost::asio::io_service io_service;

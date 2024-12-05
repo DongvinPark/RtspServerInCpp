@@ -2,10 +2,10 @@
 #include <sstream> // For std::ostringstream
 #include <stdexcept>
 
-Buffer::Buffer(const std::vector<std::byte>& buf)
-    : buf(buf), len(), offset(0), limit() {}
+Buffer::Buffer(const std::vector<unsigned char>& buf)
+    : buf(buf), len(buf.size()), offset(0), limit() {}
 
-Buffer::Buffer(const std::vector<std::byte>& buf, const int offset, const int len)
+Buffer::Buffer(const std::vector<unsigned char>& buf, const int offset, const int len)
     : buf(buf), len(len), offset(offset), limit(offset+len) {
         validateBuffer();
     }
@@ -18,7 +18,7 @@ std::string Buffer::getString() const {
     validateBuffer();
     if(buf.empty() || len <= 0) return {};
     return std::string(
-        // reinterpret_cast was used to make std::string from std::byte elements in vector.
+        // reinterpret_cast was used to make std::string from unsigned char elements in vector.
         reinterpret_cast<const char*>(buf.data() + offset), len
         );
 }
