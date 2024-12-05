@@ -8,6 +8,8 @@
 
 class Buffer {
 public:
+    // used unsigned char for buf element type for ease of initialization of buf
+    // when reading raw binary data from ifstream
     std::vector<unsigned char> buf;
     int len;
     int offset;

@@ -34,6 +34,8 @@ int main() {
         std::cout << "Ward 'Hello' Transmission complete!" << std::endl;
     };
 
+    std::cout << (unsigned char)0x24 << "\n"; // this will print '$' in terminal console.
+
     // Trigger the afterTx callback
     if (buffer.afterTx) {
         buffer.afterTx();
