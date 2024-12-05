@@ -32,8 +32,10 @@ include_directories(${Boost_INCLUDE_DIRS} src)
 # Add the executable
 add_executable(AlphaStreamer3.1Cpp
     src/main.cpp
+	src/util/Logger.h
     src/util/Logger.cpp
-    src/util/Logger.h
+	src/util/Buffer.h
+	src/util/Buffer.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

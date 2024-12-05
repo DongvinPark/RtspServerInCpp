@@ -3,6 +3,7 @@
 
 #include "util/Logger.h"
 #include "util/C.h"
+#include "util/Buffer.h"
 
 using boost::asio::ip::tcp;
 
@@ -24,6 +25,19 @@ int main() {
         std::cout << mode << ", ";
     }
     std::cout << "\n";
+
+    std::vector<std::byte> data = {std::byte{'H'}, std::byte{'e'}, std::byte{'l'}, std::byte{'l'}, std::byte{'o'}};
+    Buffer buffer(data);
+
+    // Assign a lambda function to afterTx
+    buffer.afterTx = []() {
+        std::cout << "Ward 'Hello' Transmission complete!" << std::endl;
+    };
+
+    // Trigger the afterTx callback
+    if (buffer.afterTx) {
+        buffer.afterTx();
+    }
 
     try {
         boost::asio::io_service io_service;
