@@ -4,6 +4,7 @@
 #include "util/Logger.h"
 #include "util/C.h"
 #include "util/Buffer.h"
+#include "server/file/AudioSample.h"
 
 using boost::asio::ip::tcp;
 
@@ -42,6 +43,11 @@ int main() {
     }
 
     std::cout << "buffer.toString() result : " << buffer.toString() << "\n";
+
+    std::cout << "AudioSample Test Start!!\n";
+    std::vector<unsigned char> audioData = {'A', 'u', 'd'};
+    AudioSample aSample(audioData, audioData.size());
+    std::cout << "AudioSample toString : " << aSample.toString() << "\n";
 
     try {
         boost::asio::io_service io_service;

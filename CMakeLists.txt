@@ -41,7 +41,11 @@ add_executable(AlphaStreamer3.1Cpp
     src/util/RtpInfo.h
     src/util/RtpInfo.cpp
     src/util/RtpMetaInfo.h
-    src/util/RtpMetaInfo.cpp)
+    src/util/RtpMetaInfo.cpp
+    src/server/Server.h
+    src/server/Server.cpp
+    src/server/file/AudioSample.h
+    src/server/file/AudioSample.cpp)
 
 # Link Boost libraries and platform-specific libraries only for Windows
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
