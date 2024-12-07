@@ -2,8 +2,16 @@
 # Alpha Streamer 3.1 - C++ refactored ver of alpha streamer 3.0
 <br>
 
-## C++17 이상에서 실행시키는 것을 권장한다.
+## C++17 이상 버전에서 실행시키는 것을 권장합니다.
 <br>
+
+## 개발환경 셋팅
+- 각자의 개발 컴퓨터에 맞게 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
+  - Windows : Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치해 준 후 둘을 링크 해줍니다.
+  - MacOS, WSL : GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
+- 현재 사용 중인 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
+- 셋 중 편한 환경을 선택한 후 아래의 안내를 따라서 실행시키면 됩니다.
+<br><br>
 
 ## Window 환경 Visual Studio 실행방법
 - Window 환경에서 실행할 경우, vcpkg라는 윈도우용 C++ 패키지 매니저 설치 및 셋팅, 해당 패키지 매니저로 boost 라이브러리 설치, Visual Studio에 boost 라이브러리 연동하기, CMakeLists.txt로 Visual Studio 프로젝트 빌드하기라는 다소 많은 단계를 거쳐야 한다.
