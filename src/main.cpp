@@ -5,6 +5,7 @@
 #include "util/C.h"
 #include "util/Buffer.h"
 #include "server/file/AudioSample.h"
+#include "util/Util.h"
 
 using boost::asio::ip::tcp;
 
@@ -48,6 +49,9 @@ int main() {
     std::vector<unsigned char> audioData = {'A', 'u', 'd'};
     AudioSample aSample(audioData, audioData.size());
     std::cout << "AudioSample toString : " << aSample.toString() << "\n";
+
+    std::cout << "Get random key for rtsp session Id \n";
+    std::cout << Util::getRandomKey(64) << "\n";
 
     try {
         boost::asio::io_service io_service;

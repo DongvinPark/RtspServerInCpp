@@ -12,6 +12,7 @@ namespace C {
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
     constexpr int RTP_HEADER_LEN = 12; // Refer to https://datatracker.ietf.org/doc/html/rfc7798
     constexpr int UNSET = -1;
+    constexpr int INVALID = -1;
 
     // Clock rates
     constexpr int H265_CLOCK_RATE = 90000; // by spec, 90kHz must be used.
