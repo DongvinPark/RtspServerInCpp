@@ -37,6 +37,8 @@ namespace Util {
 		// range is [ 0 : pickUpString.length()-1 ]. closed range!
 		using myEngine = std::default_random_engine;
 		using myDistribution = std::uniform_int_distribution<>;
+
+		// randome engine needs seed.
 		myEngine eng{ static_cast<unsigned long>(std::time(nullptr)) };
 		myDistribution dist{ 0, static_cast<int>(pickUpString.length() - 1)};
 		auto getRandomCharIdx = [&]() {return dist(eng); };
@@ -81,9 +83,13 @@ namespace Util {
 		std::vector<std::string> tokens;
 		std::stringstream ss(str);
 		std::string token;
+
+		// used std::getline() to split the inputstring
+		// with input delimeter.
 		while (std::getline(ss, token, delimiter)) {
 			tokens.push_back(token);
 		}
+
 		return tokens;
 	}
 
@@ -114,8 +120,11 @@ namespace Util {
 	inline std::string toHex(unsigned char a) {
 		std::ostringstream oss;
 		// mimics the java util - Integer.toHexString();
-		oss << "0x" << std::hex << std::uppercase
-			<< std::setfill('0') << std::setw(2) << static_cast<int>(a);
+		oss << "0x"
+			<< std::hex << std::uppercase
+			// to make string like 0x2A
+			<< std::setfill('0') << std::setw(2)
+			<< static_cast<int>(a);
 		return oss.str();
 	}
 
