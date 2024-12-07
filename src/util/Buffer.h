@@ -26,12 +26,12 @@ public:
     static Buffer kill();
 
     // used 'const' to repesent this return data cannot be updated after returing.
-    std::string getString() const;
+    const std::string getString();
 
-    std::string toString() const;
+    const std::string toString();
 
 private:
-    void validateBuffer() const;
+    void validateBuffer();
 };
 
 #endif // BUFFER_H

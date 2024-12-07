@@ -14,7 +14,7 @@ Buffer Buffer::kill(){
     return Buffer({}, C::UNSET, C::UNSET);
 }
 
-std::string Buffer::getString() const {
+const std::string Buffer::getString() {
     validateBuffer();
     if(buf.empty() || len <= 0) return {};
     return std::string(
@@ -23,7 +23,7 @@ std::string Buffer::getString() const {
         );
 }
 
-std::string Buffer::toString() const {
+const std::string Buffer::toString() {
     std::ostringstream oss;
     oss << "buf null? " << (buf.empty() ? "true" : "false") 
         << ", len: " << len 
@@ -40,7 +40,7 @@ std::string Buffer::toString() const {
     return oss.str();
 }
 
-void Buffer::validateBuffer() const {
+void Buffer::validateBuffer() {
     if(offset < 0 || len < 0 || offset + len > static_cast<int>(buf.size())){
         throw std::out_of_range("Invalid offset or length for buffer.");
     }

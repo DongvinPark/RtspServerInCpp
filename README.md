@@ -2,6 +2,9 @@
 # Alpha Streamer 3.1 - C++ refactored ver of alpha streamer 3.0
 <br>
 
+## C++17 이상에서 실행시키는 것을 권장한다.
+<br>
+
 ## Window 환경 Visual Studio 실행방법
 - Window 환경에서 실행할 경우, vcpkg라는 윈도우용 C++ 패키지 매니저 설치 및 셋팅, 해당 패키지 매니저로 boost 라이브러리 설치, Visual Studio에 boost 라이브러리 연동하기, CMakeLists.txt로 Visual Studio 프로젝트 빌드하기라는 다소 많은 단계를 거쳐야 한다.
 1. 우선 윈도우 커맨드 프롬프트를 연다.

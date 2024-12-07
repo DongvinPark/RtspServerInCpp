@@ -43,7 +43,7 @@ void ParsableByteArray::setPosition(int newPosition) {
     position = newPosition;
 }
 
-const std::vector<unsigned char>& ParsableByteArray::getData() const {
+const std::vector<unsigned char>& ParsableByteArray::getData() {
     return data;
 }
 

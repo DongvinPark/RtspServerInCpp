@@ -16,8 +16,8 @@ public:
 	RtpInfo& operator=(const RtpInfo& other);
 	~RtpInfo();
 
-	std::shared_ptr<RtpInfo> clone() const;
-	std::string toString() const;
+	const std::shared_ptr<RtpInfo> clone();
+	const std::string toString();
 
 	KeyValueMap kv;
 	std::vector<std::string> urls;

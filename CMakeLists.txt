@@ -45,7 +45,10 @@ add_executable(AlphaStreamer3.1Cpp
     src/server/Server.h
     src/server/Server.cpp
     src/server/file/AudioSample.h
-    src/server/file/AudioSample.cpp)
+    src/server/file/AudioSample.cpp
+    src/server/file/VideoSample.h
+    src/server/file/VideoSample.cpp
+    src/util/Util.h)
 
 # Link Boost libraries and platform-specific libraries only for Windows
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

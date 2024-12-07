@@ -27,7 +27,7 @@ public:
     int byteLeft() const;
     int getPosition() const;
     void setPosition(int position);
-    const std::vector<unsigned char>& getData() const;
+    const std::vector<unsigned char>& getData();
 
     // Data operations
     void skipBytes(int bytes);

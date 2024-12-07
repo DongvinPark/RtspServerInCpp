@@ -23,11 +23,11 @@ void RtpInfo::copyFrom(const RtpInfo& other) {
 	urls = other.urls;
 }
 
-std::shared_ptr<RtpInfo> RtpInfo::clone() const {
+const std::shared_ptr<RtpInfo> RtpInfo::clone() {
 	return std::make_shared<RtpInfo>(*this);
 }
 
-std::string RtpInfo::toString() const {
+const std::string RtpInfo::toString() {
 	std::ostringstream oss;
 	oss << "{";
 
