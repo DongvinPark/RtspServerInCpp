@@ -7,7 +7,7 @@
 
 class AudioSample : public Buffer {
 public:
-    AudioSample(std::vector<unsigned char>& buf, const int len);
+    explicit AudioSample(std::vector<unsigned char>& buf, const int len);
     int size;
     std::string toString() const;
 };

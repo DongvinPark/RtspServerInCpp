@@ -5,12 +5,20 @@
 ## C++17 이상 버전에서 실행시키는 것을 권장합니다.
 <br>
 
+## 개발 정책
+- Boost.asio 라이브러리를 사용하여 스레드의 직접적인 생성을 최소화 했습니다.
+- new와 delete를 직접 사용하는 raw memory 연산을 최소화 했습니다.
+- nullptr를 리턴하기보다는 빈 객체(empty vector, empty string)를 리턴하여 nullptr의 사용을 최소화 했습니다.
+- std 라이브러리를 최대한 많이 사용하여 직접적인 메모리 관리를 최소화 했습니다.
+<br><br>
+
 ## 개발환경 셋팅
-- 각자의 개발 컴퓨터에 맞게 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
+- 각자의 개발 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
   - Windows : Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치해 준 후 둘을 링크 해줍니다.
-  - MacOS, WSL : GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
-- 현재 사용 중인 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
-- 셋 중 편한 환경을 선택한 후 아래의 안내를 따라서 실행시키면 됩니다.
+  - MacOS : GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
+  - Linux ubuntu : GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
+- 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
+- 셋 중 편한 환경을 선택한 후 각자의 환경에 따라서 아래의 안내대로 실행시키면 됩니다.
 <br><br>
 
 ## Window 환경 Visual Studio 실행방법

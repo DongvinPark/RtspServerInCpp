@@ -6,6 +6,7 @@
 #include "util/Buffer.h"
 #include "server/file/AudioSample.h"
 #include "util/Util.h"
+#include "util/AVSampleBuffer.h"
 
 using boost::asio::ip::tcp;
 
@@ -52,6 +53,11 @@ int main() {
 
     std::cout << "Get random key for rtsp session Id \n";
     std::cout << Util::getRandomKey(64) << "\n";
+
+    std::cout << "AVSampleBuffer test start!!\n";
+    AVSampleBuffer avSample(C::VIDEO_ID);
+    avSample.setKill();
+    std::cout << avSample.toString();
 
     try {
         boost::asio::io_service io_service;

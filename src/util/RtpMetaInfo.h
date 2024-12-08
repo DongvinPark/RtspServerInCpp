@@ -6,7 +6,7 @@ public:
 	int len; // rtp length
 	long offset; // offset from file 0 position
 
-	RtpMetaInfo(int len, long offset);
+	explicit RtpMetaInfo(int len, long offset);
 
 	~RtpMetaInfo() = default;
 };

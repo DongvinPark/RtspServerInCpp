@@ -19,9 +19,9 @@ public:
     int mediaType = C::UNSET;
     std::function<void()> afterTx;
 
-    Buffer(const std::vector<unsigned char>& buf);
+    explicit Buffer(const std::vector<unsigned char>& buf);
 
-    Buffer(const std::vector<unsigned char>& buf, const int offset, const int len); 
+    explicit Buffer(const std::vector<unsigned char>& buf, const int offset, const int len);
 
     static Buffer kill();
 

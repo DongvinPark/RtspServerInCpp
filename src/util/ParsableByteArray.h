@@ -14,10 +14,10 @@ private:
 
 public:
     // Constructors
-    ParsableByteArray(const std::vector<unsigned char>& data, int len);
-    ParsableByteArray(const std::vector<unsigned char>& data, int offset, int len);
-    ParsableByteArray(const std::vector<unsigned char>& data);
-    ParsableByteArray(const Buffer& buffer);
+    explicit ParsableByteArray(const std::vector<unsigned char>& data, int len);
+    explicit ParsableByteArray(const std::vector<unsigned char>& data, int offset, int len);
+    explicit ParsableByteArray(const std::vector<unsigned char>& data);
+    explicit ParsableByteArray(const Buffer& buffer);
     
     // Reset methods
     void reset(const std::vector<unsigned char>& data, int len);

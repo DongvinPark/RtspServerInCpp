@@ -12,7 +12,7 @@ private:
     int size;                  // Total size of the sample
 
 public:
-    VideoSample();
+    explicit VideoSample();
 
     /*
     function signature tip;

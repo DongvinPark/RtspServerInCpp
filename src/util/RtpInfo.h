@@ -11,8 +11,8 @@ class RtpInfo {
 public:
 	using KeyValueMap = std::unordered_map<std::string, std::vector<long>>;
 
-	RtpInfo();
-	RtpInfo(const RtpInfo& other);
+	explicit RtpInfo();
+	explicit RtpInfo(const RtpInfo& other);
 	RtpInfo& operator=(const RtpInfo& other);
 	~RtpInfo();
 
