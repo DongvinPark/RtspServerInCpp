@@ -1,7 +1,7 @@
 #ifndef AUDIOSAMPLE_H
 #define AUDIOSAMPLE_H
 
-// use relative to include parent class in different directory
+// use relative path to include parent class in different directory
 #include "../src/util/Buffer.h"
 #include <vector>
 
