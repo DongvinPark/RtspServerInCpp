@@ -62,6 +62,10 @@ namespace Util {
 		the class produces. In random engines like std::mt19937, it specifies the type of generated
 		numbers (e.g., unsigned int). Using myEngine::result_type ensures type safety and portability
 		across platforms, avoiding narrowing conversion errors.
+
+		> 'long' VS 'long long' in C++
+		long: platform-dependent (32-bit on Windows, 64-bit on Linux).
+		long long: guaranteed at least 64-bit, use for larger integers.
 		*/
 		myEngine eng{ static_cast<myEngine::result_type>(std::time(nullptr)) };
 		myDistribution dist{ 0, static_cast<int>(pickUpString.length() - 1)};
