@@ -38,8 +38,32 @@ namespace Util {
 		using myEngine = std::default_random_engine;
 		using myDistribution = std::uniform_int_distribution<>;
 
-		// randome engine needs seed.
+		/*
+		// randome engine needs seed. So, std::time(...) was used.
 		myEngine eng{ static_cast<unsigned long>(std::time(nullptr)) };
+		run well on Window and WSL, but caused a type narrowing error on M1 chip MacOS.
+
+		This error occurred because, myEngine requires unsigned int but result type of
+		std::time(nullptr) is below like this according to Windows, WSL, M chip MacOS.
+
+		> Windows and WSL (Linux on Windows):
+		On 64-bit Windows, time_t is usually defined as a 64-bit integer (e.g., __int64).
+		On Linux (e.g., WSL), time_t is typically a 64-bit long.
+		On both platforms, unsigned long is also 64 bits, so there’s no narrowing conversion when casting time_t to unsigned long.
+		> macOS (on M1 chip):
+		On macOS, time_t is defined as long, which is 64 bits.
+		However, unsigned long is 64 bits as well, but the default type for result_type in the std::mt19937 engine
+		(or your custom myEngine) is often unsigned int, which is 32 bits.
+		This creates a narrowing conversion error because the 64-bit value from std::time
+		is being assigned to a 32-bit type.
+
+		> '::result_type' was used to handle this platform dependency problem.
+		::result_type is a type alias defined in a class/struct that indicates the type of value
+		the class produces. In random engines like std::mt19937, it specifies the type of generated
+		numbers (e.g., unsigned int). Using myEngine::result_type ensures type safety and portability
+		across platforms, avoiding narrowing conversion errors.
+		*/
+		myEngine eng{ static_cast<myEngine::result_type>(std::time(nullptr)) };
 		myDistribution dist{ 0, static_cast<int>(pickUpString.length() - 1)};
 		auto getRandomCharIdx = [&]() {return dist(eng); };
 
