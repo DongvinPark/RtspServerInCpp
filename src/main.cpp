@@ -60,9 +60,14 @@ int main() {
     avSample.setKill();
     std::cout << avSample.toString();
 
-    boost::asio::io_context io_context;
-
     std::cout << "\nPeriodic Timer Task start!\n";
+
+    boost::asio::io_context io_context;
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> workGuard = boost::asio::make_work_guard(io_context);
+
+    std::thread ioThread(
+        [&io_context]() {io_context.run(); }
+    );
 
     auto myTask = []() {
         std::cout << "Lambda-based periodic task executed at: "
@@ -73,10 +78,12 @@ int main() {
     std::chrono::milliseconds interval(1000); // 1 second
     PeriodicTask task(io_context, interval, myTask);
     task.start();
-    io_context.run();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     task.stop();
+
+    workGuard.reset();
+    ioThread.join();
 
     try {
         boost::asio::io_service io_service;
@@ -102,5 +109,4 @@ int main() {
     }
 
     return 0;
-
 }
