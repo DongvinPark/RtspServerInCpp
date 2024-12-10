@@ -12,7 +12,7 @@
 
 class SntpRefTimeProvider {
 public:
-	SntpRefTimeProvider(boost::asio::io_context& io_context);
+	explicit SntpRefTimeProvider(boost::asio::io_context& io_context);
 	~SntpRefTimeProvider();
 
 	void start();

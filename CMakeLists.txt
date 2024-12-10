@@ -53,6 +53,8 @@ add_executable(AlphaStreamer3.1Cpp
     src/util/AVSampleBuffer.cpp
     src/server/SntpRefTimeProvider.h
     src/server/SntpRefTimeProvider.cpp
+    src/timer/PeriodicTask.h
+    src/timer/PeriodicTask.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

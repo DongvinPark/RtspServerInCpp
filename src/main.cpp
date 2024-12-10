@@ -7,6 +7,7 @@
 #include "server/file/AudioSample.h"
 #include "util/Util.h"
 #include "util/AVSampleBuffer.h"
+#include "timer/PeriodicTask.h"
 
 using boost::asio::ip::tcp;
 
@@ -58,6 +59,21 @@ int main() {
     AVSampleBuffer avSample(C::VIDEO_ID);
     avSample.setKill();
     std::cout << avSample.toString();
+
+    boost::asio::io_context io_context;
+
+    std::cout << "\nPeriodic Timer Task start!\n";
+
+    auto myTask = []() {
+        std::cout << "Lambda-based periodic task executed at: "
+                  << std::chrono::system_clock::now().time_since_epoch().count()
+                  << "\n";
+    };
+
+    std::chrono::milliseconds interval(1000); // 1 second
+    PeriodicTask task(io_context, interval, myTask);
+    task.start();
+    io_context.run();
 
     try {
         boost::asio::io_service io_service;
