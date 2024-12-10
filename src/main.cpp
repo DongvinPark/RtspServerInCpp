@@ -75,6 +75,9 @@ int main() {
     task.start();
     io_context.run();
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    task.stop();
+
     try {
         boost::asio::io_service io_service;
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8554));

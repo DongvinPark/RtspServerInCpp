@@ -5,6 +5,9 @@
 #include <iostream>
 #include <functional>
 #include <chrono>
+#include <memory>
+
+#include "../src/util/Logger.h"
 
 class PeriodicTask {
 public:
@@ -15,13 +18,16 @@ public:
         TaskCallback task
     );
     void start();
+    void stop();
 
 private:
     void scheduleTask();
 
+    std::shared_ptr<Logger> logger;
     boost::asio::steady_timer timer;
     std::chrono::milliseconds interval;
     TaskCallback task;
+    bool running;
 };
 
 #endif // PERIODICTASK_H

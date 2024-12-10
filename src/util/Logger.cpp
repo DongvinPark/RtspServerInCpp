@@ -53,7 +53,7 @@ std::string Logger::makeString(const std::string& msg, const std::string& level,
 }
 
 void Logger::print(const std::string& msg) {
-    std::cout << msg << std::endl;
+    std::cout << msg << "\n";
     if (showPrompt) {
         std::cout << ">> ";
     }
