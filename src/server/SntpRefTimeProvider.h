@@ -9,23 +9,36 @@
 #include <memory>
 #include "../src/util/C.h"
 #include "../src/util/Logger.h"
+#include "../src/timer/PeriodicTask.h"
 
 class SntpRefTimeProvider {
 public:
-	explicit SntpRefTimeProvider(boost::asio::io_context& io_context);
+	explicit SntpRefTimeProvider(
+		boost::asio::io_context& io_context
+	);
 	~SntpRefTimeProvider();
 
 	void start();
 	long getRefTimeMillisForCurrentTask();
 	long getRefTimeSecForCurrentTask();
 	long getRefTime(long now);
+	void readTime();
 
 private:
-	void readTime();
 	void onReadSntpTime(long ntpTimeMs_);
-	void read32(const std::vector<uint8_t>& buffer, size_t offset);
-	long readTimeStamp(const std::vector<uint8_t>& buffer, size_t offset);
-	void writeTimeStamp(std::vector<uint8_t>& buffer, size_t offset, long time);
+	void read32(
+		const std::vector<uint8_t>& buffer,
+		size_t offset
+	);
+	long readTimeStamp(
+		const std::vector<uint8_t>& buffer,
+		size_t offset
+	);
+	void writeTimeStamp(
+		std::vector<uint8_t>& buffer,
+		size_t offset,
+		long time
+	);
 
 	boost::asio::io_context& iOContext;
 
@@ -37,7 +50,7 @@ private:
 
 	std::mutex lock;
 	std::atomic<bool> running;
-	std::thread timerThread;
+	PeriodicTask timerTask;
 
 };
 

@@ -2,7 +2,7 @@
 # Alpha Streamer 3.1 - C++ refactored ver of alpha streamer 3.0
 <br>
 
-## C++17 이상 버전에서 실행시키는 것을 권장합니다.
+## C++20 버전에서 실행시키는 것을 권장합니다.
 <br>
 
 ## 개발 정책

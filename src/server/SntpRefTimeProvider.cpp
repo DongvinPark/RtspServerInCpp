@@ -1,18 +1,5 @@
 #include "SntpRefTimeProvider.h"
 #include "../src/util/Logger.h"
-#include "../src/util/C.h"
-
-/*
-	Logger logger;
-
-	long originSntpTime;
-	std::atomic<long> ntpTimeMs;
-	std::atomic<long> elapsedTimeNanoSec;
-
-	std::mutex lock;
-	std::atomic<bool> running;
-	std::thread timerThread;
-*/
 
 SntpRefTimeProvider::SntpRefTimeProvider(boost::asio::io_context& io_context)
 	: 
@@ -21,17 +8,21 @@ SntpRefTimeProvider::SntpRefTimeProvider(boost::asio::io_context& io_context)
 	originSntpTime(0),
 	ntpTimeMs(C::UNSET),
 	elapsedTimeNanoSec(C::UNSET),
-	running(false) {}
+	running(false),
+	timerTask(PeriodicTask(io_context, std::chrono::milliseconds(C::NTP_READ_PERIOD))){}
 
 SntpRefTimeProvider::~SntpRefTimeProvider() {
 	running = false;
-	// join the timer thread.
-	if (timerThread.joinable()) {
-		timerThread.join();
-	}
+	timerTask.stop();
 }
 
 void SntpRefTimeProvider::start() {
+	// set task to timer and start the timer.
+	auto readTimeTask = [this]() {
+		this->readTime();
+	};
+	timerTask.setTask(readTimeTask);
+	timerTask.start();
 }
 
 long SntpRefTimeProvider::getRefTimeMillisForCurrentTask() {

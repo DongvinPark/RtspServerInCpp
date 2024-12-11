@@ -12,11 +12,20 @@
 class PeriodicTask {
 public:
     using TaskCallback = std::function<void()>;
+
+    // constructor with no task
+    explicit PeriodicTask(
+        boost::asio::io_context& io_context,
+        std::chrono::milliseconds interval
+    );
+
+    // constructor with task
     explicit PeriodicTask(
         boost::asio::io_context& io_context,
         std::chrono::milliseconds interval,
         TaskCallback task
     );
+    void setTask(TaskCallback inputTask);
     void start();
     void stop();
 
@@ -28,6 +37,7 @@ private:
     std::chrono::milliseconds interval;
     TaskCallback task;
     bool running;
+    bool isTaskSet;
 };
 
 #endif // PERIODICTASK_H

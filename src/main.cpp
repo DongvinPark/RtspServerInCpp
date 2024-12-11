@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include <iostream>
+#include <syncstream>
 
 #include "util/Logger.h"
 #include "util/C.h"
@@ -39,14 +40,12 @@ int main() {
     std::vector<unsigned char> data = {'H', 'e', 'l', 'l', 'o'};
     Buffer buffer(data);
 
-    // Assign a lambda function to afterTx
     buffer.afterTx = []() {
         std::cout << "Ward 'Hello' Transmission complete!" << std::endl;
     };
 
-    std::cout << (unsigned char)0x24 << "\n"; // this will print '$' in terminal console.
+    std::cout << (unsigned char)0x24 << "\n";
 
-    // Trigger the afterTx callback
     if (buffer.afterTx) {
         buffer.afterTx();
     }
@@ -79,7 +78,8 @@ int main() {
     }
 
     auto myTask = []() {
-        std::cout << "Lambda-based periodic task executed at: "
+        // used osyncstream to synchronize print result
+        std::osyncstream(std::cout)<< "Lambda-based periodic task executed at: "
                   << std::chrono::system_clock::now().time_since_epoch().count()
                   << "\n";
     };
@@ -88,36 +88,20 @@ int main() {
     PeriodicTask task(returnIOContext(io_context), interval, myTask);
     task.start();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    task.stop();
+    //std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    //task.stop();
+
+    PeriodicTask noTask(io_context, std::chrono::milliseconds(1000));
+    noTask.setTask(myTask);
+    noTask.start();
+
+    //std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    //noTask.stop();
 
     workGuard.reset();
     
     for (auto& thread : threadVec) {
         thread.join();
-    }
-
-    try {
-        boost::asio::io_service io_service;
-        tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8554));
-
-        std::cout << "Server is running on port 8554..." << std::endl;
-
-        while (true) {
-            tcp::socket socket(io_service);
-            acceptor.accept(socket);
-	        std::cout << "client socket connected!!\n";
-
-            std::string message = "Server sent messsge!\n";
-
-            std::cout << "sent message : " << message << "\n";
-
-            boost::system::error_code ignored_error;
-            boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
-            std::cout << "wrote response!!\n";
-        }
-    } catch (std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
     }
 
     return 0;
