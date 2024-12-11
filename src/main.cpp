@@ -11,6 +11,12 @@
 
 using boost::asio::ip::tcp;
 
+boost::asio::io_context& returnIOContext(
+    boost::asio::io_context& ioContext
+) {
+    return ioContext;
+}
+
 int main() {
     
     auto logger = Logger::getLogger("main");
@@ -63,11 +69,14 @@ int main() {
     std::cout << "\nPeriodic Timer Task start!\n";
 
     boost::asio::io_context io_context;
-    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> workGuard = boost::asio::make_work_guard(io_context);
-
-    std::thread ioThread(
-        [&io_context]() {io_context.run(); }
-    );
+    auto workGuard = boost::asio::make_work_guard(io_context);
+    std::vector<std::thread> threadVec;
+    unsigned int threadCnt = std::thread::hardware_concurrency();
+    for (int i = 0; i < threadCnt; ++i) {
+        threadVec.emplace_back(
+            [&io_context]() {io_context.run(); }
+        );
+    }
 
     auto myTask = []() {
         std::cout << "Lambda-based periodic task executed at: "
@@ -76,14 +85,17 @@ int main() {
     };
 
     std::chrono::milliseconds interval(1000); // 1 second
-    PeriodicTask task(io_context, interval, myTask);
+    PeriodicTask task(returnIOContext(io_context), interval, myTask);
     task.start();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     task.stop();
 
     workGuard.reset();
-    ioThread.join();
+    
+    for (auto& thread : threadVec) {
+        thread.join();
+    }
 
     try {
         boost::asio::io_service io_service;
