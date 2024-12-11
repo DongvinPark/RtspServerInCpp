@@ -1,33 +1,28 @@
 #include "IOContextHolder.h"
 
-/*
-	boost::asio::io_context& IOContext;
-	std::vector<std::thread> threadVector;
-	WorkGuardType workGuard;
-*/
-
-IOContextHolder::IOContextHolder(boost::asio::io_context& iOContext)
-    : IOContext(iOContext), threadVector(), workGuard(boost::asio::make_work_guard(iOContext)) {
-    unsigned int num_threads = std::thread::hardware_concurrency();
-
-    // Launch threads to run the io_context
-    for (unsigned int i = 0; i < num_threads; ++i) {
-        threadVector.emplace_back([&iOContext]() {
-            iOContext.run();
-            });
-    }
-}
+IOContextHolder::IOContextHolder() 
+    : ioContext(std::make_shared<boost::asio::io_context>()) {}
 
 IOContextHolder::~IOContextHolder() {
-    for (auto& t : threadVector) {
-        t.join();
+    for (auto& thread : threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
-    workGuard.reset();
 }
 
 void IOContextHolder::start() {
+    auto workGuard = boost::asio::make_work_guard(*ioContext);
+
+    unsigned int num_threads = std::thread::hardware_concurrency();
+
+    for (unsigned int i = 0; i < num_threads; ++i) {
+        threads.emplace_back([this]() {
+            ioContext->run(); // Run io_context on each thread
+        });
+    }
 }
 
-boost::asio::io_context& IOContextHolder::getIOContext() {
-    return IOContext;
+std::shared_ptr<boost::asio::io_context> IOContextHolder::getIOContext() {
+    return ioContext;
 }

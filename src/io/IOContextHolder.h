@@ -8,17 +8,15 @@
 
 class IOContextHolder {
 public:
-	using WorkGuardType = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    IOContextHolder();
+    ~IOContextHolder();
 
-	IOContextHolder(boost::asio::io_context& iOContext);
-	~IOContextHolder();
-	void start();
-	static boost::asio::io_context& getIOContext();
+    void start(); 
+    std::shared_ptr<boost::asio::io_context> getIOContext();
 
 private:
-	boost::asio::io_context& IOContext;
-	std::vector<std::thread> threadVector;
-	WorkGuardType workGuard;
+    std::shared_ptr<boost::asio::io_context> ioContext;
+    std::vector<std::thread> threads;
 };
 
 #endif // IOCONTEXTHOLDER_H
