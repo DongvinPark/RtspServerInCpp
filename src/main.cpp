@@ -77,9 +77,12 @@ int main() {
         );
     }
 
-    auto myTask = []() {
-        // used osyncstream to synchronize print result
-        std::osyncstream(std::cout)<< "Lambda-based periodic task executed at: "
+    std::mutex lock;
+
+    auto myTask = [&lock]() {
+        // osyncstream not works on MacOS. Used std::mutex.
+        std::lock_guard<std::mutex> guard(lock);
+        /* std::osyncstream */(std::cout)<< "Lambda-based periodic task executed at: "
                   << std::chrono::system_clock::now().time_since_epoch().count()
                   << "\n";
     };
