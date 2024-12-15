@@ -63,14 +63,14 @@ namespace C {
     constexpr int NTP_PORT = 123;
     constexpr int NTP_MODE_CLIENT = 3;
     constexpr int NTP_VERSION = 3;
-    constexpr int HOST_RSP_TIMEOUT_MS = 5000; // ms
-    constexpr int NTP_READ_PERIOD = 3000; // ms
+    constexpr int HOST_RSP_TIMEOUT_MS = 3000;
+    constexpr int NTP_READ_PERIOD = 3000;
     constexpr int REFERENCE_TIME_OFFSET = 16;
     constexpr int ORIGINATE_TIME_OFFSET = 24;
     constexpr int RECEIVE_TIME_OFFSET = 32;
     constexpr int TRANSMIT_TIME_OFFSET = 40;
     constexpr int NTP_PACKET_SIZE = 48;
-    constexpr long OFFSET_1900_TO_1970 = ((365L * 70L) + 17L) * 24L * 60L * 60L;
+    constexpr long OFFSET_1900_TO_1970 = 2208988800L;//((365L * 70L) + 17L) * 24L * 60L * 60L;
 
     // Monitoring HTTP Server
     constexpr int MONITORING_HTTP_SERVER_PORT = 80;

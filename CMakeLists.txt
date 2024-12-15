@@ -55,6 +55,8 @@ add_executable(AlphaStreamer3.1Cpp
     src/server/SntpRefTimeProvider.cpp
     src/timer/PeriodicTask.h
     src/timer/PeriodicTask.cpp
+    src/util/RxBitrate.h
+    src/util/RxBitrate.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

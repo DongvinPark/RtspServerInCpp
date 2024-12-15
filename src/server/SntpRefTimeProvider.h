@@ -7,51 +7,35 @@
 #include <mutex>
 #include <vector>
 #include <memory>
-#include "../src/util/C.h"
+
 #include "../src/util/Logger.h"
-#include "../src/timer/PeriodicTask.h"
 
 class SntpRefTimeProvider {
 public:
-	explicit SntpRefTimeProvider(
-		boost::asio::io_context& io_context
-	);
-	~SntpRefTimeProvider();
+    explicit SntpRefTimeProvider(boost::asio::io_context& inputIoContext);
+    ~SntpRefTimeProvider();
 
-	void start();
-	long getRefTimeMillisForCurrentTask();
-	long getRefTimeSecForCurrentTask();
-	long getRefTime(long now);
-	void readTime();
+    void start();
+    long long getRefTimeMillisForCurrentTask();
+    long long getRefTimeSecForCurrentTask();
+    long long getRefTime(long long now);
 
 private:
-	void onReadSntpTime(long ntpTimeMs_);
-	void read32(
-		const std::vector<uint8_t>& buffer,
-		size_t offset
-	);
-	long readTimeStamp(
-		const std::vector<uint8_t>& buffer,
-		size_t offset
-	);
-	void writeTimeStamp(
-		std::vector<uint8_t>& buffer,
-		size_t offset,
-		long time
-	);
+    void readTime();
+    void writeTimeStamp(std::vector<uint8_t>& buffer, size_t offset, long long time);
+    long long readTimeStamp(const std::vector<uint8_t>& buffer, size_t offset);
+    long long read32(const std::vector<uint8_t>& buffer, size_t offset);
+    void onReadSntpTime(long long ntpTimeMs);
 
-	boost::asio::io_context& iOContext;
+    std::shared_ptr<Logger> logger;
+    boost::asio::io_context& ioContext;
+    long long originSntpTime; // Tracks the synchronized SNTP time
+    std::atomic<long long> ntpTimeMs;
+    std::atomic<long long> elapsedTimeNs;
 
-	std::shared_ptr<Logger> logger;
-
-	long originSntpTime;
-	std::atomic<long> ntpTimeMs;
-	std::atomic<long> elapsedTimeNanoSec;
-
-	std::mutex lock;
-	std::atomic<bool> running;
-	PeriodicTask timerTask;
-
+    std::mutex lock;
+    std::atomic<bool> running;
+    std::thread timerThread;
 };
 
-#endif //SNTP_REF_TIME_PROVIDER_H
+#endif // SNTP_REF_TIME_PROVIDER_H

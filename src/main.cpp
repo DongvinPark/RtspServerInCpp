@@ -9,6 +9,7 @@
 #include "util/Util.h"
 #include "util/AVSampleBuffer.h"
 #include "timer/PeriodicTask.h"
+#include "server/SntpRefTimeProvider.h"
 
 using boost::asio::ip::tcp;
 
@@ -77,14 +78,16 @@ int main() {
         );
     }
 
+    SntpRefTimeProvider sntpRefTimeProvider(io_context);
+    sntpRefTimeProvider.start();
+
     std::mutex lock;
 
-    auto myTask = [&lock]() {
+    auto myTask = [&]() {
         // osyncstream not works on MacOS. Used std::mutex.
         std::lock_guard<std::mutex> guard(lock);
-        /* std::osyncstream */(std::cout)<< "Lambda-based periodic task executed at: "
-                  << std::chrono::system_clock::now().time_since_epoch().count()
-                  << "\n";
+        /* std::osyncstream */(std::cout) << "sntp ref time millis : "
+            << sntpRefTimeProvider.getRefTimeMillisForCurrentTask() << "\n";
     };
 
     std::chrono::milliseconds interval(1000); // 1 second
@@ -92,14 +95,14 @@ int main() {
     task.start();
 
     //std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    //task.stop();
+    task.stop();
 
     PeriodicTask noTask(io_context, std::chrono::milliseconds(1000));
     noTask.setTask(myTask);
     noTask.start();
 
     //std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    //noTask.stop();
+    noTask.stop();
 
     workGuard.reset();
     
