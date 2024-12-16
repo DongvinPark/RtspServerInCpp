@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <cstdint> // For int64_t
 
 namespace C {
     // General constants
@@ -70,7 +71,7 @@ namespace C {
     constexpr int RECEIVE_TIME_OFFSET = 32;
     constexpr int TRANSMIT_TIME_OFFSET = 40;
     constexpr int NTP_PACKET_SIZE = 48;
-    constexpr long OFFSET_1900_TO_1970 = 2208988800L;//((365L * 70L) + 17L) * 24L * 60L * 60L;
+    constexpr int64_t OFFSET_1900_TO_1970 = 2208988800L;//((365L * 70L) + 17L) * 24L * 60L * 60L;
 
     // Monitoring HTTP Server
     constexpr int MONITORING_HTTP_SERVER_PORT = 80;

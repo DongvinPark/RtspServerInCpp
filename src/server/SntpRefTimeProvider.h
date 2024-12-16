@@ -7,6 +7,7 @@
 #include <mutex>
 #include <vector>
 #include <memory>
+#include <cstdint> // For int64_t
 
 #include "../src/util/Logger.h"
 
@@ -16,22 +17,22 @@ public:
     ~SntpRefTimeProvider();
 
     void start();
-    long long getRefTimeMillisForCurrentTask();
-    long long getRefTimeSecForCurrentTask();
-    long long getRefTime(long long now);
+    int64_t getRefTimeMillisForCurrentTask();
+    int64_t getRefTimeSecForCurrentTask();
+    int64_t getRefTime(int64_t now);
 
 private:
     void readTime();
-    void writeTimeStamp(std::vector<uint8_t>& buffer, size_t offset, long long time);
-    long long readTimeStamp(const std::vector<uint8_t>& buffer, size_t offset);
-    long long read32(const std::vector<uint8_t>& buffer, size_t offset);
-    void onReadSntpTime(long long ntpTimeMs);
+    void writeTimeStamp(std::vector<uint8_t>& buffer, size_t offset, int64_t time);
+    int64_t readTimeStamp(const std::vector<uint8_t>& buffer, size_t offset);
+    int64_t read32(const std::vector<uint8_t>& buffer, size_t offset);
+    void onReadSntpTime(int64_t ntpTimeMs);
 
     std::shared_ptr<Logger> logger;
     boost::asio::io_context& ioContext;
-    long long originSntpTime; // Tracks the synchronized SNTP time
-    std::atomic<long long> ntpTimeMs;
-    std::atomic<long long> elapsedTimeNs;
+    int64_t originSntpTime; // Tracks the synchronized SNTP time
+    std::atomic<int64_t> ntpTimeMs;
+    std::atomic<int64_t> elapsedTimeNs;
 
     std::mutex lock;
     std::atomic<bool> running;

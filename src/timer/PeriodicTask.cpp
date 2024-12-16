@@ -55,7 +55,8 @@ void PeriodicTask::scheduleTask() {
                         scheduleTask();
                     }
                 } else {
-                    logger->severe("boost steady timer failed! error message : " + ec.what());
+                    // used ec.message() instead of ec.what() for boost backward comparability
+                    logger->severe("boost steady timer failed! error message : " + ec.message());
                 }
             }
         );
