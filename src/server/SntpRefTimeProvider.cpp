@@ -7,7 +7,7 @@
 #include <random>
 
 SntpRefTimeProvider::SntpRefTimeProvider(boost::asio::io_context& inputIoContext)
-    : logger(Logger::getLogger("SntpRefTimeProvider")),
+    : logger(Logger::getLogger(C::SNTP_REF_TIME_PROVIDER)),
     ioContext(inputIoContext),
     originSntpTime(0),
     ntpTimeMs(C::UNSET),

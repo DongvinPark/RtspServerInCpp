@@ -21,7 +21,7 @@ boost::asio::io_context& returnIOContext(
 
 int main() {
     
-    auto logger = Logger::getLogger("main");
+    auto logger = Logger::getLogger(C::MAIN);
     logger->severe("This is a severe message.");
     logger->warning("This is a warning message.");
     logger->info("This is an info message.");

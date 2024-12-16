@@ -7,6 +7,11 @@
 #include <cstdint> // For int64_t
 
 namespace C {
+    // class names
+    constexpr char MAIN[] = "main";
+    constexpr char SNTP_REF_TIME_PROVIDER[] = "SntpRefTimeProvider";
+    constexpr char PERIODIC_TASK[] = "PeriodicTask";
+
     // General constants
     constexpr char VERSION[] = "1.0.4";
 

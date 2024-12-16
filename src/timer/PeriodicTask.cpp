@@ -1,5 +1,7 @@
 #include "PeriodicTask.h"
 
+#include <util/C.h>
+
 PeriodicTask::PeriodicTask(
     boost::asio::io_context& io_context,
     std::chrono::milliseconds inputInterval
@@ -7,7 +9,7 @@ PeriodicTask::PeriodicTask(
     interval(inputInterval),
     running(false),
     isTaskSet(false),
-    logger(Logger::getLogger("PeriodicTask")) {}
+    logger(Logger::getLogger(C::PERIODIC_TASK)) {}
 
 PeriodicTask::PeriodicTask(
     boost::asio::io_context& io_context,
@@ -18,7 +20,7 @@ PeriodicTask::PeriodicTask(
     task(std::move(inputTask)),
     running(false),
     isTaskSet(true),
-    logger(Logger::getLogger("PeriodicTask")) {}
+    logger(Logger::getLogger(C::PERIODIC_TASK)) {}
 
 void PeriodicTask::setTask(TaskCallback inputTask) {
     task = std::move(inputTask);
