@@ -2,10 +2,7 @@
 #define PERIODICTASK_H
 
 #include <boost/asio.hpp>
-#include <iostream>
 #include <functional>
-#include <chrono>
-#include <memory>
 
 #include "../include/Logger.h"
 

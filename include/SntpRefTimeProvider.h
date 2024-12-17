@@ -4,9 +4,7 @@
 #include <boost/asio.hpp>
 #include <atomic>
 #include <thread>
-#include <mutex>
 #include <vector>
-#include <memory>
 #include <cstdint> // For int64_t
 
 #include "../include/Logger.h"

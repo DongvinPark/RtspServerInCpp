@@ -57,6 +57,8 @@ add_executable(AlphaStreamer3.1Cpp
     src/timer/PeriodicTask.cpp
         include/RxBitrate.h
     src/util/RxBitrate.cpp
+        include/FileReader.h
+        src/server/file/FileReader.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

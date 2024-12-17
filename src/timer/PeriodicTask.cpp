@@ -1,5 +1,4 @@
 #include "../include/PeriodicTask.h"
-
 #include "../constants/C.h"
 
 PeriodicTask::PeriodicTask(
