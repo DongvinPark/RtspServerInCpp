@@ -1,6 +1,7 @@
 #ifndef AUDIOACCESS_H
 #define AUDIOACCESS_H
 #include <fstream>
+#include <vector>
 
 #include "../include/AudioSampleInfo.h"
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <memory>
 
 class RtpInfo {
 public:
