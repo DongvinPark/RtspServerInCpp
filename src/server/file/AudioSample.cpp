@@ -1,4 +1,4 @@
-#include "AudioSample.h"
+#include "../include/AudioSample.h"
 
 AudioSample::AudioSample(std::vector<unsigned char>& buf, const int len)
     : Buffer(buf, 0, len), size(len){}

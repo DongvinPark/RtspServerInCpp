@@ -1,4 +1,4 @@
-#include "AVSampleBuffer.h"
+#include "../include/AVSampleBuffer.h"
 #include <numeric> // for std::accumulate
 
 AVSampleBuffer::AVSampleBuffer(const int inputStreamId) : streamId(inputStreamId) {}

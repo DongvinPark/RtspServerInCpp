@@ -2,14 +2,14 @@
 #include <iostream>
 #include <syncstream>
 
-#include "util/Logger.h"
-#include "util/C.h"
-#include "util/Buffer.h"
-#include "server/file/AudioSample.h"
-#include "util/Util.h"
-#include "util/AVSampleBuffer.h"
-#include "timer/PeriodicTask.h"
-#include "server/SntpRefTimeProvider.h"
+#include "../include/Logger.h"
+#include "../constants/C.h"
+#include "../include/Buffer.h"
+#include "../include/AudioSample.h"
+#include "../constants/Util.h"
+#include "../include/AVSampleBuffer.h"
+#include "../include/PeriodicTask.h"
+#include "../include/SntpRefTimeProvider.h"
 
 using boost::asio::ip::tcp;
 

@@ -32,30 +32,30 @@ include_directories(${Boost_INCLUDE_DIRS} src)
 # Add the executable
 add_executable(AlphaStreamer3.1Cpp
     src/main.cpp
-	src/util/Logger.h
+        include/Logger.h
     src/util/Logger.cpp
-	src/util/Buffer.h
+        include/Buffer.h
 	src/util/Buffer.cpp
-    src/util/ParsableByteArray.h
+        include/ParsableByteArray.h
     src/util/ParsableByteArray.cpp
-    src/util/RtpInfo.h
+        include/RtpInfo.h
     src/util/RtpInfo.cpp
-    src/util/RtpMetaInfo.h
+        include/RtpMetaInfo.h
     src/util/RtpMetaInfo.cpp
-    src/server/Server.h
+        include/Server.h
     src/server/Server.cpp
-    src/server/file/AudioSample.h
+        include/AudioSample.h
     src/server/file/AudioSample.cpp
-    src/server/file/VideoSample.h
+        include/VideoSample.h
     src/server/file/VideoSample.cpp
-    src/util/Util.h
-    src/util/AVSampleBuffer.h
+        constants/Util.h
+        include/AVSampleBuffer.h
     src/util/AVSampleBuffer.cpp
-    src/server/SntpRefTimeProvider.h
+        include/SntpRefTimeProvider.h
     src/server/SntpRefTimeProvider.cpp
-    src/timer/PeriodicTask.h
+        include/PeriodicTask.h
     src/timer/PeriodicTask.cpp
-    src/util/RxBitrate.h
+        include/RxBitrate.h
     src/util/RxBitrate.cpp
 )
 

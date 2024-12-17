@@ -1,5 +1,5 @@
-#include "SntpRefTimeProvider.h"
-#include "../src/util/C.h"
+#include "../include/SntpRefTimeProvider.h"
+#include "../constants/C.h"
 
 #include <iostream>
 #include <chrono>

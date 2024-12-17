@@ -9,7 +9,7 @@
 #include <memory>
 #include <cstdint> // For int64_t
 
-#include "../src/util/Logger.h"
+#include "../include/Logger.h"
 
 class SntpRefTimeProvider {
 public:

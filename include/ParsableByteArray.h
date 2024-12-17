@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <stdexcept>
-#include "Buffer.h"
+#include "../include/Buffer.h"
 
 class ParsableByteArray {
 private:

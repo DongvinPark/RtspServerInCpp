@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <functional> // For std::function
-#include "C.h"
+#include "../constants/C.h"
 
 class Buffer {
 public:
@@ -25,7 +25,7 @@ public:
 
     static Buffer kill();
 
-    // used 'const' to repesent this return data cannot be updated after returing.
+    // used 'const' to represent this return data cannot be updated after returing.
     const std::string getString();
 
     const std::string toString();

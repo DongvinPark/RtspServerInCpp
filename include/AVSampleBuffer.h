@@ -1,8 +1,8 @@
 #ifndef AVSAMPLEBUFFER_H
 #define AVSAMPLEBUFFER_H
 
-#include "../src/util/C.h"
-#include "../src/util/Buffer.h"
+#include "../constants/C.h"
+#include "../include/Buffer.h"
 #include <vector>
 
 class AVSampleBuffer {

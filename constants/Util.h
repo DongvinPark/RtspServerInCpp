@@ -7,10 +7,10 @@
 #include <random>
 #include <sstream>
 #include <iomanip>
-#include "../src/util/C.h"
-#include "../src/util/Buffer.h"
-#include "../src/util/ParsableByteArray.h"
-#include "../src/server/file/VideoSample.h"
+#include "../constants/C.h"
+#include "../include/Buffer.h"
+#include "../include/ParsableByteArray.h"
+#include "../include/VideoSample.h"
 
 namespace Util {
 

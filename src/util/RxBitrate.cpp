@@ -1,4 +1,4 @@
-#include "RxBitrate.h"
+#include "../include/RxBitrate.h"
 
 RxBitrate::RxBitrate(long bitrate, long utcTimeMillis)
     : bitrate(bitrate), utcTimeMillis(utcTimeMillis) {}

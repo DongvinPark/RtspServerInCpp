@@ -2,7 +2,7 @@
 #define AUDIOSAMPLE_H
 
 // use relative path to include parent class in different directory
-#include "../src/util/Buffer.h"
+#include "../include/Buffer.h"
 #include <vector>
 
 class AudioSample : public Buffer {

@@ -1,4 +1,4 @@
-#include "ParsableByteArray.h"
+#include "../include/ParsableByteArray.h"
 
 ParsableByteArray::ParsableByteArray(const std::vector<unsigned char>& data, int len) {
     reset(data, len);

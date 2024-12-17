@@ -1,5 +1,5 @@
-#include "VideoSample.h"
-#include "../src/util/Util.h"
+#include "../include/VideoSample.h"
+#include "../constants/Util.h"
 #include <stdexcept>
 
 VideoSample::VideoSample() : size(0) {}
