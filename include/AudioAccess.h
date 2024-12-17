@@ -10,17 +10,20 @@ public:
     explicit AudioAccess();
     ~AudioAccess();
 
-    // fstream is impossible to copy.
-    std::fstream& getAccess();
+    std::ifstream& getAccess();
     std::vector<AudioSampleInfo>& getMeta();
 
-    void setAccess(const std::string& inputFilePath, std::ios::openmode mode);
+    // const version for read-only access
+    const std::ifstream& getConstAccess() const;
+    const std::vector<AudioSampleInfo>& getConstMeta() const;
+
+    void setAccess(const std::string& inputFilePath);
     void setMeta(const std::vector<AudioSampleInfo>& inputMeta);
 
     void close();
 
 private:
-    std::fstream access;
+    std::ifstream access;
     std::vector<AudioSampleInfo> meta;
 };
 
