@@ -59,6 +59,14 @@ add_executable(AlphaStreamer3.1Cpp
     src/util/RxBitrate.cpp
         include/FileReader.h
         src/server/file/FileReader.cpp
+        include/AudioSampleInfo.h
+        include/VideoSampleInfo.h
+        src/server/file/access/AudioSampleInfo.cpp
+        src/server/file/access/VideoSampleInfo.cpp
+        include/AudioAccess.h
+        include/VideoAccess.h
+        src/server/file/access/AudioAccess.cpp
+        src/server/file/access/VideoAccess.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

@@ -2,46 +2,14 @@
 #define FILEREADER_H
 #include <__filesystem/path.h>
 
-#include "../include/RtpMetaInfo.h"
 #include "../include/RtpInfo.h"
 #include "../constants/C.h"
 #include "../include/Logger.h"
+#include "../include/VideoAccess.h"
+#include "../include/AudioAccess.h"
 
 class FileReader {
 public:
-    // TODO : make these four inner class as separate class.
-    // TODO : create new directory named 'access' for these 4 inner calsses.
-    class VideoAccess {
-    public:
-    private:
-    };
-
-    class AudioAccess{
-    public:
-    private:
-    };
-
-    class VideoSampleInfo {
-    public:
-        explicit VideoSampleInfo();
-        void setSize(int inputSize);
-        void setOffset(int inputOffset);
-        void setFlag(int inputFlag);
-        [[nodiscard]] int getSize();
-        [[nodiscard]] int getOffset();
-        [[nodiscard]] int getFlag();
-        [[nodiscard]] std::vector<RtpMetaInfo>& getMetaInfo();
-    private:
-        std::vector<RtpMetaInfo> rtpMetaInfos;
-        int size;
-        int offset;
-        int flag; // 1: Key(== I) frame, 0: P frame
-    };
-
-    class AudioSampleInfo : public RtpMetaInfo {
-    public:
-        explicit AudioSampleInfo(int len, int offset);
-    };
 
 private:
     std::shared_ptr<Logger> logger;
