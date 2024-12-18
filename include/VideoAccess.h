@@ -10,18 +10,20 @@ public:
     explicit VideoAccess();
     ~VideoAccess();
 
-    std::vector<std::fstream>& getAccess();
-    std::vector<VideoSampleInfo>& getVideoSampleInfo();
+    std::vector<std::ifstream>& getAccessList();
+    std::vector<std::vector<VideoSampleInfo>>& getVideoSampleInfoList();
 
-    void setAccesses(std::vector<std::fstream>& access);
-    void setMeta(std::vector<std::vector<VideoSampleInfo>>& meta);
+    const std::vector<std::ifstream>& getConstAccessList() const;
+    const std::vector<std::vector<VideoSampleInfo>>& getConstVideoSampleInfoList() const;
 
-    int getFileNumber();
+    void setMeta(const std::vector<std::vector<VideoSampleInfo>>& inputMeta);
+
+    int getFileNumber() const;
 
     void close();
 
 private:
-    std::vector<std::fstream> accesses;
+    std::vector<std::ifstream> accesses;
     std::vector<std::vector<VideoSampleInfo>> meta;
 };
 

@@ -3,9 +3,7 @@
 AudioAccess::AudioAccess() {}
 
 AudioAccess::~AudioAccess() {
-  if (access.is_open()) {
-    access.close();
-  }
+  close();
 }
 
 // fstream is impossible to copy. So returns reference instead.
@@ -26,7 +24,7 @@ const std::vector<AudioSampleInfo> & AudioAccess::getConstMeta() const {
   return meta;
 }
 
-void AudioAccess::setAccess(const std::string &inputFilePath) {
+void AudioAccess::openAccessFileReadOnly(const std::string &inputFilePath) {
   // open file stream in read-only mode
   access = std::ifstream(inputFilePath, std::ios::in | std::ios::binary);
 }

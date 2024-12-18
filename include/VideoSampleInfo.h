@@ -7,13 +7,16 @@
 class VideoSampleInfo {
 public:
     explicit VideoSampleInfo();
+    std::vector<RtpMetaInfo>& getMetaInfoList();
+
+    int getSize() const;
+    int getOffset() const;
+    int getFlag() const;
+
     void setSize(int inputSize);
     void setOffset(int inputOffset);
     void setFlag(int inputFlag);
-    [[nodiscard]] int getSize();
-    [[nodiscard]] int getOffset();
-    [[nodiscard]] int getFlag();
-    [[nodiscard]] std::vector<RtpMetaInfo>& getMetaInfo();
+
 private:
     std::vector<RtpMetaInfo> rtpMetaInfos;
     int size;

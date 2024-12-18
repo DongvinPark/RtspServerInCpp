@@ -17,7 +17,7 @@ public:
     const std::ifstream& getConstAccess() const;
     const std::vector<AudioSampleInfo>& getConstMeta() const;
 
-    void setAccess(const std::string& inputFilePath);
+    void openAccessFileReadOnly(const std::string& inputFilePath);
     void setMeta(const std::vector<AudioSampleInfo>& inputMeta);
 
     void close();
