@@ -67,6 +67,8 @@ add_executable(AlphaStreamer3.1Cpp
         include/VideoAccess.h
         src/server/file/access/AudioAccess.cpp
         src/server/file/access/VideoAccess.cpp
+        include/HybridSampleMeta.h
+        src/util/HybridSampleMeta.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows
