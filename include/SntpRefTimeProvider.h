@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <cstdint> // For int64_t
+#include <mutex>
 
 #include "../include/Logger.h"
 

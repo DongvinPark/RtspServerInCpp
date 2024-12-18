@@ -1,6 +1,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <syncstream>
+#include <mutex>
 
 #include "../include/Logger.h"
 #include "../constants/C.h"
