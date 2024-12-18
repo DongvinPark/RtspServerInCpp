@@ -1,16 +1,18 @@
 #ifndef RXBITRATE_H
 #define RXBITRATE_H
 
+#include <cstdint> // for int64_t
+
 class RxBitrate {
 public:
-    explicit RxBitrate(long bitrate, long utcTimeMillis);
+    explicit RxBitrate(int64_t bitrate, int64_t utcTimeMillis);
 
-    long getBitrate() const;
-    long getUtcTimeMillis() const;
+    int64_t getBitrate() const;
+    int64_t getUtcTimeMillis() const;
 
 private:
-    const long bitrate;
-    const long utcTimeMillis;
+    const int64_t bitrate;
+    const int64_t utcTimeMillis;
 };
 
 #endif // RXBITRATE_H

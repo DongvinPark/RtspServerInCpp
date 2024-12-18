@@ -1,12 +1,14 @@
 #ifndef RTPMETAINFO_H
 #define RTPMETAINFO_H
 
+#include <cstdint> // for int64_t
+
 class RtpMetaInfo {
 public:
 	int len; // rtp length
-	long offset; // offset from file 0 position
+	int64_t offset; // offset from file 0 position
 
-	explicit RtpMetaInfo(int len, long offset);
+	explicit RtpMetaInfo(int len, int64_t offset);
 
 	~RtpMetaInfo() = default;
 };

@@ -9,7 +9,7 @@
 
 class RtpInfo {
 public:
-	using KeyValueMap = std::unordered_map<std::string, std::vector<long>>;
+	using KeyValueMap = std::unordered_map<std::string, std::vector<int64_t>>;
 
 	explicit RtpInfo();
 	explicit RtpInfo(const RtpInfo& other);

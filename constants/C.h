@@ -119,7 +119,7 @@ namespace C {
     constexpr char P_FRAME_TYPE[] = "P";
     constexpr char COMMA_SEPARATOR = ',';
     constexpr char INTERLEAVED_BINARY_DATA_MARKER = '$';
-    constexpr long INVALID_OFFSET = -1L;
+    constexpr int64_t INVALID_OFFSET = -1L;
     constexpr uint8_t REF_VIDEO_CHANNEL_FOR_AVPT_SAMPLE_Q = 0x00;
     constexpr uint8_t FIRST_MEMBER_VIDEO_CHANNEL_FOR_AVPT_SAMPLE_Q = 0x04;
     constexpr uint8_t SECOND_MEMBER_VIDEO_CHANNEL_FOR_AVPT_SAMPLE_Q = 0x06;

@@ -44,7 +44,7 @@ public:
     int16_t readShort(); // int16_t type means fixed 16 bit size int.
     uint32_t readUnsignedInt();// uint32_t type means fixed 32 bit size unsigned int.
     int32_t readInt();
-    uint64_t readLong();
+    uint64_t readint64_t();
 
     // Write methods
     void writeUnsignedShort(int pos, int value);

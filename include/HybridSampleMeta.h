@@ -6,7 +6,7 @@
 
 class HybridSampleMeta {
 public:
-    HybridSampleMeta(int sampleNo, long startOffset, long len, long timeStamp);
+    HybridSampleMeta(int sampleNo, int64_t startOffset, int64_t len, int64_t timeStamp);
 
     std::vector<unsigned char> getHybridMetaBinary(
         unsigned char channelForAvptSampleQ,
@@ -18,9 +18,9 @@ public:
 
 private:
     int sampleNo;
-    long startOffset;
-    long len;
-    long timeStamp;
+    int64_t startOffset;
+    int64_t len;
+    int64_t timeStamp;
 
     std::string makeStringForTx(int camId, int viewNum, const std::string& frameType) const;
     void recordChannelInfo(std::vector<unsigned char>& data, unsigned char channel, int len) const;

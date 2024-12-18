@@ -114,7 +114,7 @@ int32_t ParsableByteArray::readInt() {
     return static_cast<int32_t>(readUnsignedInt());
 }
 
-uint64_t ParsableByteArray::readLong() {
+uint64_t ParsableByteArray::readint64_t() {
     if (position + 8 > limit) {
         throw std::out_of_range("Not enough bytes to read");
     }

@@ -42,7 +42,7 @@ private:
     bool handleV0Images(const std::filesystem::path& inputCidDirectory);
     bool loadAcsFilesInCamDirectories(const std::filesystem::path& inputCidDirectory);
     bool loadRtspRtpConfig(const std::filesystem::path& rtspConfig);
-    // to mimic java's long type in multiplatform.
+    // to mimic java's int64_t type in multiplatform.
     std::vector<int64_t> getValues(std::string inputMsg, std::string inputKey);
     AudioAccess loadRtpAudioMetaDataAndGetCopy(const std::filesystem::path& inputAudio);
     void showAudioMinMaxSize(const std::vector<AudioSampleInfo>& audioMetaData);

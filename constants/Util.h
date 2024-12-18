@@ -7,6 +7,8 @@
 #include <random>
 #include <sstream>
 #include <iomanip>
+#include <cstdint> // for int64_t
+
 #include "../constants/C.h"
 #include "../include/Buffer.h"
 #include "../include/ParsableByteArray.h"
@@ -65,7 +67,7 @@ namespace Util {
 
 		> 'long' VS 'long long' in C++
 		long: platform-dependent (32-bit on Windows, 64-bit on Linux).
-		long long: guaranteed at least 64-bit, use for larger integers.
+		long long: guaranteed 64-bit or more, use for larger integers. platform-dependent also.
 		*/
 		myEngine eng{ static_cast<myEngine::result_type>(std::time(nullptr)) };
 		myDistribution dist{ 0, static_cast<int>(pickUpString.length() - 1)};
@@ -95,12 +97,12 @@ namespace Util {
 		return streamId == C::VIDEO_ID;
 	}
 
-	inline long usToMs(long timeUs) {
+	inline int64_t usToMs(int64_t timeUs) {
 		return timeUs / 1000;
 	}
 
-	inline long secToUs(float timeSec) {
-		return (long)(timeSec * 1000000);
+	inline int64_t secToUs(float timeSec) {
+		return (int64_t)(timeSec * 1000000);
 	}
 
 	// mimics the util in java.

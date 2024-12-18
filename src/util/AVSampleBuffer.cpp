@@ -76,7 +76,7 @@ void AVSampleBuffer::setMemberId(const int inputMemberId) {
     memberId = inputMemberId;
 }
 
-void AVSampleBuffer::setTimeUs(const long inputTimeUs) {
+void AVSampleBuffer::setTimeUs(const int64_t inputTimeUs) {
     timeUs = inputTimeUs;
 }
 

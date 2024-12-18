@@ -3,7 +3,7 @@
 #include <cassert>
 #include <sstream>
 
-HybridSampleMeta::HybridSampleMeta(int sampleNo, long startOffset, long len, long timeStamp)
+HybridSampleMeta::HybridSampleMeta(int sampleNo, int64_t startOffset, int64_t len, int64_t timeStamp)
     : sampleNo(sampleNo), startOffset(startOffset), len(len), timeStamp(timeStamp) {}
 
 std::vector<unsigned char> HybridSampleMeta::getHybridMetaBinary(

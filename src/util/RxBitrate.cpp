@@ -1,12 +1,12 @@
 #include "../include/RxBitrate.h"
 
-RxBitrate::RxBitrate(long bitrate, long utcTimeMillis)
+RxBitrate::RxBitrate(int64_t bitrate, int64_t utcTimeMillis)
     : bitrate(bitrate), utcTimeMillis(utcTimeMillis) {}
 
-long RxBitrate::getBitrate() const {
+int64_t RxBitrate::getBitrate() const {
     return bitrate;
 }
 
-long RxBitrate::getUtcTimeMillis() const {
+int64_t RxBitrate::getUtcTimeMillis() const {
     return utcTimeMillis;
 }

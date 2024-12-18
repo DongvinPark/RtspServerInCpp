@@ -22,7 +22,7 @@ public:
     void addRtpPacket(Buffer& rtp);
     void setSampleTimeIndex(const int inputSampleTimeIndex);
     void setMemberId(const int inputMemberId);
-    void setTimeUs(const long inputTimeUs);
+    void setTimeUs(const int64_t inputTimeUs);
     void setReq(const int inputReq);
     void setCseqNumber(const std::vector<int>& inputCseqVec);
 
@@ -31,7 +31,7 @@ private:
     std::vector<Buffer> rtps{};
     int sampleTimeIndex = C::UNSET;
     int memberId = C::UNSET;
-    long timeUs = C::UNSET;
+    int64_t timeUs = C::UNSET;
     int req = C::UNSET;
     int totalBytes = C::UNSET;
     int payloadBytes = C::UNSET;

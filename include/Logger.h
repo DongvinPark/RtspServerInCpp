@@ -18,7 +18,7 @@ public:
     void setUserInputPrompt(bool prompt);
 
 private:
-    Logger(const std::string& className);
+    explicit Logger(const std::string& className);
 
     std::string makeString(const std::string& msg, const std::string& level, const std::string& color);
     void print(const std::string& msg);
