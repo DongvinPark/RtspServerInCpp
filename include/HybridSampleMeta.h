@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint> // for int64_t
 
 class HybridSampleMeta {
 public:
