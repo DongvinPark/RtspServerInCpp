@@ -4,13 +4,17 @@
 #include <mutex>
 #include <cstdint> // For int64_t
 
-#include "AudioSample.h"
+#include "../include/AudioSample.h"
+#include "../include/HybridSampleMeta.h"
 #include "../include/VideoSample.h"
 #include "../include/RtpInfo.h"
 #include "../constants/C.h"
 #include "../include/Logger.h"
 #include "../include/VideoAccess.h"
 #include "../include/AudioAccess.h"
+
+using HybridMetaMapType
+    = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 
 class FileReader {
 public:
@@ -32,9 +36,16 @@ public:
     std::unordered_map<std::string, VideoAccess> getVideoMetaCopyWithLock();
 
     // reading sample
-    AudioSample& readAudioSampleWithLock(/* TODO : define parameters */);
-    std::vector<VideoSample>& readRefVideoSampleWithLock(/* TODO : define parameters */);
-    std::vector<VideoSample>& readVideoSampleWithLock(/* TODO : define parameters */);
+    AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap);
+    std::vector<VideoSample>& readRefVideoSampleWithLock(
+        int sampleNo, int mbpsCurBitrate, std::vector<int> possibleBitrateList,
+        HybridMetaMapType& hybridMetaMap
+    );
+    std::vector<VideoSample>& readVideoSampleWithLock(
+        int camId, int vid, int memberId, int sampleNo,
+        int mbpsCurBitrate, std::vector<int> possibleBitrateList,
+        HybridMetaMapType& hybridMetaMap
+    );
 
 private:
     bool handleCamDirectories(const std::filesystem::path& inputCidDirectory);
@@ -52,7 +63,10 @@ private:
     void showVideoMaxSize(const std::vector<VideoSampleInfo>& videoMetaData, int memberId);
 
     // reading sample
-    std::vector<VideoSample>& readVideoSample(/* TODO : define parameters */);
+    std::vector<VideoSample>& readVideoSampleInternalWithLock(
+        int camId, VideoAccess& va, int sampleNo,
+        HybridMetaMapType& hybridMetaMap
+    );
 
     std::vector<std::vector<VideoSample>>& getVideoMeta(std::string camId);
     std::vector<unsigned char> readMetaData(std::ifstream& inputFileStream);
