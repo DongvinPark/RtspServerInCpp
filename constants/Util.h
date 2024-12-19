@@ -17,28 +17,18 @@
 namespace Util {
 
 	inline std::string getRandomKey(int bitLength) {
-		std::vector<int> allowedBits = {32, 64, 128, 192, 256};
-		bool found = false;
-		for (int bits : allowedBits) {
-			if (bitLength == bits) {
-				found = true;
-				break;
-			}
-		}
-		if (found == false) {
+		const std::vector<int> allowedBits = {32, 64, 128, 192, 256};
+		if (std::find(allowedBits.begin(), allowedBits.end(), bitLength) == allowedBits.end()) {
 			throw std::logic_error("bitLength not allowed! : " + std::to_string(bitLength));
 		}
-		std::string pickUpString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-			"abcdefghijklmnopqrstuvxyz"
+
+		const std::string pickUpString =
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz"
 			"0123456789"
 			"+_-.";
 
-		int keyLength = bitLength / 8;
-
-		// make simple random int generator
-		// range is [ 0 : pickUpString.length()-1 ]. closed range!
-		using myEngine = std::default_random_engine;
-		using myDistribution = std::uniform_int_distribution<>;
+		int keyLength = bitLength / 8; // convert bit len to byte len
 
 		/*
 		// randome engine needs seed. So, std::time(...) was used.
@@ -69,15 +59,16 @@ namespace Util {
 		long: platform-dependent (32-bit on Windows, 64-bit on Linux).
 		long long: guaranteed 64-bit or more, use for larger integers. platform-dependent also.
 		*/
-		myEngine eng{ static_cast<myEngine::result_type>(std::time(nullptr)) };
-		myDistribution dist{ 0, static_cast<int>(pickUpString.length() - 1)};
-		auto getRandomCharIdx = [&]() {return dist(eng); };
 
+		std::random_device rd; // non-deterministic seed
+		std::mt19937 eng(rd()); // Mersenne Twister engine with seed
+		std::uniform_int_distribution<> dist(0, static_cast<int>(pickUpString.length() - 1));
+
+		// Generate the random key
 		std::ostringstream oss;
 		oss << "client_";
 		for (int i = 0; i < keyLength; ++i) {
-			int idx = getRandomCharIdx();
-			oss << pickUpString[idx];
+			oss << pickUpString[dist(eng)];
 		}
 		return oss.str();
 	}
