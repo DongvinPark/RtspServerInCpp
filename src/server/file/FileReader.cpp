@@ -128,10 +128,21 @@ int FileReader::getVideoSampleSize() const {
 
 std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
   std::lock_guard<std::mutex> guard(lock);
+  // used iterator and constructor to return to copied vector
+  return std::vector<AudioSampleInfo>(
+    audioFile.getConstMeta().begin(), audioFile.getConstMeta().end()
+  );
 }
 
-std::unordered_map<std::string, VideoAccess> FileReader::getVideoMetaCopyWithLock() {
+const std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock() {
   std::lock_guard<std::mutex> guard(lock);
+  // do not copy. just return const ref('&')
+  if (videoFiles.empty()) {
+    // return empty map.
+    return std::unordered_map<std::string, VideoAccess>{};
+  } else {
+    return videoFiles;
+  }
 }
 
 AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) {
@@ -157,12 +168,49 @@ std::vector<VideoSample> & FileReader::readVideoSampleWithLock(int camId,
 
 // private
 bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirectory) {
+  std::vector<std::filesystem::path> camDirectoryList;
+  for (std::filesystem::path camDirectory : std::filesystem::directory_iterator(inputCidDirectory)) {
+    camDirectoryList.push_back(camDirectory);
+  }
+  // sort ascending order of filenames
+  std::sort(
+    camDirectoryList.begin(), camDirectoryList.end()
+    , [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
+      return lhs.filename() < rhs.filename();
+    }
+  );
+
+  for (std::filesystem::path camDirectory : camDirectoryList) {
+    if (!is_directory(camDirectory)) continue;
+    if (camDirectory.filename() == C::HYBRID_META_DIR) continue;
+    bool result = loadAcsFilesInCamDirectories(camDirectory);
+    if (!result) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool FileReader::handleConfigFile(const std::filesystem::path &inputCidDirectory) {
+  for (std::filesystem::path dir : std::filesystem::directory_iterator(inputCidDirectory)) {
+    // dir.filename().string().find(..input str..) != std::string::npos >> this can be used as
+    // java's .contains() method
+    if (!is_directory(dir) && dir.filename().string().find("acc") != std::string::npos) {
+      // std::filesystem::path type is 'Copyable'!!
+      configFile = dir;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool FileReader::handleV0Images(const std::filesystem::path &inputCidDirectory) {
+  for (std::filesystem::path dir : std::filesystem::directory_iterator(inputCidDirectory)) {
+    if (!is_directory(dir) && dir.filename().string().find("jpg") != std::string::npos) {
+      v0Images.push_back(dir);
+    }
+  }
+  return v0Images.size() > 0;
 }
 
 bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {

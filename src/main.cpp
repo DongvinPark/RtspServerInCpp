@@ -11,6 +11,7 @@
 #include "../include/AVSampleBuffer.h"
 #include "../include/PeriodicTask.h"
 #include "../include/SntpRefTimeProvider.h"
+#include "../include/AudioSampleInfo.h"
 
 using boost::asio::ip::tcp;
 
@@ -110,6 +111,14 @@ int main() {
     for (auto& thread : threadVec) {
         thread.join();
     }
+
+    std::cout << "AudioSampleInfo copy test!\n";
+
+    AudioSampleInfo aSampleInfo1(10, 0);
+    AudioSampleInfo aSampleInfo2 = aSampleInfo1;
+
+    std::cout << "aSampleInfo1 : "  << aSampleInfo1.len << "/" << aSampleInfo1.offset << "\n";
+    std::cout << "aSampleInfo2 : "  << aSampleInfo2.len << "/" << aSampleInfo2.offset << "\n";
 
     return 0;
 }
