@@ -113,19 +113,17 @@ int FileReader::getAudioSampleSize() const {
 }
 
 int FileReader::getVideoSampleSize() const {
-  VideoAccess videoAccess;
   if (videoFiles.contains(C::REF_CAM)) {
-    videoAccess = videoFiles.at(C::REF_CAM);
+    return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
   } else {
-    // adaptive bitrate supporing case
+    // adaptive bitrate supporting case
     for (std::string possibleRefCam : C::ADAPTIVE_BITRATE_REF_CAM_LIST) {
       if (videoFiles.contains(possibleRefCam)) {
-        videoAccess = videoFiles.at(possibleRefCam);
-        break;
+        return videoFiles.at(possibleRefCam).getConstVideoSampleInfoList()[0].size();
       }
     }
   }
-  return videoAccess.getConstVideoSampleInfoList()[0].size();
+  return C::INVALID;
 }
 
 std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
