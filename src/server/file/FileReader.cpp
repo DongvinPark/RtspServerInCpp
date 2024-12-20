@@ -1,6 +1,8 @@
 #include "../include/FileReader.h"
 #include "../../../constants/Util.h"
 
+#include <algorithm>
+
 /*
     std::shared_ptr<Logger> logger;
     std::string ASC = "asc";
@@ -26,7 +28,7 @@
 FileReader::FileReader(const std::filesystem::path &path)
   : logger(Logger::getLogger(C::FILE_READER)),
     cidDirectory(path),
-    id(path.filename().string()){}
+    contentTitle(path.filename().string()){}
 
 FileReader::~FileReader() {
   shutdown();
@@ -50,19 +52,19 @@ FileReader & FileReader::init() {
 
   bool initResult = handleCamDirectories(cidDirectory);
   if (!initResult) {
-    logger->severe("Invalid cam directories! Content name : " + id);
+    logger->severe("Invalid cam directories! Content name : " + contentTitle);
     throw std::logic_error("Cam directory init failed.");
   }
 
   initResult = handleConfigFile(cidDirectory);
   if (!initResult) {
-    logger->severe("Invalid SDP config! Content name : " + id);
+    logger->severe("Invalid SDP config! Content name : " + contentTitle);
     throw std::logic_error("SDP config init failed.");
   }
 
   initResult = handleV0Images(cidDirectory);
   if (!initResult) {
-    logger->severe("Invalid V0 images! Content name : " + id);
+    logger->severe("Invalid V0 images! Content name : " + contentTitle);
     throw std::logic_error("V0 images init failed.");
   }
 
@@ -226,10 +228,45 @@ AudioAccess FileReader::loadRtpAudioMetaDataAndGetCopy(const std::filesystem::pa
 }
 
 void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMetaData) {
+  std::vector<int> lenList;
+  for (int i = 0; i < audioMetaData.size(); ++i) {
+    AudioSampleInfo aInfo = audioMetaData[i];
+    if (aInfo.len == 0) continue; // dummy info
+    lenList.push_back(aInfo.len);
+  }
+  // int sort ascending
+  std::ranges::sort(lenList.begin(), lenList.end());
+  int min = lenList[0];
+  int max = lenList[lenList.size() - 1];
+  logger->info3(
+    "Dongvin, id : " + contentTitle + ", audio (min, max)=("
+    + std::to_string(min) + "," + std::to_string(max) + ")"
+  );
 }
 
-std::vector<std::ifstream> & FileReader::openVideosAndGetCopy(
-  const std::vector<std::filesystem::path> &videos) {
+void FileReader::openVideosWithIfStream(
+std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
+) {
+  std::sort(
+    videos.begin(), videos.end(),
+    [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
+    return lhs.filename() < rhs.filename();
+    }
+  );
+
+  for (std::filesystem::path videoPath : videos) {
+    ifStreams.emplace_back(std::ifstream(videoPath, std::ios::in | std::ios::binary));
+  }
+
+  // check
+  if (videos.size() != ifStreams.size()) {
+    throw std::runtime_error("opening video reading ifstreams failed!");
+  }
+  for (int i = 0; i < videos.size(); ++i) {
+    if (!ifStreams[i].is_open()) {
+      throw std::runtime_error("opening video reading ifstreams failed! filename : " + videos[i].filename().string());
+    }
+  }
 }
 
 VideoAccess & FileReader::loadRtpVideoMetaData(const std::vector<std::filesystem::path> &videos) {
@@ -239,7 +276,20 @@ std::vector<VideoSampleInfo> & FileReader::loadRtpMemberVideoMetaData(
     std::ifstream &member, int memberId
 ) {
 }
-void FileReader::showVideoMaxSize(const std::vector<VideoSampleInfo> &videoMetaData, int memberId) {
+void FileReader::showVideoMinMaxSize(const std::vector<VideoSampleInfo> &videoMetaData, int memberId) {
+  std::vector<int> lenList;
+  for (int i=0; i < videoMetaData.size(); ++i) {
+    VideoSampleInfo vInfo = videoMetaData[i];
+    if (vInfo.getSize()==0) continue; // dummy info
+    lenList.push_back(vInfo.getSize());
+  }
+  std::ranges::sort(lenList.begin(), lenList.end());
+  int min = lenList[0];
+  int max = lenList[lenList.size() - 1];
+  logger->info3(
+    "Dongvin, id : " + contentTitle + ", memberId: " + std::to_string(memberId)
+    + ", video (min, max)=(" + std::to_string(min) + "," + std::to_string(max) + ")"
+  );
 }
 
 std::vector<VideoSample> & FileReader::readVideoSampleInternalWithLock(int camId,
@@ -249,7 +299,12 @@ std::vector<VideoSample> & FileReader::readVideoSampleInternalWithLock(int camId
   std::lock_guard<std::mutex> guard(lock);
 }
 
-std::vector<std::vector<VideoSample>> & FileReader::getVideoMeta(std::string camId) {
+std::vector<std::vector<VideoSampleInfo>> FileReader::getVideoMetaInternal(std::string camId) {
+  std::vector<std::vector<VideoSampleInfo>> vMetaList;
+  for (std::vector<VideoSampleInfo> vInfo : vMetaList) {
+    vMetaList.push_back(vInfo);
+  }
+  return vMetaList;
 }
 
 std::vector<unsigned char> FileReader::readMetaData(std::ifstream &inputFileStream) {

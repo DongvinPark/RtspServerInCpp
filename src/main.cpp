@@ -12,6 +12,7 @@
 #include "../include/PeriodicTask.h"
 #include "../include/SntpRefTimeProvider.h"
 #include "../include/AudioSampleInfo.h"
+#include "../include/VideoSampleInfo.h"
 
 using boost::asio::ip::tcp;
 
@@ -119,6 +120,19 @@ int main() {
 
     std::cout << "aSampleInfo1 : "  << aSampleInfo1.len << "/" << aSampleInfo1.offset << "\n";
     std::cout << "aSampleInfo2 : "  << aSampleInfo2.len << "/" << aSampleInfo2.offset << "\n";
+
+    std::cout << "VideoSampleInfo copy test!\n";
+
+    VideoSampleInfo vInfo1;
+    vInfo1.setSize(2);
+    vInfo1.setOffset(0);
+    vInfo1.setFlag(C::KEY_FRAME_FLAG);
+
+    VideoSampleInfo vInfo2 = vInfo1;
+    vInfo2.setFlag(C::P_FRAME_FLAG);
+
+    std::cout << "vInfo1 : " << vInfo1.getSize() << vInfo1.getOffset() << vInfo1.getFlag() << "\n";
+    std::cout << "vInfo2 : " << vInfo2.getSize() << vInfo2.getOffset() << vInfo2.getFlag() << "\n";
 
     return 0;
 }

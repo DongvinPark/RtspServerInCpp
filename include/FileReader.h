@@ -57,10 +57,12 @@ private:
     std::vector<int64_t> getValues(std::string inputMsg, std::string inputKey);
     AudioAccess loadRtpAudioMetaDataAndGetCopy(const std::filesystem::path& inputAudio);
     void showAudioMinMaxSize(const std::vector<AudioSampleInfo>& audioMetaData);
-    std::vector<std::ifstream>& openVideosAndGetCopy(const std::vector<std::filesystem::path>& videos);
+    void openVideosWithIfStream(
+        std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
+    );
     VideoAccess& loadRtpVideoMetaData(const std::vector<std::filesystem::path>& videos);
     std::vector<VideoSampleInfo>& loadRtpMemberVideoMetaData(std::ifstream& member, int memberId);
-    void showVideoMaxSize(const std::vector<VideoSampleInfo>& videoMetaData, int memberId);
+    void showVideoMinMaxSize(const std::vector<VideoSampleInfo>& videoMetaData, int memberId);
 
     // reading sample
     std::vector<VideoSample>& readVideoSampleInternalWithLock(
@@ -68,7 +70,7 @@ private:
         HybridMetaMapType& hybridMetaMap
     );
 
-    std::vector<std::vector<VideoSample>>& getVideoMeta(std::string camId);
+    std::vector<std::vector<VideoSampleInfo>> getVideoMetaInternal(std::string camId);
     std::vector<unsigned char> readMetaData(std::ifstream& inputFileStream);
     // to mimic java's short type in multiplatform.
     std::vector<int16_t> getSizes(std::vector<unsigned char> metaData);
@@ -83,7 +85,7 @@ private:
 
     std::filesystem::path cidDirectory;
     std::filesystem::path configFile;
-    std::string id;
+    std::string contentTitle;
 
     AudioAccess audioFile;
     std::unordered_map<std::string, VideoAccess> videoFiles;

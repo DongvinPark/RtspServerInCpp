@@ -63,7 +63,8 @@ namespace C {
     constexpr int NEXT_KEY = 0;
     constexpr int PREVIOUS_KEY = 1;
     constexpr int NEAREST_KEY = 2;
-    constexpr int KEYFRAME_FLAG = 1;
+    constexpr int KEY_FRAME_FLAG = 1;
+    constexpr int P_FRAME_FLAG = 0;
 
     // SNTP
     constexpr char SNTP_SERVER_HOST[] = "time.android.com";
