@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <random>
 #include <sstream>
+#include <iostream>
 #include <iomanip>
 #include <cstdint> // for int64_t
 #include <filesystem>
@@ -198,7 +199,7 @@ namespace Util {
 
 			std::vector<unsigned char> buffer(size);
 			if (!file.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size)) {
-				throw std::ios_base::failure("Failed to read the file")
+				throw std::ios_base::failure("Failed to read the file");
 			}
 
 			return buffer;
