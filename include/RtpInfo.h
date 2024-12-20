@@ -12,9 +12,12 @@ public:
 	using KeyValueMap = std::unordered_map<std::string, std::vector<int64_t>>;
 
 	explicit RtpInfo();
-	explicit RtpInfo(const RtpInfo& other);
-	RtpInfo& operator=(const RtpInfo& other);
 	~RtpInfo();
+
+	// Do not use 'explicit' keyword in Copy Constructor!!
+	RtpInfo(const RtpInfo& other);
+
+	RtpInfo& operator=(const RtpInfo& other);
 
 	const std::shared_ptr<RtpInfo> clone();
 	const std::string toString();

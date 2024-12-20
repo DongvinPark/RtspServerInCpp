@@ -29,7 +29,7 @@ public:
     RtpInfo getRtpInfoCopyWithLock();
     std::string getMediaInfoCopyWithLock();
     std::vector<unsigned char> getAccDataCopyWithLock();
-    std::vector<unsigned char> getAllV0ImagesCopyWithLock();
+    std::vector<std::vector<unsigned char>> getAllV0ImagesCopyWithLock();
     int getAudioSampleSize() const;
     int getVideoSampleSize() const;
     std::vector<AudioSampleInfo> getAudioMetaCopyWithLock();
@@ -73,11 +73,12 @@ private:
     // to mimic java's short type in multiplatform.
     std::vector<int16_t> getSizes(std::vector<unsigned char> metaData);
 
+    // members
     std::shared_ptr<Logger> logger;
     std::string ASC = "asc";
     std::string ASA = "asa";
     std::string ASV = "asv";
-    std::string REST_MSG_DELIMITER = "###" + std::to_string(*C::CRLF);
+    std::string RTSP_MSG_DELIMITER = "###" + std::to_string(*C::CRLF);
     int META_LEN_BYTES = 4;
 
     std::filesystem::path cidDirectory;

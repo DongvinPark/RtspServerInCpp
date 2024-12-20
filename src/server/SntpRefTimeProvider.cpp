@@ -149,7 +149,7 @@ void SntpRefTimeProvider::readTime() {
 
         socket.close();
     } catch (const std::exception& e) {
-        std::cerr << "Error reading time: " << e.what() << std::endl;
+        std::cerr << "Error reading time: " << e.what() << "\n";
     }
 }
 

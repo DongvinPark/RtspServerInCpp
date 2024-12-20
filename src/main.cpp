@@ -43,7 +43,7 @@ int main() {
     Buffer buffer(data);
 
     buffer.afterTx = []() {
-        std::cout << "Ward 'Hello' Transmission complete!" << std::endl;
+        std::cout << "Ward 'Hello' Transmission complete!" << "\n";
     };
 
     std::cout << (unsigned char)0x24 << "\n";

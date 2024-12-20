@@ -8,6 +8,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cstdint> // for int64_t
+#include <filesystem>
+#include <fstream>
 
 #include "../constants/C.h"
 #include "../include/Buffer.h"
@@ -178,6 +180,32 @@ namespace Util {
 
 	inline uint32_t findTimestampInVideoSample(VideoSample& sample) {
 		return findTimestamp(sample.getFirstRtp());
+	}
+
+	inline std::vector<unsigned char> readAllBytesFromFilePath(
+		const std::filesystem::path& inputFilePath
+	) {
+		try {
+			// open the file in binary mode
+			std::ifstream file(inputFilePath, std::ios::binary | std::ios::ate);
+			if (!file) {
+				throw std::ios_base::failure("Failed to open the file");
+			}
+
+			// get file size and resize the buffer
+			std::streamsize size = file.tellg();
+			file.seekg(0, std::ios::beg);
+
+			std::vector<unsigned char> buffer(size);
+			if (!file.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), size)) {
+				throw std::ios_base::failure("Failed to read the file")
+			}
+
+			return buffer;
+		} catch (const std::exception& e) {
+			std::cerr << "Error reading file: " << e.what() << "\n";
+			return {}; // return empty vector in case of an error
+		}
 	}
 }
 
