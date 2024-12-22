@@ -275,7 +275,7 @@ sudo chmod +x build_and_run_on_Mchip_MacOS.sh
 ```
 2. 파일에서 raw binary 데이터를 읽어들여야 할 때는 unsigned char로 읽어들인다.
 <br>
-```C++
+```c++
     // example
     inline std::vector<unsigned char> readAllBytesFromFilePath(
 		const std::filesystem::path& inputFilePath
@@ -304,7 +304,7 @@ sudo chmod +x build_and_run_on_Mchip_MacOS.sh
 	}
 ```
 3. input file stream을 열 때는 std::ios::ate 모드를 사용하자.
-```C++
+```c++
 public void opneModes(){
     // 파일 포인터를 파일의 끝부분에 위치시킨다.
     std::ifstream file(inputFilePath, std::ios::binary | std::ios::ate);
@@ -315,7 +315,7 @@ public void opneModes(){
 ```
 4. 일부 유틸리티는 직접 구현해야 한다.
    <br>java의 string.split(), Files.readAllBytes(...), RandomAccessFile.length() 등은 C++에는 없다..
-```C++
+```c++
     // mimics the util in java.
 	// String[] arr = str.split('.');
 	inline std::vector<std::string> splitToVecBySingleChar(
@@ -389,7 +389,7 @@ public void opneModes(){
 ```
 5. java의 File 객체는 C++에서는 std::filesystem::path로 대체할 수 있다.
    <br>
-```C++
+```c++
 int main() {
   const std::string path = "C:\\Users\\user\\CLionProjects\\CppTestPad\\test.txt";
   const std::string dirPath = "C:\\Users\\user\\CLionProjects\\CppTestPad";
@@ -413,7 +413,7 @@ int main() {
 ```
 6. java의 string.contains(...)는 string.find(...) != std::string::npos 로 대체할 수 있다.
    <br>
-```C++
+```c++
 bool FileReader::handleConfigFile(const std::filesystem::path &inputCidDirectory) {
   for (std::filesystem::path dir : std::filesystem::directory_iterator(inputCidDirectory)) {
     if (!is_directory(dir) && dir.filename().string().find("acc") != std::string::npos) {
@@ -490,7 +490,7 @@ private:
 ```
 9. java의 synchronized 키워드는 std::mutex 락으로 대체할 수 있다.
    <br>
-```C++
+```c++
 RtpInfo FileReader::getRtpInfoCopyWithLock() {
   std::lock_guard<std::mutex> guard(lock);
   // call Copy Constructor
@@ -518,7 +518,7 @@ RtpInfo FileReader::getRtpInfoCopyWithLock() {
 ```
 11. 반복자는 copy, sort 등에 유용하게 사용된다.
    <br>
-```C++
+```c++
 // return copied vector
 std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
   std::lock_guard<std::mutex> guard(lock);
@@ -545,7 +545,7 @@ bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirec
 ```
 12. boost.asio의 io_context를 필요로 하는 클래스들한테는 io_context의 참조를 전달한다.
    <br>
-```C++
+```c++
 int main(){
     boost::asio::io_context io_context;
     auto workGuard = boost::asio::make_work_guard(io_context);
