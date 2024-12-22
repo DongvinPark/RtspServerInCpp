@@ -14,21 +14,6 @@ private:
 public:
     explicit VideoSample();
 
-    /*
-    function signature tip;
-    
-    > when returning '&'.
-        permit modification:
-            std::vector<Buffer>& getAllRtps();
-        forbidden modification:
-            const std::vector<Buffer>& getAllRtps();
-        forbidden modification and can be called only by const object
-            const std::vector<Buffer>& getAllRtps() const;
-
-    > when return value.
-        int size() const;
-    */
-
     std::vector<Buffer>& getAllRtps();
     Buffer& getFirstRtp();
     std::vector<int>& getCSeq();
