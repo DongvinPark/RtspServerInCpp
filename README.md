@@ -274,7 +274,7 @@ sudo chmod +x build_and_run_on_Mchip_MacOS.sh
 		long long: guaranteed 64-bit or more, use for larger integers. platform-dependent also.
 ```
 2. 파일에서 raw binary 데이터를 읽어들여야 할 때는 unsigned char로 읽어들인다.
-<br>
+    <br> reinterpret_cast도 까먹지 말자.
 ```c++
     // example
     inline std::vector<unsigned char> readAllBytesFromFilePath(
@@ -304,7 +304,7 @@ sudo chmod +x build_and_run_on_Mchip_MacOS.sh
 	}
 ```
 3. input file stream을 열 때는 std::ios::ate 모드를 사용하자.
-<br>
+    <br> 그래야 파일 사이즈를 바로 알 수 있다.
 ```c++
 public void opneModes(){
     // 파일 포인터를 파일의 끝부분에 위치시킨다.
@@ -312,6 +312,8 @@ public void opneModes(){
     
     // 이렇게 파일 사이즈를 바로 알 수 있다.
 	std::streamsize size = file.tellg();
+	// 파일 사이즈를 알아낸 후에는 파일포인터를 시작지점으로 다시 옮겨 놓는다.
+	file.seekg(0, std::ios::beg);
 }
 ```
 4. 일부 유틸리티는 직접 구현해야 한다.
@@ -518,7 +520,7 @@ RtpInfo FileReader::getRtpInfoCopyWithLock() {
     */
 ```
 11. 반복자는 copy, sort 등에 유용하게 사용된다.
-   <br>
+   <br> 추가 사례들이 발생하면 여기에 기록하자.
 ```c++
 // return copied vector
 std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
@@ -545,7 +547,8 @@ bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirec
 }
 ```
 12. boost.asio의 io_context를 필요로 하는 클래스들한테는 io_context의 참조를 전달한다.
-   <br>
+   <br> 근원 io_context를 괜히 다른 클래스에서 만들지 말고, main에서 만들자.
+   <br> make_work_guard를 쓰면 async task가 전혀 없어을 때 io_context가 스스로 종료하는 행위를 막을 수 있다.
 ```c++
 int main(){
     boost::asio::io_context io_context;
