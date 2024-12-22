@@ -548,7 +548,7 @@ bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirec
 ```
 12. boost.asio의 io_context를 필요로 하는 클래스들한테는 io_context의 참조를 전달한다.
    <br> 근원 io_context를 괜히 다른 클래스에서 만들지 말고, main에서 만들자.
-   <br> make_work_guard를 쓰면 async task가 전혀 없어을 때 io_context가 스스로 종료하는 행위를 막을 수 있다.
+   <br> make_work_guard를 쓰면 async task가 전혀 없을 때 io_context가 스스로 종료하는 행위를 막을 수 있다.
 ```c++
 int main(){
     boost::asio::io_context io_context;
