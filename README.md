@@ -304,6 +304,7 @@ sudo chmod +x build_and_run_on_Mchip_MacOS.sh
 	}
 ```
 3. input file stream을 열 때는 std::ios::ate 모드를 사용하자.
+<br>
 ```c++
 public void opneModes(){
     // 파일 포인터를 파일의 끝부분에 위치시킨다.
