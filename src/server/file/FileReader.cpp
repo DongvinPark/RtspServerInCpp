@@ -216,15 +216,125 @@ bool FileReader::handleV0Images(const std::filesystem::path &inputCidDirectory) 
 }
 
 bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
+  std::string camDirectoryName = inputCidDirectory.filename().string();
+  bool isRefCam = (
+      camDirectoryName == C::REF_CAM ||
+      C::ADAPTIVE_BITRATE_REF_CAM_LIST.at(0).find(camDirectoryName) != std::string::npos
+    );
+
+  std::vector<std::filesystem::path> acsFileList;
+  for (std::filesystem::path camDirectory : std::filesystem::directory_iterator(inputCidDirectory)) {
+    acsFileList.push_back(camDirectory);
+  }
+
+  if (acsFileList.empty()) {
+    logger->severe("Dongvin, no acs file available in " + inputCidDirectory.string());
+  }
+
+  int fileCnt = 0;
+  for (std::filesystem::path file : acsFileList) {
+    if (!is_directory(file)) fileCnt++;
+  }
+  if (fileCnt > C::FILE_NUM_LIMIT) {
+    logger->severe("Dongvin, not support alphaview 2.0 contents!");
+    return false;
+  }
+
+  std::filesystem::path config; // default value of config.filename().string() is "" empty string!
+  std::filesystem::path audio;
+  std::vector<std::filesystem::path> videos;
+  for (std::filesystem::path f : acsFileList) {
+    if (f.filename().string().find(ASC) != std::string::npos) {
+      if (!config.filename().string().empty()) {
+        logger->warning("Dongvin, multiple asc detected. init by last one.");
+      }
+      // std::filesystem::path type is copyable.
+      config = f;
+    } else if (f.filename().string().find(ASA) != std::string::npos) {
+      if (!audio.filename().string().empty()) {
+        logger->warning("Dongvin, multiple asa detected. init by last one.");
+      }
+      audio = f;
+    } else if (f.filename().string().find(ASV) != std::string::npos) {
+      videos.push_back(f);
+    }
+  }
+  if (
+      videos.empty() ||
+      (isRefCam && (config.filename().string().empty() || audio.filename().string().empty())) ||
+      (!isRefCam && (!config.filename().string().empty() || !audio.filename().string().empty()))
+    ) {
+    logger->severe("No acs file or wrong place in " + inputCidDirectory.filename().string());
+    return false;
+  }
+  loadRtspRtpConfig(config);
+  loadRtpAudioMetaData(audio, audioFile);
+  // Todo : need to implement video file init
+  return true;
 }
 
-bool FileReader::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
+void FileReader::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
+  if (rtspConfig.empty()) {
+    return;
+  }
+  std::vector<unsigned char> rtspConfigBytes = Util::readAllBytesFromFilePath(rtspConfig);
+  std::string data = std::string(rtspConfigBytes.begin(), rtspConfigBytes.end());
+  std::vector<std::string> cfgs = Util::splitToVecByString(data, RTSP_MSG_DELIMITER);
+
+  std::vector<std::string> CONFIG_KEYS = {
+    C::GOP_KEY, C::MEDIA_INFO_KEY, C::SSRC_KEY, C::SEQ_KEY,
+    C::TIMESTAMP_KEY, C::FRAME_COUNT_KEY, C::PLAY_TIME_KEY
+  };
+
+  for (std::string msg : cfgs) {
+    for (std::string key : CONFIG_KEYS) {
+      if (msg.find(key) != std::string::npos) {
+        if (key == C::MEDIA_INFO_KEY) {
+          rtspSdpMessage = msg;
+        } else {
+          rtpInfo.kv.insert_or_assign(key, getValues(msg, key));
+        }
+      }
+    }// inner
+
+    if (msg.starts_with("m=video")) {
+      rtspSdpMessage += msg;
+    }
+  }//outer
 }
 
 std::vector<int64_t> FileReader::getValues(std::string inputMsg, std::string inputKey) {
+  std::string midVal = Util::splitToVecByString(inputMsg, inputKey)[1];
+  std::vector<std::string> v = Util::splitToVecBySingleChar(midVal, ',');
+  std::vector<int64_t> values;
+  for (int i=0; i < v.size(); ++i) {
+    if (v[i].find("null") != std::string::npos) {
+      continue;
+    }
+    // TODO : need to check the real value later.
+    std::cout << "input in getValues()!! :" << v[i] << "\n";
+    values.push_back(std::stoll(v[i]));
+  }
+  return values;
 }
 
-AudioAccess FileReader::loadRtpAudioMetaDataAndGetCopy(const std::filesystem::path &inputAudio) {
+void FileReader::loadRtpAudioMetaData(
+  const std::filesystem::path &inputAudio, AudioAccess& inputAudioFile) {
+  if (inputAudio.filename().string().empty()) {
+    logger->warning("Dongvin, invalid input audio file.");
+    return;
+  }
+  inputAudioFile.getAccess().open(inputAudio, std::ios::in | std::ios::binary);
+  int64_t audioFileSize = Util::getFileSize(inputAudio);
+  std::vector<unsigned char> metaData = readMetaData(audioFileSize, inputAudioFile.getAccess());
+  std::vector<int16_t> sizes = getSizes(metaData);
+
+  int64_t offset = 0;
+  for (const int16_t size : sizes) {
+    inputAudioFile.getMeta().push_back(AudioSampleInfo(size, offset));
+    offset += size;
+  }
+  showAudioMinMaxSize(inputAudioFile.getConstMeta());
 }
 
 void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMetaData) {
@@ -276,7 +386,10 @@ std::vector<VideoSampleInfo> & FileReader::loadRtpMemberVideoMetaData(
     std::ifstream &member, int memberId
 ) {
 }
-void FileReader::showVideoMinMaxSize(const std::vector<VideoSampleInfo> &videoMetaData, int memberId) {
+
+void FileReader::showVideoMinMaxSize(
+  const std::vector<VideoSampleInfo> &videoMetaData, int memberId
+) {
   std::vector<int> lenList;
   for (int i=0; i < videoMetaData.size(); ++i) {
     VideoSampleInfo vInfo = videoMetaData[i];
@@ -307,8 +420,68 @@ std::vector<std::vector<VideoSampleInfo>> FileReader::getVideoMetaInternal(std::
   return vMetaList;
 }
 
-std::vector<unsigned char> FileReader::readMetaData(std::ifstream &inputFileStream) {
+std::vector<unsigned char> FileReader::readMetaData(
+  int64_t fileSize, std::ifstream &inputFileStream
+) {
+  if (!inputFileStream.is_open()) {
+    throw std::runtime_error("Failed to open file! size : " + std::to_string(fileSize));
+  }
+  int64_t size = fileSize;
+  int64_t pos = size - META_LEN_BYTES;
+  inputFileStream.seekg(pos, std::ios::beg);
+
+  // read 4 bytes.
+  int32_t metaLen;
+  inputFileStream.read(reinterpret_cast<char*>(&metaLen), sizeof(metaLen));
+  if (inputFileStream.fail()) {
+    throw std::runtime_error("reading meta data length failed!");
+  }
+
+  pos -= metaLen;
+  inputFileStream.seekg(pos, std::ios::beg);
+
+  std::vector<unsigned char> metaBuf(metaLen);
+  inputFileStream.read(reinterpret_cast<char*>(metaBuf.data()), metaLen);
+  if (inputFileStream.fail()) {
+    throw std::runtime_error("reading meta data failed!");
+  }
+
+  return metaBuf;
 }
 
-std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char> metaData) {
+std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) {
+  std::vector<int16_t> sizes;
+  sizes.reserve(metaData.size() / 2); // reserve memory for efficiency
+
+  for (size_t i = 0; i < metaData.size(); i += 2) {
+    // combine into a 16-bit value (little-endian)
+    int16_t value = static_cast<int16_t>(metaData[i]) | (static_cast<int16_t>(metaData[i + 1]) << 8);
+    sizes.push_back(value);
+  }
+
+  return sizes;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

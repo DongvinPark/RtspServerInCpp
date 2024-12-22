@@ -101,7 +101,7 @@ namespace Util {
 
 	// mimics the util in java.
 	// String[] arr = str.split('.');
-	inline std::vector<std::string> splitToVec(
+	inline std::vector<std::string> splitToVecBySingleChar(
 		const std::string& str, char delimiter
 	) {
 		std::vector<std::string> tokens;
@@ -117,6 +117,24 @@ namespace Util {
 		return tokens;
 	}
 
+	inline std::vector<std::string> splitToVecByString(
+	const std::string& str, const std::string& delimiter
+	) {
+		std::vector<std::string> tokens;
+		size_t start = 0;
+		size_t end = str.find(delimiter);
+
+		while (end != std::string::npos) {
+			tokens.push_back(str.substr(start, end - start));
+			start = end + delimiter.length();
+			end = str.find(delimiter, start);
+		}
+
+		// add the last element
+		tokens.push_back(str.substr(start));
+		return tokens;
+	}
+
 	inline std::string getNameOnly(const std::string& fileName) {
 		// find the last occurrence of the dot
 		size_t pos = fileName.find_last_of('.');
@@ -128,7 +146,7 @@ namespace Util {
 	}
 
 	inline std::string getExtension(std::string fileName) {
-		std::vector<std::string> words = splitToVec(fileName, '.');
+		std::vector<std::string> words = splitToVecBySingleChar(fileName, '.');
 		return (words.size() == 2) ? words[1] : "";
 	}
 
@@ -207,6 +225,15 @@ namespace Util {
 			std::cerr << "Error reading file: " << e.what() << "\n";
 			return {}; // return empty vector in case of an error
 		}
+	}
+
+	inline int64_t getFileSize(const std::filesystem::path& filePath) {
+		// open in binary mode and seek to the end
+		std::ifstream file(filePath, std::ios::binary | std::ios::ate);
+		if (!file) {
+			throw std::runtime_error("Failed to open file: " + filePath.filename().string());
+		}
+		return file.tellg(); // current position == file size
 	}
 }
 

@@ -52,10 +52,12 @@ private:
     bool handleConfigFile(const std::filesystem::path& inputCidDirectory);
     bool handleV0Images(const std::filesystem::path& inputCidDirectory);
     bool loadAcsFilesInCamDirectories(const std::filesystem::path& inputCidDirectory);
-    bool loadRtspRtpConfig(const std::filesystem::path& rtspConfig);
+    void loadRtspRtpConfig(const std::filesystem::path& rtspConfig);
     // to mimic java's int64_t type in multiplatform.
     std::vector<int64_t> getValues(std::string inputMsg, std::string inputKey);
-    AudioAccess loadRtpAudioMetaDataAndGetCopy(const std::filesystem::path& inputAudio);
+    void loadRtpAudioMetaData(
+        const std::filesystem::path& inputAudio, AudioAccess& inputAudioFile
+    );
     void showAudioMinMaxSize(const std::vector<AudioSampleInfo>& audioMetaData);
     void openVideosWithIfStream(
         std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
@@ -71,9 +73,9 @@ private:
     );
 
     std::vector<std::vector<VideoSampleInfo>> getVideoMetaInternal(std::string camId);
-    std::vector<unsigned char> readMetaData(std::ifstream& inputFileStream);
+    std::vector<unsigned char> readMetaData(int64_t fileSize, std::ifstream& inputFileStream);
     // to mimic java's short type in multiplatform.
-    std::vector<int16_t> getSizes(std::vector<unsigned char> metaData);
+    std::vector<int16_t> getSizes(std::vector<unsigned char>& metaData);
 
     // members
     std::shared_ptr<Logger> logger;
