@@ -3,27 +3,6 @@
 
 #include <algorithm>
 
-/*
-    std::shared_ptr<Logger> logger;
-    std::string ASC = "asc";
-    std::string ASA = "asa";
-    std::string ASV = "asv";
-    std::string RTSP_MSG_DELIMITER = "###" + std::to_string(*C::CRLF);
-    int META_LEN_BYTES = 4;
-
-    std::filesystem::path cidDirectory;
-    std::filesystem::path configFile;
-    std::string id;
-
-    AudioAccess audioFile;
-    std::unordered_map<std::string, VideoAccess> videoFiles;
-
-    std::string rtspSdpMessage;
-    RtpInfo rtpInfo;
-    std::vector<std::filesystem::path> v0Images;
-    std::mutex lock;
-*/
-
 // constructor
 FileReader::FileReader(const std::filesystem::path &path)
   : logger(Logger::getLogger(C::FILE_READER)),
@@ -244,18 +223,18 @@ bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &input
   std::filesystem::path audio;
   std::vector<std::filesystem::path> videos;
   for (std::filesystem::path f : acsFileList) {
-    if (f.filename().string().find(ASC) != std::string::npos) {
+    if (f.filename().string().find(C::ASC) != std::string::npos) {
       if (!config.filename().string().empty()) {
         logger->warning("Dongvin, multiple asc detected. init by last one.");
       }
       // std::filesystem::path type is copyable.
       config = f;
-    } else if (f.filename().string().find(ASA) != std::string::npos) {
+    } else if (f.filename().string().find(C::ASA) != std::string::npos) {
       if (!audio.filename().string().empty()) {
         logger->warning("Dongvin, multiple asa detected. init by last one.");
       }
       audio = f;
-    } else if (f.filename().string().find(ASV) != std::string::npos) {
+    } else if (f.filename().string().find(C::ASV) != std::string::npos) {
       videos.push_back(f);
     }
   }
@@ -279,7 +258,7 @@ void FileReader::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
   }
   std::vector<unsigned char> rtspConfigBytes = Util::readAllBytesFromFilePath(rtspConfig);
   std::string data = std::string(rtspConfigBytes.begin(), rtspConfigBytes.end());
-  std::vector<std::string> cfgs = Util::splitToVecByString(data, RTSP_MSG_DELIMITER);
+  std::vector<std::string> cfgs = Util::splitToVecByString(data, C::RTSP_MSG_DELIMITER);
 
   std::vector<std::string> CONFIG_KEYS = {
     C::GOP_KEY, C::MEDIA_INFO_KEY, C::SSRC_KEY, C::SEQ_KEY,
@@ -484,7 +463,7 @@ std::vector<unsigned char> FileReader::readMetaData(
     throw std::runtime_error("Failed to open file! size : " + std::to_string(fileSize));
   }
   int64_t size = fileSize;
-  int64_t pos = size - META_LEN_BYTES;
+  int64_t pos = size - C::META_LEN_BYTES;
   inputFileStream.seekg(pos, std::ios::beg);
 
   // read 4 bytes.

@@ -85,11 +85,6 @@ private:
 
     // members
     std::shared_ptr<Logger> logger;
-    std::string ASC = "asc";
-    std::string ASA = "asa";
-    std::string ASV = "asv";
-    std::string RTSP_MSG_DELIMITER = "###" + std::to_string(*C::CRLF);
-    int META_LEN_BYTES = 4;
 
     std::filesystem::path cidDirectory;
     std::filesystem::path configFile;

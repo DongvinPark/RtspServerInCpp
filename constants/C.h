@@ -38,6 +38,13 @@ namespace C {
     constexpr int DEFAULT_DIVIDE_NUM = 3;
     constexpr char DEFAULT_IP[] = "127.0.0.1";
 
+    // File reading
+    constexpr char ASC[] = "asc";
+    constexpr char ASA[] = "asa";
+    constexpr char ASV[] = "asv";
+    constexpr char RTSP_MSG_DELIMITER[] = "###\r\n";
+    constexpr int META_LEN_BYTES = 4;
+
     // Keys
     constexpr char SSRC_KEY[] = "ssrc=";
     constexpr char SEQ_KEY[] = "seq0=";
