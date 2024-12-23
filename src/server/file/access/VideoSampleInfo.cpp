@@ -22,7 +22,7 @@ void VideoSampleInfo::setSize(const int inputSize) {
     size = inputSize;
 }
 
-void VideoSampleInfo::setOffset(const int inputOffset) {
+void VideoSampleInfo::setOffset(const int64_t inputOffset) {
     offset = inputOffset;
 }
 

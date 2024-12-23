@@ -10,6 +10,12 @@ public:
     explicit VideoAccess();
     ~VideoAccess();
 
+    // Rule of five
+    VideoAccess(const VideoAccess&) = delete; // Disable copy constructor
+    VideoAccess& operator=(const VideoAccess&) = delete; // Disable copy assignment
+    VideoAccess(VideoAccess&& other) noexcept; // Move constructor
+    VideoAccess& operator=(VideoAccess&& other) noexcept; // Move assignment
+
     std::vector<std::ifstream>& getAccessList();
     std::vector<std::vector<VideoSampleInfo>>& getVideoSampleInfoList();
 

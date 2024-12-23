@@ -175,9 +175,9 @@ bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirec
     camDirectoryList.push_back(camDirectory);
   }
   // sort ascending order of filenames
-  std::sort(
-    camDirectoryList.begin(), camDirectoryList.end()
-    , [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
+  std::ranges::sort(
+    camDirectoryList,
+    [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
       return lhs.filename() < rhs.filename();
     }
   );
@@ -269,7 +269,7 @@ bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &input
   }
   loadRtspRtpConfig(config);
   loadRtpAudioMetaData(audio, audioFile);
-  // Todo : need to implement video file init
+  loadRtpVideoMetaData(inputCidDirectory, videos);
   return true;
 }
 
@@ -357,34 +357,91 @@ void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMe
 void FileReader::openVideosWithIfStream(
 std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
 ) {
-  std::sort(
-    videos.begin(), videos.end(),
+
+
+}
+
+void FileReader::loadRtpVideoMetaData(
+const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& videos
+) {
+  VideoAccess va{};
+
+  // open ifstreams for member viedos
+  std::ranges::sort(
+    videos,
     [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
-    return lhs.filename() < rhs.filename();
+      return lhs.filename() < rhs.filename();
     }
   );
-
-  for (std::filesystem::path videoPath : videos) {
-    ifStreams.emplace_back(std::ifstream(videoPath, std::ios::in | std::ios::binary));
+  for (const std::filesystem::path& videoPath : videos) {
+    va.getAccessList().emplace_back(std::ifstream(videoPath, std::ios::in | std::ios::binary));
   }
 
   // check
-  if (videos.size() != ifStreams.size()) {
+  if (videos.size() != va.getConstAccessList().size()) {
     throw std::runtime_error("opening video reading ifstreams failed!");
   }
   for (int i = 0; i < videos.size(); ++i) {
-    if (!ifStreams[i].is_open()) {
+    if (!va.getConstAccessList()[i].is_open()) {
       throw std::runtime_error("opening video reading ifstreams failed! filename : " + videos[i].filename().string());
     }
   }
+
+  // open Video Sample meta data
+  int memberVideoId = 0;
+  for (std::ifstream& access : va.getAccessList()) {
+    if (access.is_open()) {
+      auto videoSampleMetaList = va.getVideoSampleInfoList();
+      loadRtpMemberVideoMetaData(access, videoSampleMetaList, memberVideoId);
+      memberVideoId++;
+    } else {
+      logger->severe("Failed to open video reading ifstream!");
+      throw std::runtime_error("Failed to open video reading ifstream!");
+    }
+  }
+
+  videoFiles.insert({inputCamDir.filename().string(), std::move(va)});
 }
 
-VideoAccess & FileReader::loadRtpVideoMetaData(const std::vector<std::filesystem::path> &videos) {
-}
-
-std::vector<VideoSampleInfo> & FileReader::loadRtpMemberVideoMetaData(
-    std::ifstream &member, int memberId
+void FileReader::loadRtpMemberVideoMetaData(
+    std::ifstream &inputIfstream,
+    std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
+    int memberId
 ) {
+  input2dMetaList.emplace_back(std::vector<VideoSampleInfo>{});
+
+  inputIfstream.seekg(std::ios::ate);
+  int64_t fileSize = inputIfstream.tellg();
+  std::vector<unsigned char> metaData = readMetaData(fileSize, inputIfstream);
+  std::vector<int16_t> sizes = getSizes(metaData);
+
+  int sampleCount = 0;
+  uint64_t offset = 0;
+  std::vector<int64_t> gops = rtpInfo.kv[C::GOP_KEY];
+  int gop = static_cast<int>(gops[0]);
+
+  VideoSampleInfo videoSampleInfo{};
+  for (int16_t size : sizes) { // size must start with -1, refer to acs_maker.
+    if (size == -1) {
+      if (!videoSampleInfo.getMetaInfoList().empty()) {
+        input2dMetaList.at(input2dMetaList.size() - 1).emplace_back(videoSampleInfo);
+        videoSampleInfo.setOffset(offset);
+        videoSampleInfo.setFlag( (sampleCount % gop) == 0 ? C::KEY_FRAME_FLAG : C::P_FRAME_FLAG );
+        sampleCount++;
+        continue;
+      }
+    }
+
+    videoSampleInfo.getMetaInfoList().emplace_back(size, offset);
+    int prevSize = videoSampleInfo.getSize();
+    videoSampleInfo.setSize(prevSize + size);
+    offset += size;
+  }// for
+
+  // save the last one
+  input2dMetaList.at(input2dMetaList.size() - 1).emplace_back(videoSampleInfo);
+
+  showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
 }
 
 void FileReader::showVideoMinMaxSize(

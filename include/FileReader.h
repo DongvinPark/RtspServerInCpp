@@ -62,8 +62,14 @@ private:
     void openVideosWithIfStream(
         std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
     );
-    VideoAccess& loadRtpVideoMetaData(const std::vector<std::filesystem::path>& videos);
-    std::vector<VideoSampleInfo>& loadRtpMemberVideoMetaData(std::ifstream& member, int memberId);
+    void loadRtpVideoMetaData(
+        const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& videos
+    );
+    void loadRtpMemberVideoMetaData(
+        std::ifstream &inputIfstream,
+        std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
+        int memberId
+    );
     void showVideoMinMaxSize(const std::vector<VideoSampleInfo>& videoMetaData, int memberId);
 
     // reading sample
