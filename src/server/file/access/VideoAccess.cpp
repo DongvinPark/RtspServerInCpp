@@ -6,24 +6,24 @@ VideoAccess::~VideoAccess() {
     close();
 }
 
-// Move constructor
+// move constructor
 VideoAccess::VideoAccess(VideoAccess&& other) noexcept
     : accesses(std::move(other.accesses)), meta(std::move(other.meta)) {
-    // Ensure the moved-from object's resources are in a valid state
+    // delete unnecessary resources
     other.accesses.clear();
     other.meta.clear();
 }
 
-// Move assignment
+// move assignment operator
 VideoAccess& VideoAccess::operator=(VideoAccess&& other) noexcept {
-    if (this != &other) { // Prevent self-assignment
-        close(); // Clean up current resources
+    if (this != &other) { // ban self-assignment
+        close(); // delete cur resource
 
-        // Transfer ownership of resources
+        // transfer resource
         accesses = std::move(other.accesses);
         meta = std::move(other.meta);
 
-        // Ensure the moved-from object's resources are in a valid state
+        // delete unnecessary resources
         other.accesses.clear();
         other.meta.clear();
     }

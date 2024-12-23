@@ -335,3 +335,33 @@ int main(){
     sntpRefTimeProvider.start();
 }
 ```
+13. std::ifstream은 복사가 불가능하다.
+    <br> 그러나, 참조를 이용해서 함수 파라미터로 전달하는 것은 가능하다.
+    <br> map에 어떤 객체를 등록할 때는 copy 가 기본 동작이다. std::ifstream은 이게 불가능하기 때문에, std::ifstream을 내부 멤버로 가지고 있는 객체를 map에 등록할 때는 별도의 이동 생성자와 이동 연산자 오버로딩을 정의해야 한다.
+```c++
+// VideoAccess 클래스의 이동 생성자와 이동 연산자 오버로딩.
+
+// move constructor
+VideoAccess::VideoAccess(VideoAccess&& other) noexcept
+    : accesses(std::move(other.accesses)), meta(std::move(other.meta)) {
+    // delete unnecessary resources
+    other.accesses.clear();
+    other.meta.clear();
+}
+
+// move assignment operator
+VideoAccess& VideoAccess::operator=(VideoAccess&& other) noexcept {
+    if (this != &other) { // ban self-assignment
+        close(); // delete cur resource
+
+        // transfer resource
+        accesses = std::move(other.accesses);
+        meta = std::move(other.meta);
+
+        // delete unnecessary resources
+        other.accesses.clear();
+        other.meta.clear();
+    }
+    return *this;
+}
+```
