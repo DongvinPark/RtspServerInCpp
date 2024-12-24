@@ -365,3 +365,67 @@ VideoAccess& VideoAccess::operator=(VideoAccess&& other) noexcept {
     return *this;
 }
 ```
+14. 컨테이너에서 내용물을 꺼내서 수정하고 싶으면, '&'타입으로 꺼내라.
+    <br> 그렇지 않으면, 꺼내면서 copy가 돼서 원본 객체 수정도 안 되고, 성능도 나빠질 수 있다.
+```c++
+void FileReader::loadRtpMemberVideoMetaData(
+    int64_t videoFileSize,
+    std::ifstream &inputIfstream,
+    std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
+    int memberId
+) {
+  input2dMetaList.push_back(std::vector<VideoSampleInfo>{});
+
+  // ...
+
+  for (const int16_t size : sizes) { // size must start with -1, refer to acs_maker.
+    if (size == C::INVALID) {
+      VideoSampleInfo newVSampleInfo{};
+      newVSampleInfo.setOffset(offset);
+      newVSampleInfo.setFlag( (sampleCount % gop) == 0 ? C::KEY_FRAME_FLAG : C::P_FRAME_FLAG );
+      input2dMetaList.at(input2dMetaList.size() - 1).push_back(newVSampleInfo);
+      sampleCount++;
+      continue;
+    }
+
+    // 여기서 & 를 붙이지 않고 그냥 .at(...)으로 꺼내버리면
+    // 그 많은 요소들이 전부 복사되는 수가 있다!!!
+    std::vector<VideoSampleInfo>& sampleInfoList = input2dMetaList.at(input2dMetaList.size() - 1);
+    VideoSampleInfo& latestVideoSampleInfo = sampleInfoList.at(sampleInfoList.size() - 1);
+    
+    // 수정을 위해서 사용되는 .getMetaInfoList() 함수도 당연히 '&'타입으로 리턴해야 한다!!
+    latestVideoSampleInfo.getMetaInfoList().push_back(RtpMetaInfo(size, offset));
+    int prevSize = latestVideoSampleInfo.getSize();
+    latestVideoSampleInfo.setSize(prevSize + size);
+
+    offset += size;
+  }// for
+
+  showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
+}
+```
+15. java의 ByteBuffer 클래스 내의 asShortBuffer()는 보통은 big endian으로 작동한다. 
+    <br> 그렇기 때문에 C++에서는 이것을 수동으로 구현해야 한다.
+```java
+// java version
+private short[] getSizes(byte[] metaData){
+        short[] sizes = new short[metaData.length/2];
+        ByteBuffer.wrap(metaData).asShortBuffer().get(sizes);
+        return sizes;
+    }
+```
+```c++
+// C++ version
+std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) {
+  std::vector<int16_t> sizes;
+  sizes.reserve(metaData.size() / 2); // Reserve memory for efficiency
+
+  for (size_t i = 0; i < metaData.size(); i += 2) {
+    // Combine into a 16-bit value (big-endian)
+    int16_t value = (static_cast<int16_t>(metaData[i]) << 8) | static_cast<int16_t>(metaData[i + 1]);
+    sizes.push_back(value);
+  }
+
+  return sizes;
+}
+```

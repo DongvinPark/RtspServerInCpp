@@ -2,7 +2,6 @@
 #include "../../../constants/Util.h"
 
 #include <algorithm>
-#include <cstring> // for std::memcpy
 
 // constructor
 FileReader::FileReader(const std::filesystem::path &path)
@@ -494,10 +493,10 @@ std::vector<unsigned char> FileReader::readMetaData(
 
 std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) {
   std::vector<int16_t> sizes;
-  sizes.reserve(metaData.size() / 2); // Reserve memory for efficiency
+  sizes.reserve(metaData.size() / 2); // reserve memory for efficiency
 
   for (size_t i = 0; i < metaData.size(); i += 2) {
-    // Combine into a 16-bit value (big-endian)
+    // execute bitwise operation to two bytes(big-endian)
     int16_t value = (static_cast<int16_t>(metaData[i]) << 8) | static_cast<int16_t>(metaData[i + 1]);
     sizes.push_back(value);
   }
