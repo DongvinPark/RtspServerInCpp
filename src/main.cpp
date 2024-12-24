@@ -13,6 +13,7 @@
 #include "../include/SntpRefTimeProvider.h"
 #include "../include/AudioSampleInfo.h"
 #include "../include/VideoSampleInfo.h"
+#include "../include/FileReader.h"
 
 using boost::asio::ip::tcp;
 
@@ -133,6 +134,16 @@ int main() {
 
     std::cout << "vInfo1 : " << vInfo1.getSize() << vInfo1.getOffset() << vInfo1.getFlag() << "\n";
     std::cout << "vInfo2 : " << vInfo2.getSize() << vInfo2.getOffset() << vInfo2.getFlag() << "\n";
+
+    //std::filesystem::path contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
+    std::filesystem::path contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
+
+    for (std::filesystem::path dir : std::filesystem::directory_iterator(contentsRootPath)) {
+        if (is_directory(dir)) {
+            FileReader fileReader(dir);
+            fileReader.init();
+        }
+    }
 
     return 0;
 }

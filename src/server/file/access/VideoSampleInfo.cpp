@@ -1,6 +1,7 @@
 #include "../include/VideoSampleInfo.h"
 
-VideoSampleInfo::VideoSampleInfo() {}
+VideoSampleInfo::VideoSampleInfo()
+    : rtpMetaInfos(std::vector<RtpMetaInfo>{}), size(0), offset(0), flag(0) {}
 
 std::vector<RtpMetaInfo>& VideoSampleInfo::getMetaInfoList() {
     return rtpMetaInfos;

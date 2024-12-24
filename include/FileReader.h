@@ -59,13 +59,11 @@ private:
         const std::filesystem::path& inputAudio, AudioAccess& inputAudioFile
     );
     void showAudioMinMaxSize(const std::vector<AudioSampleInfo>& audioMetaData);
-    void openVideosWithIfStream(
-        std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
-    );
     void loadRtpVideoMetaData(
         const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& videos
     );
     void loadRtpMemberVideoMetaData(
+        int64_t videoFileSize,
         std::ifstream &inputIfstream,
         std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
         int memberId

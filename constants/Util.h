@@ -205,6 +205,19 @@ namespace Util {
 		}
 		return file.tellg(); // current position == file size
 	}
+
+	inline int32_t convertToInt32(const std::vector<unsigned char>& metaLenBuf) {
+		if (metaLenBuf.size() != 4) {
+			throw std::invalid_argument("metaLenBuf must contain exactly 4 bytes.");
+		}
+
+		// mimic the (b1 << 24) | (b2 << 16) + (b3 << 8) + b4 logic in java's RandomAccessFile's
+		// .readInt() method.
+		return (static_cast<int32_t>(metaLenBuf[0]) << 24) |
+			   (static_cast<int32_t>(metaLenBuf[1]) << 16) |
+			   (static_cast<int32_t>(metaLenBuf[2]) << 8) |
+			   (static_cast<int32_t>(metaLenBuf[3]));
+	}
 }
 
 #endif // UTIL_H

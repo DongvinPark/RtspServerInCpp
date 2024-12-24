@@ -2,6 +2,7 @@
 #include "../../../constants/Util.h"
 
 #include <algorithm>
+#include <cstring> // for std::memcpy
 
 // constructor
 FileReader::FileReader(const std::filesystem::path &path)
@@ -246,9 +247,16 @@ bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &input
     logger->severe("No acs file or wrong place in " + inputCidDirectory.filename().string());
     return false;
   }
-  loadRtspRtpConfig(config);
-  loadRtpAudioMetaData(audio, audioFile);
-  loadRtpVideoMetaData(inputCidDirectory, videos);
+
+  if (!config.filename().string().empty()) {
+    loadRtspRtpConfig(config);
+  }
+  if (!audio.filename().string().empty()) {
+    loadRtpAudioMetaData(audio, audioFile);
+  }
+  if (!videos.empty()) {
+    loadRtpVideoMetaData(inputCidDirectory, videos);
+  }
   return true;
 }
 
@@ -290,19 +298,13 @@ std::vector<int64_t> FileReader::getValues(std::string inputMsg, std::string inp
     if (v[i].find("null") != std::string::npos) {
       continue;
     }
-    // TODO : need to check the real value later.
-    std::cout << "input in getValues()!! :" << v[i] << "\n";
-    values.push_back(std::stoll(v[i]));
+    values.push_back(static_cast<int64_t>(std::stoll(v[i])));
   }
   return values;
 }
 
 void FileReader::loadRtpAudioMetaData(
   const std::filesystem::path &inputAudio, AudioAccess& inputAudioFile) {
-  if (inputAudio.filename().string().empty()) {
-    logger->warning("Dongvin, invalid input audio file.");
-    return;
-  }
   inputAudioFile.getAccess().open(inputAudio, std::ios::in | std::ios::binary);
   int64_t audioFileSize = Util::getFileSize(inputAudio);
   std::vector<unsigned char> metaData = readMetaData(audioFileSize, inputAudioFile.getAccess());
@@ -325,19 +327,12 @@ void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMe
   }
   // int sort ascending
   std::ranges::sort(lenList.begin(), lenList.end());
-  int min = lenList[0];
-  int max = lenList[lenList.size() - 1];
+  int64_t min = lenList[0];
+  int64_t max = lenList[lenList.size() - 1];
   logger->info3(
     "Dongvin, id : " + contentTitle + ", audio (min, max)=("
     + std::to_string(min) + "," + std::to_string(max) + ")"
   );
-}
-
-void FileReader::openVideosWithIfStream(
-std::vector<std::filesystem::path>& videos, std::vector<std::ifstream>& ifStreams
-) {
-
-
 }
 
 void FileReader::loadRtpVideoMetaData(
@@ -371,7 +366,8 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
   for (std::ifstream& access : va.getAccessList()) {
     if (access.is_open()) {
       auto videoSampleMetaList = va.getVideoSampleInfoList();
-      loadRtpMemberVideoMetaData(access, videoSampleMetaList, memberVideoId);
+      int64_t videoFileSize = Util::getFileSize(videos.at(memberVideoId));
+      loadRtpMemberVideoMetaData(videoFileSize, access, videoSampleMetaList, memberVideoId);
       memberVideoId++;
     } else {
       logger->severe("Failed to open video reading ifstream!");
@@ -383,42 +379,50 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
 }
 
 void FileReader::loadRtpMemberVideoMetaData(
+    int64_t videoFileSize,
     std::ifstream &inputIfstream,
     std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
     int memberId
 ) {
-  input2dMetaList.emplace_back(std::vector<VideoSampleInfo>{});
+  input2dMetaList.push_back(std::vector<VideoSampleInfo>{});
 
-  inputIfstream.seekg(std::ios::ate);
-  int64_t fileSize = inputIfstream.tellg();
-  std::vector<unsigned char> metaData = readMetaData(fileSize, inputIfstream);
+  std::vector<unsigned char> metaData = readMetaData(videoFileSize, inputIfstream);
   std::vector<int16_t> sizes = getSizes(metaData);
 
   int sampleCount = 0;
   uint64_t offset = 0;
   std::vector<int64_t> gops = rtpInfo.kv[C::GOP_KEY];
   int gop = static_cast<int>(gops[0]);
+  std::cout << "!!! gop : " << gop << std::endl;
 
-  VideoSampleInfo videoSampleInfo{};
-  for (int16_t size : sizes) { // size must start with -1, refer to acs_maker.
-    if (size == -1) {
-      if (!videoSampleInfo.getMetaInfoList().empty()) {
-        input2dMetaList.at(input2dMetaList.size() - 1).emplace_back(videoSampleInfo);
-        videoSampleInfo.setOffset(offset);
-        videoSampleInfo.setFlag( (sampleCount % gop) == 0 ? C::KEY_FRAME_FLAG : C::P_FRAME_FLAG );
-        sampleCount++;
-        continue;
-      }
+  for (const int16_t size : sizes) { // size must start with -1, refer to acs_maker.
+    if (size == C::INVALID) {
+      VideoSampleInfo newVSampleInfo{};
+      newVSampleInfo.setOffset(offset);
+      newVSampleInfo.setFlag( (sampleCount % gop) == 0 ? C::KEY_FRAME_FLAG : C::P_FRAME_FLAG );
+      input2dMetaList.at(input2dMetaList.size() - 1).push_back(newVSampleInfo);
+      sampleCount++;
+      continue;
     }
 
-    videoSampleInfo.getMetaInfoList().emplace_back(size, offset);
-    int prevSize = videoSampleInfo.getSize();
-    videoSampleInfo.setSize(prevSize + size);
+    std::vector<VideoSampleInfo>& sampleInfoList = input2dMetaList.at(input2dMetaList.size() - 1);
+    VideoSampleInfo& latestVideoSampleInfo = sampleInfoList.at(sampleInfoList.size() - 1);
+
+    latestVideoSampleInfo.getMetaInfoList().push_back(RtpMetaInfo(size, offset));
+    int prevSize = latestVideoSampleInfo.getSize();
+    latestVideoSampleInfo.setSize(prevSize + size);
+
     offset += size;
   }// for
 
-  // save the last one
-  input2dMetaList.at(input2dMetaList.size() - 1).emplace_back(videoSampleInfo);
+  std::cout << "!!! vMetaData.size() = " << input2dMetaList.at(input2dMetaList.size()-1).size() << std::endl;
+  std::vector<VideoSampleInfo>& resultInfoList = input2dMetaList.at(input2dMetaList.size()-1);
+  VideoSampleInfo& first = resultInfoList.at(0);
+  VideoSampleInfo& last = resultInfoList.at(resultInfoList.size()-1);
+  std::cout << "first V : size/offset/flag/cnt : "
+    << first.getSize() << "/" << first.getOffset() << "/" << first.getFlag() << "/" << first.getMetaInfoList().size() << std::endl;
+  std::cout << "last V : size/offset/flag/cnt : "
+    << last.getSize() << "/" << last.getOffset() << "/" << last.getFlag() << "/" << last.getMetaInfoList().size() << std::endl;
 
   showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
 }
@@ -433,8 +437,8 @@ void FileReader::showVideoMinMaxSize(
     lenList.push_back(vInfo.getSize());
   }
   std::ranges::sort(lenList.begin(), lenList.end());
-  int min = lenList[0];
-  int max = lenList[lenList.size() - 1];
+  int64_t min = lenList[0];
+  int64_t max = lenList[lenList.size() - 1];
   logger->info3(
     "Dongvin, id : " + contentTitle + ", memberId: " + std::to_string(memberId)
     + ", video (min, max)=(" + std::to_string(min) + "," + std::to_string(max) + ")"
@@ -467,17 +471,18 @@ std::vector<unsigned char> FileReader::readMetaData(
   inputFileStream.seekg(pos, std::ios::beg);
 
   // read 4 bytes.
-  int32_t metaLen;
-  inputFileStream.read(reinterpret_cast<char*>(&metaLen), sizeof(metaLen));
-  if (inputFileStream.fail()) {
-    throw std::runtime_error("reading meta data length failed!");
+  std::vector<unsigned char> metaLenBuf(C::META_LEN_BYTES);
+  inputFileStream.read(reinterpret_cast<std::istream::char_type*>(metaLenBuf.data()), C::META_LEN_BYTES);
+  int32_t metaLen = Util::convertToInt32(metaLenBuf);
+  if (inputFileStream.fail() || metaLen <= 0) {
+    throw std::runtime_error("reading meta data length failed! : metaLen : " + std::to_string(metaLen));
   }
 
   pos -= metaLen;
   inputFileStream.seekg(pos, std::ios::beg);
 
   std::vector<unsigned char> metaBuf(metaLen);
-  inputFileStream.read(reinterpret_cast<char*>(metaBuf.data()), metaLen);
+  inputFileStream.read(reinterpret_cast<std::istream::char_type*>(metaBuf.data()), metaLen);
   if (inputFileStream.fail()) {
     throw std::runtime_error("reading meta data failed!");
   }
@@ -487,11 +492,11 @@ std::vector<unsigned char> FileReader::readMetaData(
 
 std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) {
   std::vector<int16_t> sizes;
-  sizes.reserve(metaData.size() / 2); // reserve memory for efficiency
+  sizes.reserve(metaData.size() / 2); // Reserve memory for efficiency
 
   for (size_t i = 0; i < metaData.size(); i += 2) {
-    // combine into a 16-bit value (little-endian)
-    int16_t value = static_cast<int16_t>(metaData[i]) | (static_cast<int16_t>(metaData[i + 1]) << 8);
+    // Combine into a 16-bit value (big-endian)
+    int16_t value = (static_cast<int16_t>(metaData[i]) << 8) | static_cast<int16_t>(metaData[i + 1]);
     sizes.push_back(value);
   }
 
