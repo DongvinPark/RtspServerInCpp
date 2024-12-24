@@ -393,7 +393,6 @@ void FileReader::loadRtpMemberVideoMetaData(
   uint64_t offset = 0;
   std::vector<int64_t> gops = rtpInfo.kv[C::GOP_KEY];
   int gop = static_cast<int>(gops[0]);
-  std::cout << "!!! gop : " << gop << std::endl;
 
   for (const int16_t size : sizes) { // size must start with -1, refer to acs_maker.
     if (size == C::INVALID) {
@@ -415,6 +414,8 @@ void FileReader::loadRtpMemberVideoMetaData(
     offset += size;
   }// for
 
+  /*
+  TODO : delete after completions of development
   std::cout << "!!! vMetaData.size() = " << input2dMetaList.at(input2dMetaList.size()-1).size() << std::endl;
   std::vector<VideoSampleInfo>& resultInfoList = input2dMetaList.at(input2dMetaList.size()-1);
   VideoSampleInfo& first = resultInfoList.at(0);
@@ -423,6 +424,7 @@ void FileReader::loadRtpMemberVideoMetaData(
     << first.getSize() << "/" << first.getOffset() << "/" << first.getFlag() << "/" << first.getMetaInfoList().size() << std::endl;
   std::cout << "last V : size/offset/flag/cnt : "
     << last.getSize() << "/" << last.getOffset() << "/" << last.getFlag() << "/" << last.getMetaInfoList().size() << std::endl;
+  */
 
   showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
 }
