@@ -21,10 +21,17 @@ public:
     explicit FileReader(const std::filesystem::path& path);
     ~FileReader();
 
+    // Rule of five. FileReader object is not allowed to copy and move.
+    FileReader(const FileReader&) = delete;
+    FileReader& operator=(const FileReader&) = delete;
+    FileReader& operator=(FileReader&& other) noexcept = delete;
+    // enable move constructor.
+    FileReader(FileReader&& other) noexcept;
+
     // utils
     int getNumberOfCamDirectories() const;
     int getRefVideoSampleCnt() const;
-    FileReader& init();
+    void init();
     void shutdown();
     RtpInfo getRtpInfoCopyWithLock();
     std::string getMediaInfoCopyWithLock();

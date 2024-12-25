@@ -406,6 +406,9 @@ void FileReader::loadRtpMemberVideoMetaData(
 ```
 15. java의 ByteBuffer 클래스 내의 asShortBuffer()는 보통은 big endian으로 작동한다. 
     <br> 그렇기 때문에 C++에서는 이것을 수동으로 구현해야 한다.
+    <br> big endian 은 0x1234를 address 1,2에 0x12, 0x34 순서로 담는 것이고,
+    <br> littel endian은 address 1,2에 0x34, 0x12 순서로 담는 것이다.
+    <br> 즉, big endian은 MSB 가 먼저, little endian은 LSB 먼저인 것이다.
 ```java
 // java version
 private short[] getSizes(byte[] metaData){
@@ -427,5 +430,117 @@ std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) 
   }
 
   return sizes;
+}
+```
+16. std::pmr:: ... 류의 자료구조는 웬만해서는 쓰지 마라.
+    <br> 이걸 썼을 경우, 쓰지 않았을 때와 비교해서 컴파일 요건이 까다로워지기 때문에 쓸데없이 시간을 낭비하게될 가능성이 크다.
+    <br> ... prm 을 쓴 경우와 쓰지 않은 경우의 차이점은 memory allocation이 어떻게 컨트롤 되는가이다.
+    <br> 전자의 경우(pmr사용), C++ 17에서 도입된 Polymorphic Memory Resource 라이브러리에 정의 된 std::pmr::polymorphic_allocator를 사용하게 되고, 후자의 경우 default allocator인 std::allocator를 사용한다는 차이점이 있다.
+    <br> 전자의 경우는 정말 특별한 경우(성능이 너무나 중요하거나, 자원이 너무나 한정적이어서)에만 사용하고, 대부분의 경우엔 pmr을 쓰지 않는다.
+    <br> pmr을 쓴 후 컴파일 할 경우, error: invalid use of incomplete type ... 같은 에러 메시지를 마주할 가능성이 크다.  
+```c++
+class ContentsStorage {
+public:
+  explicit ContentsStorage(const std::string contentStorage);
+  ~ContentsStorage();
+
+  ContentsStorage& init();
+
+  FileReader& getCid(std::string cid);
+  std::unordered_map<std::string, FileReader>& getReaders();
+  void shutdown();
+  std::string getContentRootPath() const;
+
+private:
+  std::shared_ptr<Logger> logger;
+  std::filesystem::path parent;
+  // 여기서 그냥 unordered_map을 쓰면 별 문제 없이 컴파일 되던 것이
+  // pmr 을 쓰게될 경우, Linux환경에서는 컴파일이 거부 된다.
+  //std::pmr::unordered_map<std::string, FileReader> readers;
+  std::unordered_map<std::string, FileReader> readers;
+  std::string contentRootPath;
+};
+```
+17. 함수 내부에서 새롭게 만든 객체를 외부로 반출시키는 방법은 웬만해서는 쓰지 마라.
+    <br> java에서는 이러한 경우가 아주 많지만, C++에서는 그렇지 않다.
+    <br> C++에서는 함수 범위를 벗어난 객체는 자동으로 회수 처리 되기 때문이다.
+    <br> 대신 아래와 같은 방법을 사용하라.
+```c++
+// RVO(return by value) : 값을 반환하라. 대신 복사는 피할 수 없다.
+int getLocalValue() {
+    int localVar = 42;
+    return localVar; // The value is safely copied or moved.
+}
+
+int main() {
+    int value = getLocalValue();
+    std::cout << value << std::endl; // Output: 42
+}
+
+// Dynamic Memory Allocation : raw 포인터 반환하라.
+int* getHeapValue() {
+    int* heapVar = new int(42); // Allocate on the heap.
+    return heapVar;            // Return a pointer.
+}
+
+int main() {
+    int* ptr = getHeapValue();
+    std::cout << *ptr << std::endl; // Output: 42
+    delete ptr;                     // Don't forget to free the memory!
+}
+
+
+// 스마트 포인터 반환하라. unique OR shared
+#include <iostream>
+#include <memory> // For std::unique_ptr
+
+std::unique_ptr<int> getHeapValue() {
+    return std::make_unique<int>(42); // Allocate on the heap and return a unique_ptr.
+}
+
+int main() {
+    auto ptr = getHeapValue(); // `ptr` now owns the heap memory.
+    std::cout << *ptr << std::endl; // Output: 42
+    // No need to manually delete; `std::unique_ptr` takes care of it.
+    return 0;
+}
+
+#include <iostream>
+#include <memory> // For std::shared_ptr
+
+std::shared_ptr<int> getHeapValue() {
+    return std::make_shared<int>(42); // Allocate on the heap and return a shared_ptr.
+}
+
+int main() {
+    auto ptr = getHeapValue(); // `ptr` now shares ownership of the heap memory.
+    std::cout << *ptr << std::endl; // Output: 42
+    // Memory will be freed when the last shared_ptr owning it is destroyed.
+    return 0;
+}
+
+
+// 외부 객체를 참조 타임 파라미터로 전달한 후, 함수 내부에서 수정하라.
+void modifyValue(int& value) {
+    value = 42; // Modify the object.
+}
+
+int main() {
+    int myVar = 0;
+    modifyValue(myVar);
+    std::cout << myVar << std::endl; // Output: 42
+}
+
+// static local 변수로 전달하라. 단, 위의 방법들이 통하지 않을 때만!!
+int& getStaticReference() {
+    static int staticVar = 42; // This object persists for the lifetime of the program.
+    return staticVar;
+}
+
+int main() {
+    int& ref = getStaticReference();
+    std::cout << ref << std::endl; // Output: 42
+    ref = 100;
+    std::cout << getStaticReference() << std::endl; // Output: 100
 }
 ```

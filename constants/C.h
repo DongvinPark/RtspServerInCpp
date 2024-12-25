@@ -12,6 +12,7 @@ namespace C {
     constexpr char SNTP_REF_TIME_PROVIDER[] = "SntpRefTimeProvider";
     constexpr char PERIODIC_TASK[] = "PeriodicTask";
     constexpr char FILE_READER[] = "FileReader";
+    constexpr char CONTENTS_STORAGE[] = "ContentsStorage";
 
     // General constants
     constexpr char VERSION[] = "1.0.4";

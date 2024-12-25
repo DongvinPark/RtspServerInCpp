@@ -138,12 +138,12 @@ int main() {
     //std::filesystem::path contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
     std::filesystem::path contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
 
-    for (std::filesystem::path dir : std::filesystem::directory_iterator(contentsRootPath)) {
+    /*for (std::filesystem::path dir : std::filesystem::directory_iterator(contentsRootPath)) {
         if (is_directory(dir)) {
             FileReader fileReader(dir);
             fileReader.init();
         }
-    }
+    }*/
 
     return 0;
 }

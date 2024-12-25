@@ -69,6 +69,10 @@ add_executable(AlphaStreamer3.1Cpp
         src/server/file/access/VideoAccess.cpp
         include/HybridSampleMeta.h
         src/util/HybridSampleMeta.cpp
+        include/Session.h
+        src/service/Session.cpp
+        include/ContentsStorage.h
+        src/server/ContentsStorage.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

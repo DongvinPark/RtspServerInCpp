@@ -10,6 +10,10 @@ public:
     explicit AudioAccess();
     ~AudioAccess();
 
+    // enabled move semantics
+    AudioAccess(AudioAccess&& other) noexcept;
+    AudioAccess& operator=(AudioAccess&& other) noexcept;
+
     std::ifstream& getAccess();
     std::vector<AudioSampleInfo>& getMeta();
 

@@ -13,6 +13,18 @@ FileReader::~FileReader() {
   shutdown();
 }
 
+FileReader::FileReader(FileReader && other) noexcept
+  : logger(std::move(other.logger)),
+    cidDirectory(other.cidDirectory),
+    configFile(other.configFile),
+    audioFile(std::move(other.audioFile)),
+    videoFiles(std::move(other.videoFiles)),
+    rtspSdpMessage(other.rtspSdpMessage),
+    rtpInfo(other.rtpInfo),
+    v0Images(std::move(other.v0Images)) {
+  other.shutdown();
+}
+
 // public
 int FileReader::getNumberOfCamDirectories() const {
   return videoFiles.size();
@@ -23,7 +35,7 @@ int FileReader::getRefVideoSampleCnt() const {
   return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
 }
 
-FileReader & FileReader::init() {
+void FileReader::init() {
   if (cidDirectory.empty() || !exists(cidDirectory)) {
     logger->severe("No content files or wrong content root directory!");
     throw std::logic_error("FileReader failed.");
@@ -46,8 +58,6 @@ FileReader & FileReader::init() {
     logger->severe("Invalid V0 images! Content name : " + contentTitle);
     throw std::logic_error("V0 images init failed.");
   }
-
-  return *this;
 }
 
 void FileReader::shutdown() {
