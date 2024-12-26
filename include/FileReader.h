@@ -21,7 +21,7 @@ public:
     explicit FileReader(const std::filesystem::path& path);
     ~FileReader();
 
-    // Rule of five. FileReader object is not allowed to copy and move.
+    // Rule of five. FileReader object is not allowed to copy.
     FileReader(const FileReader&) = delete;
     FileReader& operator=(const FileReader&) = delete;
     FileReader& operator=(FileReader&& other) noexcept = delete;

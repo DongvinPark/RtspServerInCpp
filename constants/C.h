@@ -13,9 +13,12 @@ namespace C {
     constexpr char PERIODIC_TASK[] = "PeriodicTask";
     constexpr char FILE_READER[] = "FileReader";
     constexpr char CONTENTS_STORAGE[] = "ContentsStorage";
+    constexpr char SERVER[] = "Server";
+    constexpr char SESSION[] = "Session";
 
     // General constants
     constexpr char VERSION[] = "1.0.4";
+    constexpr int SESSION_KEY_BIT_SIZE = 64;
 
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
     constexpr int RTP_HEADER_LEN = 12; // Refer to https://datatracker.ietf.org/doc/html/rfc7798

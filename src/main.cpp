@@ -1,19 +1,11 @@
 #include <boost/asio.hpp>
-#include <iostream>
-#include <syncstream>
-#include <mutex>
 
 #include "../include/Logger.h"
 #include "../constants/C.h"
-#include "../include/Buffer.h"
-#include "../include/AudioSample.h"
-#include "../constants/Util.h"
-#include "../include/AVSampleBuffer.h"
-#include "../include/PeriodicTask.h"
 #include "../include/SntpRefTimeProvider.h"
-#include "../include/AudioSampleInfo.h"
-#include "../include/VideoSampleInfo.h"
 #include "../include/FileReader.h"
+#include "../include/Session.h"
+#include "../include/Server.h"
 
 using boost::asio::ip::tcp;
 
@@ -24,8 +16,35 @@ boost::asio::io_context& returnIOContext(
 }
 
 int main() {
-    
-    auto logger = Logger::getLogger(C::MAIN);
+
+    // make worker thread pool for boost.asio io_context
+    boost::asio::io_context io_context;
+    auto workGuard = boost::asio::make_work_guard(io_context);
+    std::vector<std::thread> threadVec;
+    unsigned int threadCnt = std::thread::hardware_concurrency();
+    for (int i = 0; i < threadCnt; ++i) {
+        threadVec.emplace_back(
+            [&io_context]() {io_context.run(); }
+        );
+    }
+
+    SntpRefTimeProvider sntpRefTimeProvider(io_context);
+
+    //std::string contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
+    std::string contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
+
+    ContentsStorage contentsStorage(contentsRootPath);
+    contentsStorage.init();
+
+    Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider);
+    server.start();
+
+    return 0;
+}
+/*
+*** for prev test ***
+
+auto logger = Logger::getLogger(C::MAIN);
     logger->severe("This is a severe message.");
     logger->warning("This is a warning message.");
     logger->info("This is an info message.");
@@ -72,29 +91,9 @@ int main() {
 
     std::cout << "\nPeriodic Timer Task start!\n";
 
-    boost::asio::io_context io_context;
-    auto workGuard = boost::asio::make_work_guard(io_context);
-    std::vector<std::thread> threadVec;
-    unsigned int threadCnt = std::thread::hardware_concurrency();
-    for (int i = 0; i < threadCnt; ++i) {
-        threadVec.emplace_back(
-            [&io_context]() {io_context.run(); }
-        );
-    }
+>>
 
-    SntpRefTimeProvider sntpRefTimeProvider(io_context);
-    sntpRefTimeProvider.start();
-
-    std::mutex lock;
-
-    auto myTask = [&]() {
-        // osyncstream not works on MacOS. Used std::mutex.
-        std::lock_guard<std::mutex> guard(lock);
-        /* std::osyncstream */(std::cout) << "sntp ref time millis : "
-            << sntpRefTimeProvider.getRefTimeMillisForCurrentTask() << "\n";
-    };
-
-    std::chrono::milliseconds interval(1000); // 1 second
+std::chrono::milliseconds interval(1000); // 1 second
     PeriodicTask task(returnIOContext(io_context), interval, myTask);
     task.start();
 
@@ -109,12 +108,17 @@ int main() {
     noTask.stop();
 
     workGuard.reset();
-    
-    for (auto& thread : threadVec) {
-        thread.join();
-    }
 
-    std::cout << "AudioSampleInfo copy test!\n";
+std::mutex lock;
+
+    auto myTask = [&]() {
+        // osyncstream not works on MacOS. Used std::mutex.
+        std::lock_guard<std::mutex> guard(lock);
+         std::osyncstream (std::cout) << "sntp ref time millis : "
+            //<< sntpRefTimeProvider.getRefTimeMillisForCurrentTask() << "\n";
+    //}
+
+std::cout << "AudioSampleInfo copy test!\n";
 
     AudioSampleInfo aSampleInfo1(10, 0);
     AudioSampleInfo aSampleInfo2 = aSampleInfo1;
@@ -134,16 +138,4 @@ int main() {
 
     std::cout << "vInfo1 : " << vInfo1.getSize() << vInfo1.getOffset() << vInfo1.getFlag() << "\n";
     std::cout << "vInfo2 : " << vInfo2.getSize() << vInfo2.getOffset() << vInfo2.getFlag() << "\n";
-
-    //std::filesystem::path contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
-    std::filesystem::path contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
-
-    /*for (std::filesystem::path dir : std::filesystem::directory_iterator(contentsRootPath)) {
-        if (is_directory(dir)) {
-            FileReader fileReader(dir);
-            fileReader.init();
-        }
-    }*/
-
-    return 0;
-}
+*/

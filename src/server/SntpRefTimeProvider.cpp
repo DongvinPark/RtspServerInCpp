@@ -22,6 +22,7 @@ SntpRefTimeProvider::~SntpRefTimeProvider() {
 }
 
 void SntpRefTimeProvider::start() {
+    logger->info("Starting SntpRefTimeProvider...");
     running = true;
     timerThread = std::thread([this]() {
         while (running) {

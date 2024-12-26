@@ -39,7 +39,6 @@ namespace Util {
 
 		// Generate the random key
 		std::ostringstream oss;
-		oss << "client_";
 		for (int i = 0; i < keyLength; ++i) {
 			oss << pickUpString[dist(eng)];
 		}
