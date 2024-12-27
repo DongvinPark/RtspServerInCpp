@@ -231,7 +231,7 @@ bool FileReader::handleConfigFile(const std::filesystem::path &inputCidDirectory
 ```
 <br><br/>
 8. 기본 생성자가 아닌 다른 생성자에는 explicit 키워드를 쓰면 안 된다.
-   <br> 해당 키워드를 쓰면 생성자가 작동을 하지 않는다..
+   <br> 해당 키워드를 쓰면 기본 생성자 이외의 다른 생성자(복사, 이동)가 작동을 하지 않는다..
 ```c++
 class RtpInfo {
 public:
@@ -335,6 +335,7 @@ int main(){
     sntpRefTimeProvider.start();
 }
 ```
+<br><br/>
 13. std::ifstream은 복사가 불가능하다.
     <br> 그러나, 참조를 이용해서 함수 파라미터로 전달하는 것은 가능하다.
     <br> map에 어떤 객체를 등록할 때는 copy 가 기본 동작이다. std::ifstream은 이게 불가능하기 때문에, std::ifstream을 내부 멤버로 가지고 있는 객체를 map에 등록할 때는 별도의 이동 생성자와 이동 연산자 오버로딩을 정의해야 한다.
@@ -365,6 +366,7 @@ VideoAccess& VideoAccess::operator=(VideoAccess&& other) noexcept {
     return *this;
 }
 ```
+<br><br/>
 14. 컨테이너에서 내용물을 꺼내서 수정하고 싶으면, '&'타입으로 꺼내라.
     <br> 그렇지 않으면, 꺼내면서 copy가 돼서 원본 객체 수정도 안 되고, 성능도 나빠질 수 있다.
 ```c++
@@ -404,6 +406,7 @@ void FileReader::loadRtpMemberVideoMetaData(
   showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
 }
 ```
+<br><br/>
 15. java의 ByteBuffer 클래스 내의 asShortBuffer()는 보통은 big endian으로 작동한다. 
     <br> 그렇기 때문에 C++에서는 이것을 수동으로 구현해야 한다.
     <br> big endian 은 0x1234를 address 1,2에 0x12, 0x34 순서로 담는 것이고,
@@ -432,6 +435,7 @@ std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) 
   return sizes;
 }
 ```
+<br><br/>
 16. std::pmr:: ... 류의 자료구조는 웬만해서는 쓰지 마라.
     <br> 이걸 썼을 경우, 쓰지 않았을 때와 비교해서 컴파일 요건이 까다로워지기 때문에 쓸데없이 시간을 낭비하게될 가능성이 크다.
     <br> ... prm 을 쓴 경우와 쓰지 않은 경우의 차이점은 memory allocation이 어떻게 컨트롤 되는가이다.
@@ -461,6 +465,7 @@ private:
   std::string contentRootPath;
 };
 ```
+<br><br/>
 17. 함수 내부에서 새롭게 만든 객체를 외부로 반출시키는 방법은 웬만해서는 쓰지 마라.
     <br> java에서는 이러한 경우가 아주 많지만, C++에서는 그렇지 않다.
     <br> C++에서는 함수 범위를 벗어난 객체는 자동으로 회수 처리 되기 때문이다.
@@ -544,3 +549,209 @@ int main() {
     std::cout << getStaticReference() << std::endl; // Output: 100
 }
 ```
+<br><br/>
+18. 복사도, 이동도 불가능한 객체를 멤버로 가지고 있는 클래스는 어떻게 다루어야 하는가?
+    <br> boost.asio의 io_context 객체가 대표적으로 복사도, 이동도 되지 않는다.
+    <br> 본 프로젝트의 Session 객체가 바로 이러한 특징을 가지고 있는 객체다.
+    <br> std::ifstream이 복사는 되지 않는 대신, 참조로서 이동은 가능한 것과 비교 된다.
+    <br> 복사 또는 이동 생성자를 정의할 수 없기 때문에, map.emplace(key, val); 이런 것이 통하지 않는다.
+    <br> 이럴 때는 하는 수 없이, 포인터를 저장하는 것 말고는 뾰족한 방법이 없다.
+```c++
+// Session 객체에 대한 포인터를 맵의 value로서 가지고 있는 Server 객체 정의하였다.
+class Server {
+public:
+  explicit Server(
+    boost::asio::io_context& inputIoContext,
+    ContentsStorage& inputContentsStorage,
+    const std::string &inputStorage,
+    SntpRefTimeProvider& inputSntpRefTimeProvider
+  );
+  ~Server();
+
+  // ... several member functions ...
+
+private:
+  // ... several member fileds ...
+  
+  // 주목해야 하는 부분은 여기다. Session 객체를 map.emplace(); 같은 함수를 써서
+  // 생성하는 것은 이동생성자가 정의돼 있어야 가능하다.
+  // 그러나, Session 객체 내부의 boost::asio::io_context io_context; 멤버가
+  // 복사와 이동이 모두 금지된 객체이기 때문에 Session 객체 또한 복사외 이동이 어렵다.
+  // 이럴 때는 Session 객체의 포인터를 map 등의 컨테이너에 저장하여 복사외 이동 없이도
+  // container를 통한 접근 및 관리가 가능하게 만들 수 있다.
+  std::unordered_map<std::string, std::shared_ptr<Session>> sessions;
+  
+  // ... several member fileds ...
+};
+```
+<br><br/>
+19. java의 HashMap<K,V>는 C++의 std::unordered_map<K,V>로 대체할 수 있다.
+    <br> std::vector 와 함께 매우 자주 사용되는 객체이므로 주요 멤버 함수의 특징을 간략하게 정리하였다.
+```c++
+#include <iostream>
+#include <unordered_map>
+#include <string>
+
+// 아래는 std::unordered_map을 사용하는 예시 프로그램이다.
+int main() {
+    std::unordered_map<int, std::string> myMap;
+
+    // Insert elements
+    // 맵에 key value 쌍을 저장할 때의 기본 동작은 copy이다.
+    myMap[1] = "One";
+    myMap[2] = "Two";
+    myMap.insert({3, "Three"});
+
+    // Access elements
+    // 맵에서 key value pair를 가져올 때도 별도의 참조(&) 타입으로 가져오지 않으면
+    // copy 동작으로 키값 쌍을 가져오게 된다.
+    std::cout << "Key 1: " << myMap[1] << '\n';
+    std::cout << "Key 3: " << myMap.at(3) << '\n';
+
+    // Check if a key exists
+    if (myMap.count(2)) {
+        std::cout << "Key 2 exists.\n";
+    }
+
+    // Iterate over the map
+    // 이렇게 & 타입을 이용할 경우, 복사가 아니라 참조로써 맵 내 요소들에 접근할 수 있다.
+    for (const auto& pair : myMap) {
+        std::cout << "Key: " << pair.first << ", Value: " << pair.second << '\n';
+    }
+
+    // Erase an element
+    myMap.erase(2);
+
+    // Print size
+    std::cout << "Size: " << myMap.size() << '\n';
+
+    return 0;
+}
+
+//------------- 복사 없이 맵에 요소 등록하기.
+
+// 맵에 사용자 타입 객체(사용자가 정의한 클래스)를 복사 없이 담고 싶다면 두 가지 방법이 있다.
+
+// 첫째는 객체에 이동 생성자를 정의해 둔 후, std::move(value_);로 키값 쌍을 등록하는 것이다.
+// 단 이 방법이 통하려면, 공통적으로 '이동 생성자'가 정확하게 정의되어야 한다!!
+#include <unordered_map>
+#include <string>
+#include <iostream>
+
+struct Data {
+    std::string value;
+    Data(const std::string& val) : value(val) {}
+};
+
+int main() {
+    std::unordered_map<int, Data> myMap;
+
+    Data d("example");
+    myMap[1] = std::move(d);  // The value `d` is moved into the map.
+
+    std::cout << myMap[1].value << '\n';  // Output: example
+    std::cout << d.value << '\n';         // Output: (empty string, as `d` has been moved)
+}
+
+// 둘째는 map.emplace()를 이용하는 것이다.
+// 하지만 이 경우에도 '이동 생성지'가 정의돼 있지 않을 경우, emplace()는 내부적으로
+// 임시 객체를 만든 후 그 객체를 맵 안으로 복사하는 방식으로 작동하기 때문에, 제대로된
+// non-copy 삽입이 되게 하려면 결국 이동 생성자를 정의해야 한다.
+// 19번 팁과 같이 이동 생성자를 정의할 수 없는 경우에는 하는 수 없이
+// 값 타입의 포인터를 맵에 저장하는 방식으로 하는 것 외에는 다른 방법이 별로 없다.
+#include <unordered_map>
+#include <string>
+#include <iostream>
+
+struct Data {
+    std::string value;
+    Data(const std::string& val) : value(val) {}
+};
+
+int main() {
+    std::unordered_map<int, Data> myMap;
+
+    myMap.emplace(1, "example");  // Directly constructs the value in place.
+
+    std::cout << myMap[1].value << '\n';  // Output: example
+}
+```
+<br><br/>
+20. C++에서도 Circular Referencing 또는 Circular Dependencies 문제가 발생한다.
+    <br> 본 프로젝트에서는 이러한 문제가 Session과 Server 객체를 정의하면서 발생하였다.
+    <br> Session 객체는 생성자에서 Server 객체의 참조를 인자로 받고, Server 객체는 멤버 std::unordered_map에서 value 타입으로 Session 객체의 포인터를 받아들이게 정의 돼 있기 때문이다.
+    <br> 이 문제는 forward declaration 으로 해결할 수 있다.
+    <br> 단, 이것은 Session과 Server가 서로의 참조 또는 포인터만을 멤버로 가지고 있기 때문에 가능한 방법이며, 참조나 포인터가 아닌 경우에 어떤 동작을 하게 될지는 아직 테스트 하지 않았다.
+```c++
+// Server.h 다. Session 객체를 먼저 선언해줌으로써 순환 참조 문제를 방지한다.
+class Session;
+class ContentsStorage;
+class SntpRefTimeProvider;
+
+class Server {
+public:
+  explicit Server(
+    boost::asio::io_context& inputIoContext,
+    ContentsStorage& inputContentsStorage,
+    const std::string &inputStorage,
+    SntpRefTimeProvider& inputSntpRefTimeProvider
+  );
+  ~Server();
+
+  // ... public member functions ...
+
+private:
+  // ... private members ...
+  std::unordered_map<std::string, std::shared_ptr<Session>> sessions;
+};
+
+//----------------------------------
+
+// Session.h 다. 여기에서도 Server 클래스를 먼저 선언해줌으로써 순환 참조를 방지한다.
+class Server;
+class ContentsStorage;
+class SntpRefTimeProvider;
+
+class Session {
+public:
+  explicit Session(
+    boost::asio::io_context& inputIoContext,
+    boost::asio::ip::tcp::socket& inputSocket,
+    std::string inputSessionId,
+    Server& inputServer,
+    ContentsStorage& inputContentsStorage,
+    SntpRefTimeProvider& inputSntpRefTimeProvider
+  );
+  ~Session();
+
+  // ... public member functions ...
+
+private:
+  // ... private members ...
+  Server& parentServer;
+};
+
+#endif //SESSION_H
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
