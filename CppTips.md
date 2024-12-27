@@ -471,7 +471,7 @@ private:
     <br> C++에서는 함수 범위를 벗어난 객체는 자동으로 회수 처리 되기 때문이다.
     <br> 대신 아래와 같은 방법을 사용하라.
 ```c++
-// RVO(return by value) : 값을 반환하라. 대신 복사는 피할 수 없다.
+// 값을 반환하라. 대신 복사는 피할 수 없다.
 int getLocalValue() {
     int localVar = 42;
     return localVar; // The value is safely copied or moved.
