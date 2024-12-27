@@ -72,6 +72,8 @@ int main() {
     contentsStorage.init();
 
     Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider);
+    // server.start(); is blocking function.
+    // if server stop with uncaught exception, the following shutting down logic will never work.
     server.start();
 
     // Wait for shutdown to complete

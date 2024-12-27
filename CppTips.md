@@ -739,10 +739,78 @@ private:
 };
 
 #endif //SESSION_H
-
 ```
+<br><br/>
+21. Graceful shutting down logic 구현이 필수적이다.
+    <br> 본 프로젝트는 RTSP 스트리밍 서버이기 때문에 소켓, 파일 핸들러, 스레드 풀, boost.asio io_context 등의 자원을 서버 종료시 모두 회수해야 한다.
+    <br> 서버 종료 시 자원 회수 로직은 main.cpp 에 구현돼 있으며, Future, Boost.asio signal handling, try-catch exception handling 이 사용되었다.
+    <br> 자세한 코드와 구현 시 고려한 사항은 main.cpp를 참고한다.
+    <br> 특정 상황에서 반드시 실행돼야 하는 로직을 구현할 때는, 중간의 blocking 함수가 예외를 던지는지 유심히 관찰하자. 
+```c++
+// 아래는 main.cpp의 일부이다.
+// 여기서 특히 주의해야 할 점은, 셧다운 로직을 실행시키기 이전에 어딘가 blocking 함수에서 예외를 던지며
+// main.cpp가 종료돼 버릴 경우, 이어지는 셧다운 로직이 전부 실행되지 못한 채 프로그램이 종료 돼 버린다는 점이다.
+using boost::asio::ip::tcp;
 
+int main() {
+    // ...
+    // 여기서 boost.asio io_context를 여러 개의 스레드에서 run(); 해주는 워커 스레드 풀을 만든다.
+    logger->warning("Made io_cotext.run() worker thread pool with thread cnt: " + std::to_string(threadCnt));
 
+    // main.cpp가 사용자의 종료 명령(컨트롤 + C 키 누름) 종료 되면 안되므로,
+    // exit 핸들러 역할을 하는 boost asio signal set이 종료되는 것을 알려주는 콜백을 만들어준다.
+    std::promise<void> shutdownPromise;
+    auto shutdownFuture = shutdownPromise.get_future();
+
+    // 사용자가 종료 명령을 내리면, 여기에서 io_context를 바로 정지 시킨다.
+    boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
+    signals.async_wait([&](const boost::system::error_code& ec, int signal) {
+        try {
+            if (!ec) {
+                std::cout << "\n\t>>> Received signal: " << signal << ". Stopping server...\n";
+                workGuard.reset();
+                if (!io_context.stopped()) {
+                    io_context.stop();
+                    std::cout << "\t>>> io_context stopped.\n";
+                }
+
+                // io_context 정지 후, 콜백에 값을 전달한다.
+                shutdownPromise.set_value();
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Exception during signal handling: " << e.what() << std::endl;
+            shutdownPromise.set_exception(std::make_exception_ptr(e));
+        }
+    });
+
+    // ... init several componants ...
+
+    Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider);
+    // Server 클래스 내부의 start() 부분에서 try-catch 등의 방법으로 예외를 잡지 않을 경우,
+    // main.cpp가 바로 종료돼 버리면서 이어지는 셧다운 로직을 실행할 수 없게 된다.
+    // 예외를 여기에서 바로 잡든지, 아니면 server.start(); 함수 내부에서 잡든지 해야 한다.
+    server.start();
+
+    // 워커 스레드 풀 내의 스레드들이 전부 io_context.run();을 종료할 때까지 기다린다.
+    shutdownFuture.wait();
+
+    // 워커 스레드 풀 내의 모든 스레드들을 모두 join 시켜서 회수한다.
+    // 다른 셧다운 로직이 추가될 수 있다.
+    for (auto& thread : threadVec) {
+        if (thread.joinable()) {
+            std::cout << "Joining io_context.run() worker thread " << thread.get_id() << "...\n";
+            thread.join();
+        } else {
+            std::cout << "Cannot join thread : " << thread.get_id() << "\n";
+        }
+    }
+
+    logger->warning("=================================================================");
+    logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server SHUTS DOWN gracefully.");
+    logger->warning("=================================================================");
+    return 0;
+}
+```
 
 
 
