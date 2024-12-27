@@ -7,6 +7,9 @@
 #include <cstdint> // For int64_t
 
 namespace C {
+    // version
+    const std::string VER = "2.0.0";
+
     // class names
     constexpr char MAIN[] = "main";
     constexpr char SNTP_REF_TIME_PROVIDER[] = "SntpRefTimeProvider";

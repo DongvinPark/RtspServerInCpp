@@ -588,6 +588,13 @@ private:
 19. java의 HashMap<K,V>는 C++의 std::unordered_map<K,V>로 대체할 수 있다.
     <br> std::vector 와 함께 매우 자주 사용되는 객체이므로 주요 멤버 함수의 특징을 간략하게 정리하였다.
 ```c++
+// 요약하면 아래와 같다.
+//Summary of Behaviors
+//myMap[key] = value	             >> Copies value into the map..
+//myMap.insert({key, value})	     >> Copies value into the map.
+//myMap[key] = std::move(value)	     >> Moves value into the map only when move constructor was difined
+//myMap.emplace(key, value)	     >> Constructs value in place (no copies) only when move constructor was defined
+
 #include <iostream>
 #include <unordered_map>
 #include <string>

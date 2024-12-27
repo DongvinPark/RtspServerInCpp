@@ -21,10 +21,13 @@ void ContentsStorage::init() {
     readers.try_emplace(contentTitle, FileReader(contentPath));
   }
 
+  std::string availableContents = ">> ";
   for (auto& kvPair : readers) {
     kvPair.second.init();
+    availableContents += kvPair.first + ", ";
   }
 
+  logger->warning("Available contents: " + availableContents);
 }
 
 FileReader & ContentsStorage::getCid(std::string cid) {

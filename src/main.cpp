@@ -7,15 +7,17 @@
 #include "../include/Session.h"
 #include "../include/Server.h"
 
+// Version History
+// VER          Date            Changes
+// 1.0.0        2024.12.27      Util, DTO, and FileRaader Initialized
+
 using boost::asio::ip::tcp;
 
-boost::asio::io_context& returnIOContext(
-    boost::asio::io_context& ioContext
-) {
-    return ioContext;
-}
-
 int main() {
+    std::shared_ptr<Logger> logger = Logger::getLogger(C::MAIN);
+    logger->warning("=================================================================");
+    logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server STARTS. ver: " + C::VER);
+    logger->warning("=================================================================");
 
     // make worker thread pool for boost.asio io_context
     boost::asio::io_context io_context;

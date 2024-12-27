@@ -338,7 +338,7 @@ void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMe
   std::ranges::sort(lenList.begin(), lenList.end());
   int64_t min = lenList[0];
   int64_t max = lenList[lenList.size() - 1];
-  logger->info3(
+  logger->info(
     "Dongvin, id : " + contentTitle + ", audio (min, max)=("
     + std::to_string(min) + "," + std::to_string(max) + ")"
   );
@@ -450,7 +450,7 @@ void FileReader::showVideoMinMaxSize(
   std::ranges::sort(lenList.begin(), lenList.end());
   int64_t min = lenList[0];
   int64_t max = lenList[lenList.size() - 1];
-  logger->info3(
+  logger->info(
     "Dongvin, id : " + contentTitle + ", memberId: " + std::to_string(memberId)
     + ", video (min, max)=(" + std::to_string(min) + "," + std::to_string(max) + ")"
   );
