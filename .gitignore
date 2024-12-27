@@ -6,6 +6,9 @@ cmake-build-debug/
 # Visual Studio
 .vs
 
+# Window Builds
+out/
+
 # Xcode
 XcodeProject/
 .DS_Store
