@@ -1,5 +1,7 @@
 #include "../include/Server.h"
 
+#include <sstream>
+
 #include "../constants/Util.h"
 #include "../constants/C.h"
 
@@ -29,25 +31,31 @@ void Server::start() {
     io_context, tcp::endpoint(tcp::v4(), C::RTSP_RTP_TCP_PORT)
   );
 
-  while (true) {
-    tcp::socket socket(io_context);
-    acceptor.accept(socket);
-    std::string sessionId = getSessionId();
+  try {
+    while (true) {
+      tcp::socket socket(io_context);
+      acceptor.accept(socket);
+      std::string sessionId = getSessionId();
 
-    logger->warning(
-      "Dongvin, new client arrives, id: " + sessionId
-      + ", total number of clients: " + std::to_string(sessions.size())
-    );
+      logger->warning(
+        "Dongvin, new client arrives, id: " + sessionId
+        + ", total number of clients: " + std::to_string(sessions.size())
+      );
 
-    // makes session and starts it.
-    std::shared_ptr<Session> sessionPtr = std::make_shared<Session>(
-      io_context, socket, sessionId,
-      *this, contentsStorage, sntpTimeProvider
-    );
-    sessionPtr->start();
+      // makes session and starts it.
+      std::shared_ptr<Session> sessionPtr = std::make_shared<Session>(
+        io_context, socket, sessionId,
+        *this, contentsStorage, sntpTimeProvider
+      );
+      sessionPtr->start();
 
-    // register session pointer at session map
-    sessions.insert_or_assign(sessionId, sessionPtr);
+      // register session pointer at session map
+      sessions.insert_or_assign(sessionId, sessionPtr);
+    }
+  } catch (const std::exception& e) {
+    std::ostringstream oss;
+    oss << "Server stops with exception : " << e.what();
+    logger->severe(oss.str());
   }
 }
 

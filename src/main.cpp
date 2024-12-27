@@ -1,4 +1,10 @@
 #include <boost/asio.hpp>
+#include <boost/asio/signal_set.hpp>
+#include <csignal> // for signal event handling
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <future> // For std::promise and std::future
 
 #include "../include/Logger.h"
 #include "../constants/C.h"
@@ -26,14 +32,41 @@ int main() {
     unsigned int threadCnt = std::thread::hardware_concurrency();
     for (int i = 0; i < threadCnt; ++i) {
         threadVec.emplace_back(
-            [&io_context]() {io_context.run(); }
+            [&io_context]() {
+                io_context.run();
+            }
         );
     }
+    logger->warning("Made io_cotext.run() worker thread pool with thread cnt: " + std::to_string(threadCnt));
+
+    // used std::promise to synchronize the shutdown process
+    std::promise<void> shutdownPromise;
+    auto shutdownFuture = shutdownPromise.get_future();
+
+    // handle exit signal using boost::asio::signal_set
+    boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
+    signals.async_wait([&](const boost::system::error_code& ec, int signal) {
+        try {
+            if (!ec) {
+                std::cout << "\n\t>>> Received signal: " << signal << ". Stopping server...\n";
+                workGuard.reset();
+                if (!io_context.stopped()) {
+                    io_context.stop();
+                    std::cout << "\t>>> io_context stopped.\n";
+                }
+
+                shutdownPromise.set_value();
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Exception during signal handling: " << e.what() << std::endl;
+            shutdownPromise.set_exception(std::make_exception_ptr(e));
+        }
+    });
 
     SntpRefTimeProvider sntpRefTimeProvider(io_context);
 
-    //std::string contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
-    std::string contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
+    std::string contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
+    //std::string contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
 
     ContentsStorage contentsStorage(contentsRootPath);
     contentsStorage.init();
@@ -41,6 +74,22 @@ int main() {
     Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider);
     server.start();
 
+    // Wait for shutdown to complete
+    shutdownFuture.wait();
+
+    // do cleaning before shutting down.
+    for (auto& thread : threadVec) {
+        if (thread.joinable()) {
+            std::cout << "Joining io_context.run() worker thread " << thread.get_id() << "...\n";
+            thread.join();
+        } else {
+            std::cout << "Cannot join thread : " << thread.get_id() << "\n";
+        }
+    }
+
+    logger->warning("=================================================================");
+    logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server SHUTS DOWN gracefully.");
+    logger->warning("=================================================================");
     return 0;
 }
 /*
@@ -79,7 +128,7 @@ auto logger = Logger::getLogger(C::MAIN);
     std::cout << "buffer.toString() result : " << buffer.toString() << "\n";
 
     std::cout << "AudioSample Test Start!!\n";
-    std::vector<unsigned char> audioData = {'A', 'u', 'd'};
+    std::vector<+unsigned char> audioData = {'A', 'u', 'd'};
     AudioSample aSample(audioData, audioData.size());
     std::cout << "AudioSample toString : " << aSample.toString() << "\n";
 
