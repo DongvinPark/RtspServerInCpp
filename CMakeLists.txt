@@ -75,6 +75,12 @@ add_executable(AlphaStreamer3.1Cpp
         src/server/ContentsStorage.cpp
         include/BlockingQueue.h
         src/util/BlockingQueue.cpp
+        include/RtspHandler.h
+        src/service/RtspHandler.cpp
+        include/RtpHandler.h
+        src/service/RtpHandler.cpp
+        include/AcsHandler.h
+        src/service/AcsHandler.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows

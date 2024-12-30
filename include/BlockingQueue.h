@@ -1,5 +1,5 @@
-#ifndef LINKEDBLOCKINGQUEUE_H
-#define LINKEDBLOCKINGQUEUE_H
+#ifndef BLOCKINGQUEUE_H
+#define BLOCKINGQUEUE_H
 
 #include <deque>
 #include <mutex>
@@ -9,7 +9,7 @@
 template <typename T>
 class BlockingQueue {
 public:
-  BlockingQueue(std::nullopt_t) {};
+  explicit BlockingQueue() {};
   explicit BlockingQueue(size_t maxCapacity);
 
   void put(const T& item);
@@ -28,4 +28,4 @@ private:
   bool shutdownFlag = false;
 };
 
-#endif //LINKEDBLOCKINGQUEUE_H
+#endif //BLOCKINGQUEUE_H

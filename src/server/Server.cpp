@@ -4,6 +4,9 @@
 
 #include "../constants/Util.h"
 #include "../constants/C.h"
+#include "../include/AcsHandler.h"
+#include "../include/RtspHandler.h"
+#include "../include/RtpHandler.h"
 
 using boost::asio::ip::tcp;
 
@@ -47,6 +50,12 @@ void Server::start() {
         io_context, socket, sessionId,
         *this, contentsStorage, sntpTimeProvider
       );
+
+      // used weak pointer to break the circular dependencies
+      auto inputAcsHandlerPtr = std::make_shared<AcsHandler>(sessionId, sessionPtr);
+      auto rtspHandlerPtr = std::make_shared<RtspHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
+      auto rtpHandlerPtr = std::make_shared<RtpHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
+
       sessionPtr->start();
 
       // register session pointer at session map

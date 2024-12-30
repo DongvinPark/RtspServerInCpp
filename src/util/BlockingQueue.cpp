@@ -1,12 +1,5 @@
 # include <../include/BlockingQueue.h>
 
-/*
-  std::deque<T> queue;
-  mutable std::mutex mutex;
-  std::condition_variable conditionVariable;
-  std::optional<size_t> capacity;
-  bool shutdownFlag = false;
- */
 template<typename T>
 BlockingQueue<T>::BlockingQueue(size_t maxCapacity) : capacity(maxCapacity) {}
 

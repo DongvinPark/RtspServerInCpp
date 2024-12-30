@@ -811,6 +811,55 @@ int main() {
     return 0;
 }
 ```
+<br><br/>
+22. 클래스의 멤버 간 Circular Dependencies 문제가 복잡하게 얽혀 있을 때는 클래스 멤버들을 전부 pointer로 만드는 게 가장 간단한 해결책이다.  
+    <br> 스마트 포인터를 만들 때는 full definition을 필요로 하지 않기 때문이다.
+    <br> 그러나, 여기에도 주의사항이 있다.
+    <br> 포인터를 이용해서 서로 참조할 때, 특히 서로 다른 클래스 두 개가 std::shared_ptr 로 서로 참조하고 있을 때는 포인터를 썼음에도 불구하고 circular dependencies 문제가 똑같이 발생하면서 reference count가 절대 0으로 떨어지지 않기 때문에 결과적으로 memory leak이 발생한다.
+    <br> 이 때는 한쪽을 std::weak_ptr 로 만들어서 이러한 연결고리를 끊어야 한다.
+    <br> 그리고 포인터를 이용해서 참조 관계를 설정할 때는, .h 파일에 대응하는 .cpp 파일도 만들어서 구현을 마무리 지어 놔야 한다. 그렇지 않을 경우, 'undefined reference to ...'라는 컴파일 타임 에러 메시지를 마주치게 된다.
+    <br> 마지막으로, 포인터 멤버를 초기화 할 때는 생성자 내부에서 하기보다는 다른 곳에서 하는 것을 추천한다. 직접 해보니 this 포인터를 가지고 std::make_shared를 호출하는 것이 허용되지 않았기 때문이다.
+```c++
+// 본 프로젝트의 Session, AcsHandler, RtspHandler, RtpHandler가 이러한 관계에 있다.
+// Session은 AcsHandler, RtspHandler, RtpHandler를 멤버 클래스로 두고 있고,
+// AcsHandler, RtspHandler, RtpHandler는 Session의 포인터를 가지고 Session 내의 함수들을 호출해야 한다.
+// 결과적으로 멤버 클래스가 부모 클래스를 참조해야 하는 상황인데, 이때는 멤버 클래스가 부모 포인터를 std::weak_ptr로서 참조해야 한다.
+// std::weak_ptr는 소유권이 없기 때문에 reference count를 증가시키지 않고, 결과적으로 memory leak을 예방할 수 있다.
+// std::weak_ptr는 circular dependencies를 끊고, memory leack를 예방하기 위한 용도로 사용한다.
+
+// 구체적인 코드 구현은 Server.cpp의 start() 함수 내부, AcsHandler의 생성자, RtspHandler의 생성자, RtpHandler의 생성자를 참고한다.
+
+// 일반적으로 상위 클래스는 멤버 클래스들에 대한 std::sharead_ptr를 가지고 있고, 멤버 클래스들은 상위 클래스에 대한 std::weak_ptr를 가지고 있게 구현한다. 
+
+// std::weak_ptr는 보통 Observer 패턴, 캐싱 관리, 순환 참조 해제 등에 사용된다.
+
+// ------- 아래는 std::weak_ptr의 간단한 사용 예시다. -------
+// expired() 함수와, lock() 함수를 써서 std::weak_ptr에 대한 안전한 접근을 한다.
+#include <iostream>
+#include <memory>
+
+int main() {
+    std::shared_ptr<int> shared = std::make_shared<int>(10);
+    std::weak_ptr<int> weak = shared; // Non-owning reference
+
+    if (auto locked = weak.lock()) { // Check if the object still exists
+        std::cout << "Value: " << *locked << "\n";
+    } else {
+        std::cout << "The object no longer exists.\n";
+    }
+
+    shared.reset(); // Destroy the managed object
+
+    if (auto locked = weak.lock()) {
+        std::cout << "Value: " << *locked << "\n";
+    } else {
+        std::cout << "The object no longer exists.\n";
+    }
+
+    return 0;
+}
+
+```
 
 
 

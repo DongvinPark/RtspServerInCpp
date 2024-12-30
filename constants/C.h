@@ -22,6 +22,11 @@ namespace C {
     // General constants
     constexpr char VERSION[] = "1.0.4";
     constexpr int SESSION_KEY_BIT_SIZE = 64;
+    constexpr int SESSION_CLOSE_TIMEOUT_MS = 10*1000;
+    constexpr int DELAY_BEFORE_RTP_START = 500;
+    constexpr int SOCKET_TIMEOUT_MS = 10*1000;
+    const std::string EMPTY_STRING = "";
+    constexpr int ZERO = 0;
 
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
     constexpr int RTP_HEADER_LEN = 12; // Refer to https://datatracker.ietf.org/doc/html/rfc7798

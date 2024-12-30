@@ -15,10 +15,9 @@ Session::Session(
     sessionId(inputSessionId),
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
-    sntpRefTimeProvider(inputSntpRefTimeProvider){}
+    sntpRefTimeProvider(inputSntpRefTimeProvider) {}
 
-Session::~Session() {
-}
+Session::~Session() {}
 
 void Session::start() {
 
