@@ -73,6 +73,8 @@ add_executable(AlphaStreamer3.1Cpp
         src/service/Session.cpp
         include/ContentsStorage.h
         src/server/ContentsStorage.cpp
+        include/BlockingQueue.h
+        src/util/BlockingQueue.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows
