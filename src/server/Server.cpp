@@ -79,7 +79,7 @@ ContentsStorage & Server::getContentsStorage() {
 void Server::shutdownServer() {
   // shutdown all sessions.
   for (auto& kvPair : sessions) {
-    kvPair.second->shutdown();
+    kvPair.second->shutdownSession();
   }
   sessions.clear();
   contentsStorage.shutdown();

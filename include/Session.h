@@ -15,6 +15,7 @@
 #include "../include/AcsHandler.h"
 #include "../include/RtspHandler.h"
 #include "../include/RtpHandler.h"
+#include "../include/RxBitrate.h"
 
 // forward declaration of Server, ContentsStorage, and SntpRefTimeProvider
 // to prevent circular referencing
@@ -58,10 +59,79 @@ public:
 
   void start();
 
-  void shutdown();
+  std::string getSessionId();
+  std::string getClientRemoteAddress();
+  int64_t getSessionInitTimeSecUtc() const;
+  int64_t getSessionDestroyTimeSecUtc() const;
+
+  std::string getDeviceModelNo();
+  void updateDeviceModelNo(std::string name);
+  std::string getManufacturer();
+  void updateManufacturer(std::string inputManufacturer);
+
+  bool getPauseStatus();
+  void updatePauseStatus(bool inputPausedStatus);
+
+  std::string getContentTitle();
+  void updateContentTitleOfCurSession(std::string inputContentTitle);
+
+  int64_t getPlayTimeDurationMillis();
+  void updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis);
+
+  void callStopLoaders();
+
+  int get_mbpsCurBitrate() const;
+  void set_kbpsBitrate(int input_kbps);
+  void add_kbpsBitrateValue(int input_kbps);
+  int get_kbpsCurBitrate();
+  std::unordered_map<int64_t, int>& getUtiTimeSecBitSizeMap();
+  void addRxBitrate(RxBitrate& record);
+  BlockingQueue<Buffer>& getRxBitrateQueue();
+  std::vector<int>& get_mbpsTypeList();
+  void set_mbpsTypeList(std::vector<int> input_mbpsTypeList);
+
+  int getNumberOfCamDirectories() const;
+  int getRefVideoSampleCnt() const;
+  std::shared_ptr<RtpHandler> getRtpHandlerPtr();
+
+  std::string getContentRootPath() const;
+  int getCamId() const;
+  HybridMetaMapType& getHybridMetaMap();
+
+  void shutdownSession();
+
+  // for rtsp messages
+  void handleRtspRequest(Buffer& buffer);
+  bool onCid(std::string inputCid);
+  void onUserRequestingPlayTime(std::vector<float> playTimeSec); // TODO: need to test at multi platform.
+
+  void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& switchingRst, bool neetToLimitSample);
+  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& camChangeRsp);
+
+  void onPlayStart();
+  void onTeardown();
+
+  void onTransmitVideoSample(std::vector<Buffer>& rtps);
+  void onTransmitAudioSample(std::vector<Buffer>& rtps);
+
+  void onPlayDonw(int streamId);
+
+  void queueTx(Buffer& buffer);
+
+  void recorrdBitrateTestResult();
 
 private:
+  void closeHandlers();
+
+  bool isPlayDone(int streamId);
+  void transmit(Buffer& buffer);
+
+  void receive(boost::asio::ip::tcp::socket& socket, Buffer& buffer);
+
+  void takeTxq(Buffer& buffer);
+
   std::shared_ptr<Logger> logger;
+  std::mutex lock;
   boost::asio::io_context& io_context;
   boost::asio::ip::tcp::socket& socket;
   std::string sessionId;

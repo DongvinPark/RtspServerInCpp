@@ -1,6 +1,8 @@
 #include "../include/Session.h"
 #include "../constants/C.h"
 
+#include <iostream>
+
 Session::Session(
   boost::asio::io_context & inputIoContext,
   boost::asio::ip::tcp::socket & inputSocket,
@@ -15,7 +17,13 @@ Session::Session(
     sessionId(inputSessionId),
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
-    sntpRefTimeProvider(inputSntpRefTimeProvider) {}
+    sntpRefTimeProvider(inputSntpRefTimeProvider) {
+  const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
+  sessionInitTimeSecUtc = sessionInitTime;
+
+  auto clientIpAddressEndpoint = socket.local_endpoint();
+  clientRemoteAddress = clientIpAddressEndpoint.address().to_string();
+}
 
 Session::~Session() {}
 
@@ -23,6 +31,6 @@ void Session::start() {
 
 }
 
-void Session::shutdown() {
+void Session::shutdownSession() {
 
 }
