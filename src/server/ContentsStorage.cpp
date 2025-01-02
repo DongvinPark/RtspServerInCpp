@@ -13,7 +13,9 @@ ContentsStorage::~ContentsStorage() {
 void ContentsStorage::init() {
   std::vector<std::filesystem::path> files;
   for (const auto entry : std::filesystem::directory_iterator(parent)) {
-    files.push_back(entry.path());
+    if (entry.is_directory()) {
+      files.push_back(entry.path());
+    }
   }
 
   for (const std::filesystem::path contentPath : files) {
