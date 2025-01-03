@@ -65,8 +65,13 @@ int main() {
 
     SntpRefTimeProvider sntpRefTimeProvider(io_context);
 
-    //std::string contentsRootPath = "/mnt/c/dev/streaming-contents"; // for WSL
-    std::string contentsRootPath = "C:\\dev\\streaming-contents"; // for native Windows
+    // for WSL
+    std::string contentsRootPath = "/mnt/c/dev/streaming-contents";
+
+    // for native Windows
+    //std::string contentsRootPath = "C:\\dev\\streaming-contents";
+
+    // for M chip MacOS
     //std::string contentsRootPath = "/Users/dongvin99/Documents/for Mac Studio Dev Contents BackUP/streaming_contents_3.0";
 
     ContentsStorage contentsStorage(contentsRootPath);
