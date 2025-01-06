@@ -101,34 +101,34 @@ public:
   void shutdownSession();
 
   // for rtsp messages
-  void handleRtspRequest(Buffer& buffer);
+  void handleRtspRequest(std::unique_ptr<Buffer> bufPtr);
   bool onCid(std::string inputCid);
   void onUserRequestingPlayTime(std::vector<float> playTimeSec); // TODO: need to test at multi platform.
 
-  void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& switchingRst, bool neetToLimitSample);
-  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& camChangeRsp);
+  void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> switchingRspPtr, bool neetToLimitSample);
+  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> camChangeRspPtr);
 
   void onPlayStart();
   void onTeardown();
 
-  void onTransmitVideoSample(std::vector<Buffer>& rtps);
-  void onTransmitAudioSample(std::vector<Buffer>& rtps);
+  void onTransmitVideoSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs);
+  void onTransmitAudioSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs);
 
-  void onPlayDonw(int streamId);
+  void onPlayDone(int streamId);
 
-  void queueTx(Buffer& buffer);
+  void queueTx(std::unique_ptr<Buffer> bufPtr);
 
-  void recorrdBitrateTestResult();
+  void recordBitrateTestResult();
 
 private:
   void closeHandlers();
 
   bool isPlayDone(int streamId);
-  void transmit(Buffer& buffer);
+  void transmit(std::unique_ptr<Buffer> bufPtr);
 
-  void receive(boost::asio::ip::tcp::socket& socket, Buffer& buffer);
+  std::unique_ptr<Buffer> receive(boost::asio::ip::tcp::socket& socket);
 
-  void takeTxq(Buffer& buffer);
+  std::unique_ptr<Buffer> takeTxq();
 
   std::shared_ptr<Logger> logger;
   std::mutex lock;
@@ -139,7 +139,7 @@ private:
   ContentsStorage& contentsStorage;
   SntpRefTimeProvider& sntpRefTimeProvider;
   std::string cid = C::EMPTY_STRING;
-  BlockingQueue<Buffer> txQ;
+  BlockingQueue<std::unique_ptr<Buffer>> txQ;
 
   // members need to be iupdated after.
   std::shared_ptr<AcsHandler> acsHandlerPtr = nullptr;
