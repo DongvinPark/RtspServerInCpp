@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <set>
 #include <cstdint> // For int64_t
 
@@ -18,15 +19,18 @@ namespace C {
     constexpr char CONTENTS_STORAGE[] = "ContentsStorage";
     constexpr char SERVER[] = "Server";
     constexpr char SESSION[] = "Session";
+    constexpr char RTSP_HANDLER[] = "RtspHandler";
 
     // General constants
-    constexpr char VERSION[] = "1.0.4";
+    const std::string VERSION = "1.0.4";
+    const std::string MY_NAME = "alphaStreamer-3.1/" + VERSION;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
     constexpr int SESSION_CLOSE_TIMEOUT_MS = 10*1000;
     constexpr int DELAY_BEFORE_RTP_START = 500;
     constexpr int SOCKET_TIMEOUT_MS = 10*1000;
     const std::string EMPTY_STRING = "";
     constexpr int ZERO = 0;
+    constexpr int WRONG_SESSION_ID_TOLERANCE_CNT = 5;
 
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
     constexpr int RTP_HEADER_LEN = 12; // Refer to https://datatracker.ietf.org/doc/html/rfc7798
@@ -65,6 +69,18 @@ namespace C {
     constexpr char FRAME_COUNT_KEY[] = "framecount=";
     constexpr char MEDIA_INFO_KEY[] = "v=";
     constexpr char PLAY_TIME_KEY[] = "playtime=";
+
+    // RTSP
+    const std::vector<std::string> RTSP_METHOD_VECTOR = {
+        "DESCRIBE","SETUP","PLAY","PAUSE","TEARDOWN","SET_PARAMETER","OPTIONS" // !! "OPTIONS" must be the last.
+    };
+    const std::unordered_map<int, std::string> RTSP_STATUS_CODES_MAP = {
+        {200, "OK"},
+        {400, "Bad Request"},
+        {405, "Method Not Allowed"},
+        {454, "Session Not Found"},
+        {501, "Not Implemented"}
+    };
 
     // Adaptive bitrate
     constexpr char SWITCHING_KEY[] = "SwitchingInfo";
@@ -105,7 +121,6 @@ namespace C {
     const std::set<std::string> VIDEO_ID_SET = {
         "10", "11", "12", "13", "20", "21", "22", "23", "30", "31", "32", "33"
     };
-    constexpr char DEFAULT_EMPTY_STRING[] = "";
 
     // Pause Seek
     constexpr int RE_PAUSE_DELAY_TIME_SEC = 1;
