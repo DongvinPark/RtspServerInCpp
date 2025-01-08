@@ -28,6 +28,43 @@ Session::~Session() {
 }
 
 void Session::start() {
+  logger->info2("session id : " + sessionId + " starts.");
+
+  auto rxTask = [&](){
+    try {
+      while (true) {
+        std::unique_ptr<Buffer> bufferPtr = receive(socket);
+        handleRtspRequest(std::move(bufferPtr));
+      }
+    } catch (const std::exception & e) {
+      logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
+      recordBitrateTestResult();
+    }
+  };
+
+  auto txTask = [&](){
+    try {
+      while (true) {
+        std::unique_ptr<Buffer> bufferPtr = takeTxq();
+        if (bufferPtr == nullptr || bufferPtr->len == C::INVALID) break;
+        transmit(std::move(bufferPtr));
+        if (bufferPtr->afterTx != nullptr) bufferPtr->afterTx();
+      }
+    } catch (const std::exception & e) {
+      logger->severe("session " + sessionId + " failed. stop tx. exception : " + e.what());
+      recordBitrateTestResult();
+    }
+  };
+
+  // TODO : implement BitrateRecorderTimer Task using PeriodicTask
+
+  std::thread rxThread(rxTask);
+  std::thread txThread(txTask);
+
+  if (rxThread.joinable()) rxThread.join();
+  if (txThread.joinable()) txThread.join();
+
+
 }
 
 std::string Session::getSessionId() {
