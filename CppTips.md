@@ -858,9 +858,24 @@ int main() {
 
     return 0;
 }
-
 ```
-
+<br><br/>
+23. std::unique_ptr 은 복사가 불가능하다.
+    <br> 왜냐하면, 말 그대로 단 한 곳에서만 해당 포인터를 소유할 수 있기 때문이다.
+    <br> 따라서, std::unique_ptr를 함수 인자로 주고 받기 위해서는 std::move()를 써야 한다.
+```c++
+// 예를 들면 이런 식이다.
+auto rxTask = [&](){
+    try {
+      while (true) {
+        std::unique_ptr<Buffer> bufferPtr = receive(socket);
+        handleRtspRequest(std::move(bufferPtr));
+      }
+    } catch (const std::exception & e) {
+      // ...
+    }
+  };
+```
 
 
 
