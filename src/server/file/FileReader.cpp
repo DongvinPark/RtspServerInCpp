@@ -424,7 +424,7 @@ void FileReader::loadRtpMemberVideoMetaData(
   }// for
 
   /*
-  TODO : delete after completions of development
+  TODO : delete after development
   std::cout << "!!! vMetaData.size() = " << input2dMetaList.at(input2dMetaList.size()-1).size() << std::endl;
   std::vector<VideoSampleInfo>& resultInfoList = input2dMetaList.at(input2dMetaList.size()-1);
   VideoSampleInfo& first = resultInfoList.at(0);

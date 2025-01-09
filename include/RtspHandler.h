@@ -3,6 +3,7 @@
 
 #include "../include/Logger.h"
 #include "../constants/C.h"
+#include "../include/Buffer.h"
 
 class Session;
 class AcsHandler;
@@ -14,7 +15,12 @@ public:
   );
   ~RtspHandler();
 
+  void shutdown();
+  std::unique_ptr<Buffer> run(std::unique_ptr<Buffer> inputBufferPtr);
+  std::unique_ptr<Buffer> handleRtspRequest(std::string reqStr);
+
 private:
+
   std::shared_ptr<Logger> logger;
   std::weak_ptr<Session> parentSessionPtr;
   std::weak_ptr<AcsHandler> acsHandlerPtr;
