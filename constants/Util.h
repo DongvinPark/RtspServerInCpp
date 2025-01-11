@@ -5,12 +5,14 @@
 #include <sstream> // for std::ostringstream
 #include <stdexcept>
 #include <random>
-#include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <cstdint> // for int64_t
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <algorithm>
+#include <cctype>
 
 #include "../constants/C.h"
 #include "../include/Buffer.h"
@@ -102,6 +104,14 @@ namespace Util {
 		// add the last element
 		tokens.push_back(str.substr(start));
 		return tokens;
+	}
+
+	// delete the leading and trailing whitespace chars
+	inline std::string trim(const std::string& str) {
+		const size_t start = str.find_first_not_of(" \t\r\n");
+		if (start == std::string::npos) return "";
+		const size_t end = str.find_last_not_of(" \t\r\n");
+		return str.substr(start, end - start + 1);
 	}
 
 	inline std::string getNameOnly(const std::string& fileName) {

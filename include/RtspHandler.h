@@ -53,7 +53,7 @@ private:
   std::vector<float> findNormalPlayTime(std::vector<std::string> strings);
   std::string findDeviceModelName(std::vector<std::string> strings);
   std::string findManufacturer(std::vector<std::string> strings);
-  int findLatestReceivecSampleIdx(std::vector<std::string> strings, std::string filter);
+  int findLatestReceivedSampleIdx(std::vector<std::string> strings, std::string filter);
   bool isSeekRequest(std::vector<std::string> strings);
   bool isValidPlayTime(std::vector<float> ntpSec);
   std::string getContentsTitle(std::vector<std::string> urls);
