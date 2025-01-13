@@ -12,6 +12,10 @@
 
 class ReadInfo {
 public:
+  void setCurSampleNo(int idx);
+  bool isDone();
+  std::string toString();
+
   int startSampleNo = C::INVALID;
   int endSampleNo = C::INVALID;
   int curSampleNo = C::INVALID;
