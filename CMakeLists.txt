@@ -81,6 +81,8 @@ add_executable(AlphaStreamer3.1Cpp
         src/service/RtpHandler.cpp
         include/AcsHandler.h
         src/service/AcsHandler.cpp
+        include/ReadInfo.h
+        src/service/ReadInfo.cpp
 )
 
 # Link Boost libraries and platform-specific libraries only for Windows
