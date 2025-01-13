@@ -20,6 +20,7 @@ namespace C {
     constexpr char SERVER[] = "Server";
     constexpr char SESSION[] = "Session";
     constexpr char RTSP_HANDLER[] = "RtspHandler";
+    constexpr char ACS_HANDLER[] = "AcsHandler";
 
     // General constants
     const std::string VERSION = "1.0.4";

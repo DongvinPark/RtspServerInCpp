@@ -52,7 +52,7 @@ void Server::start() {
       );
 
       // used weak pointer to break the circular dependencies
-      auto inputAcsHandlerPtr = std::make_shared<AcsHandler>(sessionId, sessionPtr);
+      auto inputAcsHandlerPtr = std::make_shared<AcsHandler>(sessionId, sessionPtr, contentsStorage);
       auto rtspHandlerPtr = std::make_shared<RtspHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
       auto rtpHandlerPtr = std::make_shared<RtpHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
 
