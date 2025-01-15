@@ -49,8 +49,8 @@ namespace C {
     constexpr int RTSP_RTP_TCP_PORT = 8554;
 
     // Strings and MTU size
-    constexpr char CRLF[] = "\r\n";
-    constexpr char CRLF2[] = "\r\n\r\n";
+    const std::string CRLF = "\r\n";
+    const std::string CRLF2 = "\r\n\r\n";
     constexpr int MTU_SIZE = 1472; // UDP max payload size
     constexpr char DEFAULT_MEDIA_TYPE[] = "mp4";
     constexpr int DEFAULT_DIVIDE_NUM = 3;
@@ -167,6 +167,7 @@ namespace C {
     constexpr int VIEW_NUM_FACTOR = 1;
     constexpr char HYBRID_META_PAYLOAD_PREFIX[] = "local:";
     constexpr int HYBRID_META_FACTOR_FOR_AUDIO = -1;
+    const std::string DUMMY_CONTENT_BASE = "rtsp://0.0.0.0:0/test";
 
     // Inline methods
     inline uint8_t getAvptSampleQChannel(int vid) {

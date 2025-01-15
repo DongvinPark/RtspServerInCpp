@@ -876,6 +876,45 @@ auto rxTask = [&](){
     }
   };
 ```
+<br><br/>
+23. java의 Math.min(), max(), abs(), round() 등의 유틸은 C++에서는 아래와 같이 사용한다.
+    <br> java의 Math.round()는 반올림이다. 
+    <br> C++에서는 java보다 더 많은 수학 함수를 제공하지만, 함수별로 include 해야 하는 헤더가 다를 수 있다.
+```c++
+// Min, Max 찾기
+#include <algorithm>
+#include <iostream>
+
+int main() {
+    int a = 10, b = 20;
+    std::cout << "Min: " << std::min(a, b) << "\n"; // Outputs 10
+    std::cout << "Max: " << std::max(a, b) << "\n"; // Outputs 20
+    return 0;
+}
+
+// Abs, Round 하기
+#include <cmath>
+#include <iostream>
+
+int main() {
+    double x = -5.67;
+    std::cout << "Absolute: " << std::abs(x) << "\n"; // Outputs 5.67
+    std::cout << "Round: " << std::round(x) << "\n";  // Outputs -6
+    return 0;
+}
+
+
+// 제곱, 제곱근 구하기
+#include <cmath>
+#include <iostream>
+
+int main() {
+    double base = 3, exponent = 2;
+    std::cout << "Power: " << std::pow(base, exponent) << "\n"; // Outputs 9
+    std::cout << "Square root: " << std::sqrt(9) << "\n";       // Outputs 3
+    return 0;
+}
+```
 
 
 

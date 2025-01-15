@@ -47,7 +47,7 @@ public:
   std::vector<long> getTimestamp();
   int64_t getTimestamp0(int streamId);
   int64_t getUnitFrameCount(int streamId);
-  std::vector<int> getUnitFrameCount();
+  std::vector<int64_t> getUnitFrameCount();
   std::vector<std::string> getStreamUrls();
   void setStreamUrl(int streamId, std::string url);
   std::vector<int64_t> getPlayTimeUs();

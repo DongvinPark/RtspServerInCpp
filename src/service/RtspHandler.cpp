@@ -3,6 +3,9 @@
 #include "../../constants/Util.h"
 #include "../../include/Session.h"
 
+#include <cmath>
+#include <iostream>
+
 /*
   std::shared_ptr<Logger> logger;
   std::weak_ptr<Session> parentSessionPtr;
@@ -97,6 +100,7 @@ void RtspHandler::respondError(int error, std::string rtspMethod) {
 }
 
 void RtspHandler::respondPause(Buffer &buffer) {
+
 }
 
 std::string RtspHandler::findUserName(std::vector<std::string> strings) {
@@ -132,7 +136,62 @@ std::string RtspHandler::findContents(std::string line0) {
 }
 
 std::string RtspHandler::getMediaInfo(std::string fullCid) {
-  // TODO : need to declare AcsHandler.h first
+  if (auto handlerPtr = acsHandlerPtr.lock()) {
+
+    std::vector<int64_t> unitCnt = handlerPtr->getUnitFrameCount();
+    std::vector<int64_t> gop = handlerPtr->getGop();
+
+    std::string mediaInfo = handlerPtr->getMediaInfo();
+    std::vector<std::string> lines = Util::splitToVecByString(mediaInfo, C::CRLF);
+
+    for (int i = 0; i < lines.size(); ++i) {
+      std::string line = lines[i];
+      if (line.starts_with("c=")) {
+        lines[i] = "c=IN IP4 0.0.0.0"; // don't need to know ip addr of client
+      } else if (line.starts_with("a=control:")){
+        int trackId = std::stoi(Util::splitToVecBySingleChar(line, '=')[2]);
+
+        std::string track = "/trackID="+trackId;
+        lines[i] = "a=control:"+C::DUMMY_CONTENT_BASE+track;
+        if(trackId <= C::AUDIO_ID){
+          handlerPtr->setStreamUrl(trackId, fullCid+track);
+        }
+      } else if (line.starts_with("AS")){ // application specific for bandwidth.
+        lines[i] = C::EMPTY_STRING;
+      } else if (line.starts_with("a=tool:")) {
+        lines[i] = C::EMPTY_STRING;
+      } else if (line.starts_with("a=fmtp:")) {
+        if(Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).starts_with("97")){ // audio
+          // refer to Table 9 (streamType Values) in ISO/IEC 14496-1 (coding of audio-visual objects)
+          lines[i] +=";streamType=5";
+          lines[i] += ";ucnt="+unitCnt[1];
+        } else if (Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).starts_with("96")){ // video
+          // refer to Table 9 (streamType Values) in ISO/IEC 14496-1 (coding of audio-visual objects)
+          lines[i] +=";streamType=4";
+          lines[i] += ";dGop="+gop[0];
+          lines[i] += ";ucnt="+unitCnt[0];
+        }
+      } else if (line.starts_with("b=AS:")) {
+        // dongvin : 최초 재생 시 사용하게 될 bitrate를 기록해 둔다.
+        int kbps = std::stoi(Util::splitToVecBySingleChar(line, ':')[1] );
+        if (auto sessionPtr = parentSessionPtr.lock()) {
+          sessionPtr->add_kbpsBitrateValue(kbps);
+        }
+      }
+    }//for
+
+    std::string result = "";
+    for (std::string line : lines) {
+      if (line == C::EMPTY_STRING) {
+        continue;
+      }
+      result += line + C::CRLF;
+    }
+
+    return result;
+  } else {
+    return C::EMPTY_STRING;
+  }
 }
 
 int RtspHandler::findTrackId(std::string line0) {
@@ -255,7 +314,15 @@ bool RtspHandler::isSeekRequest(std::vector<std::string> strings) {
 }
 
 bool RtspHandler::isValidPlayTime(std::vector<float> ntpSec) {
-  // TODO : need declare AcsHandler.h first
+  if (auto acsHandler = acsHandlerPtr.lock()) {
+    std::vector<int64_t> playTimeUs = acsHandler->getPlayTimeUs();
+    int mediaPlayTimeMs = static_cast<int>(std::max(playTimeUs[0], playTimeUs[1])/1000);
+
+    return (static_cast<int>(ntpSec[0]*1000) < mediaPlayTimeMs) &&
+      (ntpSec[1] == -1  || ntpSec[1]*1000 < mediaPlayTimeMs);
+  } else {
+    return false;
+  }
 }
 
 std::string RtspHandler::getContentsTitle(std::vector<std::string> urls) {

@@ -80,7 +80,7 @@ int64_t AcsHandler::getTimestamp0(int streamId) {
 int64_t AcsHandler::getUnitFrameCount(int streamId) {
 }
 
-std::vector<int> AcsHandler::getUnitFrameCount() {
+std::vector<int64_t> AcsHandler::getUnitFrameCount() {
 }
 
 std::vector<std::string> AcsHandler::getStreamUrls() {
