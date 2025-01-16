@@ -76,31 +76,117 @@ void RtspHandler::respondPlay(
   Buffer &buffer,
   std::vector<int> seq,
   std::vector<int64_t> rtpTime,
-  std::vector<std::string> urls,
   std::string sessionId
 ) {
+  bool initResult = false;
+  int lastVideoSampleNo = C::UNSET;
+  int lastAudioSampleNo = C::UNSET;
+  std::string supportingBitrateType = C::EMPTY_STRING;
+  int numberOfCamDirectories = C::UNSET;
+  if (auto acsHandler = acsHandlerPtr.lock()) {
+    lastVideoSampleNo = acsHandler->getLastVideoSampleNumber();
+    lastAudioSampleNo = acsHandler->getLastAudioSampleNumber();
+    if (lastVideoSampleNo > C::ZERO && lastAudioSampleNo > C::ZERO) initResult = true;
+    else initResult = false;
+  }
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    supportingBitrateType = getSupportingBitrateTypes(sessionPtr->get_mbpsTypeList());
+    numberOfCamDirectories = sessionPtr->getNumberOfCamDirectories();
+    if (numberOfCamDirectories > C::ZERO) initResult = true;
+    else initResult = false;
+  }
+
+  std::string rsp;
+  if (initResult) {
+    rsp = "RTSP/1.0 200 OK" + C::CRLF +
+      "CSeq: " + std::to_string(cSeq) + C::CRLF +
+      "RTP-Info: " +
+
+      "url=" + C::DUMMY_CONTENT_BASE + "/trackID=0" + // front video
+      ";seq=" + std::to_string(static_cast<short>(seq[0])) +
+      ";rtptime=" + std::to_string(rtpTime[0]) +
+      ";lsnum=" + std::to_string(lastVideoSampleNo) +
+
+      ",url=" + C::DUMMY_CONTENT_BASE + "/trackID=1" + // audio
+      ";seq=" + std::to_string(static_cast<short>(seq[1])) +
+      ";rtptime=" + std::to_string(rtpTime[1]) +
+      ";lsnum=" + std::to_string(lastAudioSampleNo) +
+
+      ",url=" + C::DUMMY_CONTENT_BASE + "/trackID=2" + // member videos(ex : rear video)
+      ";seq=" + std::to_string(static_cast<short>(seq[0])) +
+      ";rtptime=" + std::to_string(rtpTime[0]) +
+      ";lsnum=" + std::to_string(lastVideoSampleNo) + C::CRLF +
+
+      "Server: " + C::MY_NAME + C::CRLF +
+      "Session: " + sessionId + C::CRLF +
+      "SupportingBitrate: " + supportingBitrateType + C::CRLF +
+      "CamDirectoryCnt: " + std::to_string(numberOfCamDirectories) + C::CRLF2;
+    const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+    buffer.updateBuf(response);
+  } else {
+    logger->severe("Dongvin, Failed to init Rtp-Info header for PLAY request");
+    respondError(buffer, 500, "PLAY");
+  }
 }
 
-void RtspHandler::respondPlayAfterPause(std::string sessionId) {
+void RtspHandler::respondPlayAfterPause(Buffer& buffer) {
+  std::string rsp = "RTSP/1.0 200 OK"+C::CRLF +
+            "CSeq: " + std::to_string(cSeq) + C::CRLF +
+            "Server: "+ C::MY_NAME + C::CRLF+
+            "Session: "+ sessionId + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
-void RtspHandler::respondSwitching(std::string sessionId) {
+void RtspHandler::respondSwitching(Buffer& buffer) {
+  std::string rsp = "RTSP/1.0 200 OK"+C::CRLF+
+                "CSeq: " + std::to_string(cSeq) + C::CRLF +
+                "Session: "+ sessionId + C::CRLF +
+                "Server: "+ C::MY_NAME + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
-void RtspHandler::respondCameraChange(std::string sessionId) {
+void RtspHandler::respondCameraChange(Buffer& buffer, int targetCamId) {
+  std::string rsp = "RTSP/1.0 200 OK"+C::CRLF+
+                "CSeq: " + std::to_string(cSeq) + C::CRLF +
+                "Session: "+ sessionId + C::CRLF +
+                C::CAM_CHANG_KEY + ": " + std::to_string(targetCamId) + C::CRLF +
+                "Server: "+ C::MY_NAME + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
-void RtspHandler::respondBitrateChange(std::string sessionId) {
+void RtspHandler::respondBitrateChange(Buffer& buffer) {
+  respondSwitching(buffer);
 }
 
-void RtspHandler::respondTeardown() {
+void RtspHandler::respondTeardown(Buffer& buffer) {
+  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
+            "CSeq: " + std::to_string(cSeq) + C::CRLF +
+            "Server: "+ C::MY_NAME + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
-void RtspHandler::respondError(int error, std::string rtspMethod) {
+void RtspHandler::respondError(Buffer& buffer, int error, std::string rtspMethod) {
+  std::string rsp = "RTSP/1.0 " + std::to_string(error) + " " + C::RTSP_STATUS_CODES_MAP.at(error) + C::CRLF +
+                "CSeq: " + std::to_string(cSeq) + C::CRLF +
+                "Server: " + C::MY_NAME + C::CRLF2;
+  logger->warning(
+    "Dongvin, session id:"+ sessionId +
+    ", send error (" + std::to_string(error) + ") response for " + rtspMethod
+    );
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
 void RtspHandler::respondPause(Buffer &buffer) {
-
+  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
+            "CSeq: " + std::to_string(cSeq) + C::CRLF +
+            "Server: "+ C::MY_NAME + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
 std::string RtspHandler::findUserName(std::vector<std::string> strings) {

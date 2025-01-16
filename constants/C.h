@@ -81,7 +81,8 @@ namespace C {
         {400, "Bad Request"},
         {405, "Method Not Allowed"},
         {454, "Session Not Found"},
-        {501, "Not Implemented"}
+        {501, "Not Implemented"},
+        {500, "Internal Server Error"}
     };
 
     // Adaptive bitrate

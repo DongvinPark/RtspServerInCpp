@@ -29,15 +29,14 @@ private:
   );
   void respondSetupForHybrid(Buffer& buffer, std::string sessionId, std::string hybridMode);
   void respondPlay(
-    Buffer& buffer, std::vector<int> seq, std::vector<int64_t> rtpTime,
-    std::vector<std::string> urls, std::string sessionId
+    Buffer& buffer, std::vector<int> seq, std::vector<int64_t> rtpTime, std::string sessionId
   );
-  void respondPlayAfterPause(std::string sessionId);
-  void respondSwitching(std::string sessionId);
-  void respondCameraChange(std::string sessionId);
-  void respondBitrateChange(std::string sessionId);
-  void respondTeardown();
-  void respondError(int error, std::string rtspMethod);
+  void respondPlayAfterPause(Buffer& buffer);
+  void respondSwitching(Buffer& buffer);
+  void respondCameraChange(Buffer& buffer, int targetCamId);
+  void respondBitrateChange(Buffer& buffer);
+  void respondTeardown(Buffer& buffer);
+  void respondError(Buffer& buffer, int error, std::string rtspMethod);
   void respondPause(Buffer& buffer);
 
   std::string findUserName(std::vector<std::string> strings);

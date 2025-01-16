@@ -2,6 +2,9 @@
 #include <sstream> // For std::ostringstream
 #include <stdexcept>
 
+Buffer::Buffer()
+    : len(C::UNSET), offset(C::UNSET), limit(C::UNSET){}
+
 Buffer::Buffer(const std::vector<unsigned char>& buf)
     : buf(buf), len(buf.size()), offset(0), limit() {}
 
@@ -9,6 +12,13 @@ Buffer::Buffer(const std::vector<unsigned char>& buf, const int offset, const in
     : buf(buf), len(len), offset(offset), limit(offset+len) {
         validateBuffer();
     }
+
+void Buffer::updateBuf(const std::vector<unsigned char> &inputBuf) {
+    buf = std::move(inputBuf);
+    len = inputBuf.size();
+    offset = 0;
+}
+
 
 Buffer Buffer::kill(){
     return Buffer({}, C::UNSET, C::UNSET);
