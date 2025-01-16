@@ -19,6 +19,23 @@
 
 using boost::asio::ip::tcp;
 
+std::string getContentsRootPath() {
+#ifdef __linux__
+    // Check if running on WSL
+    if (std::getenv("WSL_DISTRO_NAME")) {
+        return "/mnt/c/dev/streaming-contents";
+    } else {
+        return "/mnt/efs/fs1"; // for AWS EC2 Linux mounted with AWS Elastic File System.
+    }
+#elif _WIN32
+    return "C:\\dev\\streaming-contents";
+#elif __APPLE__
+    return "/Users/dongvin99/Documents/for Mac Studio Dev Contents BackUP/streaming_contents_3.0";
+#else
+    throw std::runtime_error("Unsupported platform");
+#endif
+}
+
 int main() {
     std::shared_ptr<Logger> logger = Logger::getLogger(C::MAIN);
     logger->warning("=================================================================");
@@ -65,14 +82,7 @@ int main() {
 
     SntpRefTimeProvider sntpRefTimeProvider(io_context);
 
-    // for WSL
-    std::string contentsRootPath = "/mnt/c/dev/streaming-contents";
-
-    // for native Windows
-    //std::string contentsRootPath = "C:\\dev\\streaming-contents";
-
-    // for M chip MacOS
-    //std::string contentsRootPath = "/Users/dongvin99/Documents/for Mac Studio Dev Contents BackUP/streaming_contents_3.0";
+    std::string contentsRootPath = getContentsRootPath();
 
     ContentsStorage contentsStorage(contentsRootPath);
     contentsStorage.init();
