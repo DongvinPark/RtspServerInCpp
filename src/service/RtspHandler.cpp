@@ -2,6 +2,7 @@
 
 #include "../../constants/Util.h"
 #include "../../include/Session.h"
+#include "../include/HybridSampleMeta.h"
 
 #include <cmath>
 #include <iostream>
@@ -37,8 +38,8 @@ bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
 void RtspHandler::respondOptions(Buffer &buffer) {
   std::string rsp;
 
-  rsp + "RTSP/1.0 200 OK" + C::CRLF;
-  "CSeq: " + std::to_string(cSeq) + C::CRLF;
+  rsp = "RTSP/1.0 200 OK" + C::CRLF;
+  rsp += "CSeq: " + std::to_string(cSeq) + C::CRLF;
 
   std::string rtspMethods = "Public: ";
   const size_t loopCnt = C::RTSP_METHOD_VECTOR.size();
@@ -526,7 +527,7 @@ Map : hybridMeta<camId, val>
         auto& sampleMetaMap = viewNumberAndFrameTypeMap[viewNumberFrameKey];
 
         const HybridSampleMeta hybridSampleMeta(
-          sampleIdx, C::INVALID_OFFSET, C::INVALID_OFFSET, C::INVALID_BYTE
+          sampleIdx, C::INVALID_OFFSET, C::INVALID_OFFSET, C::INVALID_OFFSET
         );
 
         if (!sampleMetaMap.contains(sampleIdx)) {
@@ -534,41 +535,6 @@ Map : hybridMeta<camId, val>
         }
 
       }//for
-    } else {
-      logger->severe("RtspHandler: AcsHandlerPtr is null");
-    }
-  } else {
-    logger->severe("RtspHandler: SessionPtr is null");
-  }
+    } else logger->severe("RtspHandler: AcsHandlerPtr is null");
+  } else logger->severe("RtspHandler: SessionPtr is null");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

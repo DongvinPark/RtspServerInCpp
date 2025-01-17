@@ -7,6 +7,9 @@
 
 class HybridSampleMeta {
 public:
+
+    HybridSampleMeta();
+
     HybridSampleMeta(int sampleNo, int64_t startOffset, int64_t len, int64_t timeStamp);
 
     std::vector<unsigned char> getHybridMetaBinary(

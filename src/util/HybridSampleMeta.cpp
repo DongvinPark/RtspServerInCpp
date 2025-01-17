@@ -3,6 +3,12 @@
 #include <cassert>
 #include <sstream>
 
+HybridSampleMeta::HybridSampleMeta()
+    : sampleNo(C::UNSET),
+    startOffset(C::INVALID_OFFSET),
+    len(C::INVALID_OFFSET),
+    timeStamp(C::INVALID_OFFSET) {}
+
 HybridSampleMeta::HybridSampleMeta(int sampleNo, int64_t startOffset, int64_t len, int64_t timeStamp)
     : sampleNo(sampleNo), startOffset(startOffset), len(len), timeStamp(timeStamp) {}
 
