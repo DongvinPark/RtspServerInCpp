@@ -46,12 +46,42 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(std::string reqStr) {
 }
 
 bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
+  std::string _sessionId = findSessionId(strings);
+  logger->info("Dongvin, session in rtsp request " + _sessionId);
+  return (!_sessionId.empty() && _sessionId == sessionId);
 }
 
 void RtspHandler::respondOptions(Buffer &buffer) {
+  std::string rsp;
+
+  rsp + "RTSP/1.0 200 OK" + C::CRLF;
+  "CSeq: " + std::to_string(cSeq) + C::CRLF;
+
+  std::string rtspMethods = "Public: ";
+  const int loopCnt = C::RTSP_METHOD_VECTOR.size();
+  for (int i=0; i<loopCnt; i++) {
+    rtspMethods += C::RTSP_METHOD_VECTOR[i];
+    if (i < (loopCnt-1)) rtspMethods += ",";
+  }
+
+  rsp += rtspMethods + C::CRLF;
+  rsp += "Server: " +C::MY_NAME+ C::CRLF2;
+
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
 void RtspHandler::respondDescribe(Buffer &buffer, std::string mediaInfo, std::string content) {
+  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
+                "CSeq: " + std::to_string(cSeq) + C::CRLF +
+                "Content-Base: " + C::DUMMY_CONTENT_BASE +"/"+ C::CRLF +
+                "Content-Length: " + std::to_string(mediaInfo.length()) + C::CRLF +
+                "Content-Type: application/sdp" + C::CRLF +
+                "Server: " +C::MY_NAME+ C::CRLF2 +
+                mediaInfo; // don't append CRLF according to AVPT 6.1 implementation
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
+  buffer.bodyLen = mediaInfo.length();
 }
 
 void RtspHandler::respondSetup(
@@ -63,6 +93,16 @@ void RtspHandler::respondSetup(
   int refVideoSampleCnt,
   int camDirectoryCnt
 ) {
+  logger->info("Dongvin, setup stream id : " + std::to_string(trackId));
+  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
+                "CSeq: " + std::to_string(cSeq) + C::CRLF +
+                "Server: "+ C::MY_NAME + C::CRLF +
+                "Session: "+ sessionId + C::CRLF +
+                "RefVideoSampleCnt: " + std::to_string(refVideoSampleCnt) + C::CRLF +
+                "camDirectoryCnt: " + std::to_string(camDirectoryCnt) + C::CRLF +
+                transport+";ssrc="+ std::to_string(ssrc) + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
 void RtspHandler::respondSetupForHybrid(
@@ -70,6 +110,13 @@ void RtspHandler::respondSetupForHybrid(
   std::string sessionId,
   std::string hybridMode
 ) {
+  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
+                "CSeq: " + std::to_string(cSeq) + C::CRLF +
+                "Server: "+ C::MY_NAME + C::CRLF +
+                "Session: "+ sessionId + C::CRLF +
+                "HybridMode: "+ hybridMode + C::CRLF2;
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
 }
 
 void RtspHandler::respondPlay(

@@ -14,7 +14,7 @@ public:
     int len;
     int offset;
     int limit;
-    int bodyLen = C::UNSET;
+    int bodyLen = C::UNSET; // len == rtsp message + bodylen. only if bodd message exists.
     int sampleNo = C::UNSET;
     int mediaType = C::UNSET;
     std::function<void()> afterTx;
