@@ -6,23 +6,6 @@
 #include <cmath>
 #include <iostream>
 
-/*
-  std::shared_ptr<Logger> logger;
-  std::weak_ptr<Session> parentSessionPtr;
-  std::weak_ptr<AcsHandler> acsHandlerPtr;
-
-  std::string userName = C::EMPTY_STRING;
-  std::string watingReq = C::EMPTY_STRING;
-
-  int cSeq = C::UNSET;
-  std::string sessionId = C::EMPTY_STRING;
-  int wrongSessionIdRequestCnt = C::ZERO;
-
-  std::string frontVideoTrackUrl = C::EMPTY_STRING;
-  std::string audioTrackUrl = C::EMPTY_STRING;
-  std::string rearVideoTrackUrl = C::EMPTY_STRING;
-*/
-
 RtspHandler::RtspHandler(
   std::string inputSessionId,
   std::weak_ptr<Session> inputParentSessionPtr,
@@ -121,7 +104,6 @@ void RtspHandler::respondSetupForHybrid(
 
 void RtspHandler::respondPlay(
   Buffer &buffer,
-  std::vector<int> seq,
   std::vector<int64_t> rtpTime,
   std::string sessionId
 ) {
@@ -150,17 +132,14 @@ void RtspHandler::respondPlay(
       "RTP-Info: " +
 
       "url=" + C::DUMMY_CONTENT_BASE + "/trackID=0" + // front video
-      ";seq=" + std::to_string(static_cast<short>(seq[0])) +
       ";rtptime=" + std::to_string(rtpTime[0]) +
       ";lsnum=" + std::to_string(lastVideoSampleNo) +
 
       ",url=" + C::DUMMY_CONTENT_BASE + "/trackID=1" + // audio
-      ";seq=" + std::to_string(static_cast<short>(seq[1])) +
       ";rtptime=" + std::to_string(rtpTime[1]) +
       ";lsnum=" + std::to_string(lastAudioSampleNo) +
 
       ",url=" + C::DUMMY_CONTENT_BASE + "/trackID=2" + // member videos(ex : rear video)
-      ";seq=" + std::to_string(static_cast<short>(seq[0])) +
       ";rtptime=" + std::to_string(rtpTime[0]) +
       ";lsnum=" + std::to_string(lastVideoSampleNo) + C::CRLF +
 
@@ -511,4 +490,85 @@ bool RtspHandler::isThereMonitoringInfoHeader(std::vector<std::string> strings) 
 }
 
 void RtspHandler::parseHybridVideoSampleMetaDataForDandS(std::string notTxIdListStr) {
+  // dongvin : for hybrid streaming
+/*
+hybridMetaMap inside : camId >> view number & frame type >> sampleNo & sampleMetaData
+Map : hybridMeta<camId, val>
+                         |---> Map<view number + frame type string , val>
+                                                                       |---> Map<sampleNo, val>
+                                                                                            |---> sample meta data
+*/
+  using HybridMetaMapType
+    = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    if (auto handlerPtr = acsHandlerPtr.lock()) {
+      HybridMetaMapType& hybridMetaMap = sessionPtr->getHybridMetaMap();
+      int gop = handlerPtr->getGop()[0];
+
+      std::vector<std::string> infoArr = Util::splitToVecBySingleChar(notTxIdListStr, ',');
+      int camId = std::stoi(infoArr[0]);
+      int viewNum = std::stoi(infoArr[1]);
+      for (int i=2; i<infoArr.size(); i++) {
+        int sampleIdx = std::stoi(infoArr[i]);
+        std::string frameType = sampleIdx % gop == 0 ? C::KEY_FRAME_TYPE : C::P_FRAME_TYPE;
+
+        if (!hybridMetaMap.contains(camId)) {
+          // put empty map if key 'camId' was not found.
+          hybridMetaMap[camId] = {};
+        }
+
+        auto& viewNumberAndFrameTypeMap = hybridMetaMap[camId];
+        std::string viewNumberFrameKey = std::to_string(viewNum) + frameType;
+        if (!viewNumberAndFrameTypeMap.contains(viewNumberFrameKey)) {
+          viewNumberAndFrameTypeMap[viewNumberFrameKey] = {};
+        }
+
+        auto& sampleMetaMap = viewNumberAndFrameTypeMap[viewNumberFrameKey];
+
+        const HybridSampleMeta hybridSampleMeta(
+          sampleIdx, C::INVALID_OFFSET, C::INVALID_OFFSET, C::INVALID_BYTE
+        );
+
+        if (!sampleMetaMap.contains(sampleIdx)) {
+          sampleMetaMap[sampleIdx] = hybridSampleMeta;
+        }
+
+      }//for
+    } else {
+      logger->severe("RtspHandler: AcsHandlerPtr is null");
+    }
+  } else {
+    logger->severe("RtspHandler: SessionPtr is null");
+  }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

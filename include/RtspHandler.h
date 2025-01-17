@@ -29,7 +29,7 @@ private:
   );
   void respondSetupForHybrid(Buffer& buffer, std::string sessionId, std::string hybridMode);
   void respondPlay(
-    Buffer& buffer, std::vector<int> seq, std::vector<int64_t> rtpTime, std::string sessionId
+    Buffer& buffer, std::vector<int64_t> rtpTime, std::string sessionId
   );
   void respondPlayAfterPause(Buffer& buffer);
   void respondSwitching(Buffer& buffer);
