@@ -58,7 +58,7 @@ void RtspHandler::respondOptions(Buffer &buffer) {
   "CSeq: " + std::to_string(cSeq) + C::CRLF;
 
   std::string rtspMethods = "Public: ";
-  const int loopCnt = C::RTSP_METHOD_VECTOR.size();
+  const size_t loopCnt = C::RTSP_METHOD_VECTOR.size();
   for (int i=0; i<loopCnt; i++) {
     rtspMethods += C::RTSP_METHOD_VECTOR[i];
     if (i < (loopCnt-1)) rtspMethods += ",";
