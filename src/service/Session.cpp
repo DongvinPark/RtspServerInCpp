@@ -166,6 +166,9 @@ void Session::handleRtspRequest(std::unique_ptr<Buffer> bufPtr) {
 bool Session::onCid(std::string inputCid) {
 }
 
+void Session::onChannel(int trackId, std::vector<int> channels) {
+}
+
 void Session::onUserRequestingPlayTime(std::vector<float> playTimeSec) {
 }
 

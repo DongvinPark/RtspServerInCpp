@@ -17,12 +17,14 @@ public:
 
   void shutdown();
   std::unique_ptr<Buffer> run(std::unique_ptr<Buffer> inputBufferPtr);
-  std::unique_ptr<Buffer> handleRtspRequest(std::string reqStr);
+  std::unique_ptr<Buffer> handleRtspRequest(
+    std::string reqStr, std::unique_ptr<Buffer> inputBufferPtr
+  );
 
 private:
   bool hasSessionId(std::vector<std::string> strings);
   void respondOptions(Buffer& buffer);
-  void respondDescribe(Buffer& buffer, std::string mediaInfo, std::string content);
+  void respondDescribe(Buffer& buffer, std::string mediaInfo);
   void respondSetup(
     Buffer& buffer, std::string transport, std::string sessionId, int64_t ssrc,
     int trackId, int refVideoSampleCnt, int camDirectoryCnt
@@ -70,6 +72,7 @@ private:
 
   int cSeq = C::UNSET;
   std::string sessionId = C::EMPTY_STRING;
+  bool inSession = true;
   int wrongSessionIdRequestCnt = C::ZERO;
 
   std::string frontVideoTrackUrl = C::EMPTY_STRING;

@@ -13,6 +13,9 @@ public:
   );
   ~RtpHandler();
 
+  void stopVideo();
+  void stopAudio();
+
 private:
 };
 

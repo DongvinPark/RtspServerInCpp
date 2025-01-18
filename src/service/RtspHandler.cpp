@@ -3,6 +3,7 @@
 #include "../../constants/Util.h"
 #include "../../include/Session.h"
 #include "../include/HybridSampleMeta.h"
+#include "../include/RtpHandler.h"
 
 #include <cmath>
 #include <iostream>
@@ -24,9 +25,198 @@ void RtspHandler::shutdown() {
 }
 
 std::unique_ptr<Buffer> RtspHandler::run(std::unique_ptr<Buffer> inputBufferPtr) {
+  std::string req = inputBufferPtr->getString();
+  logger->info("Dongvin, " + sessionId + ", rtsp req: " + req);
+  if (req.find(C::CRLF2) != std::string::npos) {
+    if (watingReq == C::EMPTY_STRING) watingReq = req;
+    else watingReq += req;
+    return nullptr;
+  }
+  if (watingReq != C::EMPTY_STRING) {
+    req = (watingReq+req);
+    watingReq = C::EMPTY_STRING;
+  }
+
+  return handleRtspRequest(req, std::move(inputBufferPtr));
 }
 
-std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(std::string reqStr) {
+std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
+  std::string reqStr, std::unique_ptr<Buffer> inputBufferPtr
+) {
+  int idx = reqStr.find(' ');
+  std::string method = reqStr.substr(0, idx);
+  Buffer& inputBuffer = *inputBufferPtr;
+  if (std::ranges::find(C::RTSP_METHOD_VECTOR, method) == C::RTSP_METHOD_VECTOR.end()) {
+    logger->severe("Dongvin, not implemented method! : " + method);
+    respondError(inputBuffer, 405, method);
+    return inputBufferPtr;
+  }
+
+  std::vector<std::string> strings = Util::splitToVecByString(reqStr, C::CRLF);
+  int _cSeq = findCSeq(strings);
+  if (_cSeq == -1) {
+    // invalid CSeq. bad req.
+    logger->severe("Dongvin, failed to find CSeq header!");
+    respondError(inputBuffer, 400, method);
+  }
+  int next = cSeq + 1;
+  if (next != _cSeq) {
+    logger->severe("Dongvin, bad sequence number!");
+    respondError(inputBuffer, 400, method);
+  }
+
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    if (auto acsHandlePtr = acsHandlerPtr.lock()) {
+      // do not allowed proceeding without session id once session is set up.
+      // Once session id is given to a client, all the following requests must
+      // include the session id in the request.
+      if (inSession && !hasSessionId(strings)) {
+        wrongSessionIdRequestCnt++;
+        if (wrongSessionIdRequestCnt >= C::WRONG_SESSION_ID_TOLERANCE_CNT) {
+          // some kind of punks are sending wrong requests on the port assigned to
+          // my client. I shut down this port to protect my client's QOE. Not answer to
+          // the bad guy any longer so as not to give any hint of the correct session id.
+          logger->warning(
+            "Dongvin, illegal requests with invalid session id are given "
+            + std::to_string(C::WRONG_SESSION_ID_TOLERANCE_CNT)+" times in total. "
+            +"We believe there is something wrong. We shut down this connection.");
+          sessionPtr->shutdownSession();
+          return nullptr;
+        }
+        logger->severe("Dongvin, failed to find session id!");
+        respondError(inputBuffer, 400, method);
+        return inputBufferPtr;
+      }
+
+      cSeq = _cSeq;
+
+      if (method == "OPTIONS") {
+        if (isThereMonitoringInfoHeader(strings)) {
+          // t: NTP time at which OPTION method was sent. (ms)
+          // sa: The amount of samples received by the client. (bitrate, utc time(ms))
+          // sr: The rate at which the client receives samples. (rate, utc time(ms))
+          // e.g. MonitoringInfo: t=1719479800907;sa=7731176,1719479798405,1099016,1719479799406;sr=32040696,1719479798387,25152971,1719479798487
+          std::string info = strings[strings.size()-1];
+          std::vector<std::string> words =
+            Util::splitToVecBySingleChar(
+              Util::trim( Util::splitToVecBySingleChar(info, ':')[1] ), ';'
+            );
+
+          for (std::string w : words) {
+            if (w.starts_with("rb")) {
+              std::vector<std::string> bitrateAndTime =
+                Util::splitToVecBySingleChar(
+                  Util::splitToVecBySingleChar(w, '=')[1], ','
+                );
+
+              for (int i=0; i < bitrateAndTime.size(); i+=2) {
+                RxBitrate rxBitrate(
+                  std::stoll(bitrateAndTime[i]), std::stoll(bitrateAndTime[i+1])
+                );
+                sessionPtr->addRxBitrate(rxBitrate);
+              }
+
+            }
+          }
+        }
+
+        userName = findUserName(strings);
+        std::string cid = findContents(strings[0]);
+        bool isContentExists = sessionPtr->onCid(cid);
+        if (isContentExists) {
+          respondOptions(inputBuffer);
+        } else {
+          logger->severe("Dongvin, server doesn't have content : " + cid);
+          respondError(inputBuffer, 400, method);
+        }
+      } else if (method == "DESCRIBE") {
+        // assume url and username are correct or same. Don't check again.
+        std::string fullCid = Util::splitToVecBySingleChar(strings[0], ' ')[1];
+        std::string mediaInfo = getMediaInfo(fullCid);
+        respondDescribe(inputBuffer, mediaInfo);
+      } else if (method == "SETUP") {
+        // assume url and username are correct or same. Don't check again.
+        std::string transport = findTransport(strings);
+        std::string hybridMode = findHybridMode(strings);
+        std::string notToTxList = findNotTx(strings);
+        if (transport == C::EMPTY_STRING && hybridMode == C::EMPTY_STRING) {
+          logger->severe("Dongvin, invalid SETUP header!");
+          respondError(inputBuffer, 400, method);
+        } else if (transport != C::EMPTY_STRING && hybridMode == C::EMPTY_STRING) {
+          // process the setup req on track ids.
+          int trackId = findTrackId(strings[0]);
+          std::vector<int> channels = findChannels(transport);
+
+          // don't make new thread for reading member videos.
+          // the thread reading ref front video samples must read the member video samples too.
+          if (trackId <= C::AUDIO_ID) {
+            sessionPtr->onChannel(trackId, channels);
+          }
+
+          int ssrcIdx;
+          if (trackId > C::AUDIO_ID) {
+            ssrcIdx = C::VIDEO_ID;
+          } else {
+            ssrcIdx = trackId;
+          }
+
+          // dongvin : record content's title at Session object.
+          if (sessionPtr->getContentTitle() == C::EMPTY_STRING) {
+            std::string contentTitle = getContentsTitle(acsHandlePtr->getStreamUrls());
+            if (contentTitle != C::EMPTY_STRING) {
+              sessionPtr->updateContentTitleOfCurSession(contentTitle);
+            }
+          }
+
+          std::vector<int64_t> ssrc = acsHandlePtr->getSsrc();
+          respondSetup(
+            inputBuffer, transport, sessionId, ssrc[ssrcIdx], trackId,
+            sessionPtr->getRefVideoSampleCnt(), sessionPtr->getNumberOfCamDirectories()
+          );
+        } else {
+          // process not tx sample numbers for hybrid D & S.
+          parseHybridVideoSampleMetaDataForDandS(notToTxList);
+          respondSetupForHybrid(inputBuffer, sessionId, hybridMode);
+        }
+      } else if (method == "PLAY") {
+        // TODO : implement later
+      } else if (method == "PAUSE") {
+        // dongvin, if pause req come at puase state, just return 200 OK response.
+        if (sessionPtr->getPauseStatus()) {
+          respondPause(inputBuffer);
+        } else {
+          sessionPtr->updatePauseStatus(true);
+          respondPause(inputBuffer);
+
+          // stop reading video and audio
+          sessionPtr->getRtpHandlerPtr()->stopVideo();
+          sessionPtr->getRtpHandlerPtr()->stopAudio();
+        }
+      } else if (method == "TEARDOWN") {
+        respondTeardown(inputBuffer);
+        sessionPtr->onTeardown();
+        inSession = false;
+        wrongSessionIdRequestCnt = 0;
+      } else if (method == "SET_PARAMETER") {
+        // TODO : implement later
+      } else {
+        logger->warning("Dongvin, invalid method: " + method);
+        respondError(inputBuffer, 400, method);
+      }
+
+      if (inputBufferPtr->getString().size() > 0) {
+        logger->info("Dongvin, id : " + sessionId + ", rtsp response: \n" + inputBufferPtr->getString());
+      }
+      return inputBufferPtr;
+    } else {
+      logger->severe("Dongvin, failed to get weak acs handler ptr!");
+      respondError(inputBuffer, 500, method);
+    }
+  } else {
+    logger->severe("Dongvin, failed to get weak session ptr!");
+    respondError(inputBuffer, 500, method);
+  }
+  return nullptr;
 }
 
 bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
@@ -55,7 +245,7 @@ void RtspHandler::respondOptions(Buffer &buffer) {
   buffer.updateBuf(response);
 }
 
-void RtspHandler::respondDescribe(Buffer &buffer, std::string mediaInfo, std::string content) {
+void RtspHandler::respondDescribe(Buffer &buffer, std::string mediaInfo) {
   std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
                 "CSeq: " + std::to_string(cSeq) + C::CRLF +
                 "Content-Base: " + C::DUMMY_CONTENT_BASE +"/"+ C::CRLF +

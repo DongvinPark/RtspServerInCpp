@@ -877,7 +877,7 @@ auto rxTask = [&](){
   };
 ```
 <br><br/>
-23. java의 Math.min(), max(), abs(), round() 등의 유틸은 C++에서는 아래와 같이 사용한다.
+24. java의 Math.min(), max(), abs(), round() 등의 유틸은 C++에서는 아래와 같이 사용한다.
     <br> java의 Math.round()는 반올림이다. 
     <br> C++에서는 java보다 더 많은 수학 함수를 제공하지만, 함수별로 include 해야 하는 헤더가 다를 수 있다.
 ```c++
@@ -912,6 +912,27 @@ int main() {
     double base = 3, exponent = 2;
     std::cout << "Power: " << std::pow(base, exponent) << "\n"; // Outputs 9
     std::cout << "Square root: " << std::sqrt(9) << "\n";       // Outputs 3
+    return 0;
+}
+```
+<br><br/>
+25. std::vector 에서 요소 포함 여부 알아내는 법
+    <br> java에서는 list.contains(...)를 쓰면 되지만 C++ std::vector에서는 이런 멤버 함수가 없다. 
+    <br> 대신, std::find(...) 또는 std::ranges::find(...)를 쓴다.
+```c++
+#include <iostream>
+#include <vector>
+#include <algorithm> // For std::find
+
+int main() {
+    std::vector<int> ints = {1, 2, 3, 4, 5};
+
+    if (std::find(ints.begin(), ints.end(), 1) != ints.end()) {
+        std::cout << "The vector contains 1." << std::endl;
+    } else {
+        std::cout << "The vector does not contain 1." << std::endl;
+    }
+
     return 0;
 }
 ```

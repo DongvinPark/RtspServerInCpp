@@ -103,6 +103,7 @@ public:
   // for rtsp messages
   void handleRtspRequest(std::unique_ptr<Buffer> bufPtr);
   bool onCid(std::string inputCid);
+  void onChannel(int trackId, std::vector<int> channels);
   void onUserRequestingPlayTime(std::vector<float> playTimeSec); // TODO: need to test at multi platform.
 
   void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> switchingRspPtr, bool neetToLimitSample);
