@@ -936,6 +936,27 @@ int main() {
     return 0;
 }
 ```
+<br><br/>
+26. ../RtspHandler.cpp:192: undefined reference to `RtpHandler::stopVideo()' 라는 에러 메시지
+    <br> 아래의 코드에서 발견된 에러다.
+    <br> 포인터를 통해서 접근한 객체 내부의 멤버 함수를 호출하려고 하는데, 해당 멤버 함수가 .h 파일에서는 선언 돼 있지만, .cpp 파일에서는 구현돼 있지 않은 상황에서 발생한다.
+```c++
+// ...
+else if (method == "PAUSE") {
+        // dongvin, if pause req come at puase state, just return 200 OK response.
+        if (sessionPtr->getPauseStatus()) {
+          respondPause(inputBuffer);
+        } else {
+          sessionPtr->updatePauseStatus(true);
+          respondPause(inputBuffer);
+
+          // RtpPahndler.cpp 내부에 stopVideo() 또는 stopAudio() 라는 함수가 구현돼 있지 않은 경우에 위의 에러가 발생한다.
+          sessionPtr->getRtpHandlerPtr()->stopVideo();
+          sessionPtr->getRtpHandlerPtr()->stopAudio();
+        }
+      }
+// ...
+```
 
 
 
