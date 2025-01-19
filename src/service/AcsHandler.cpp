@@ -71,7 +71,7 @@ int AcsHandler::getMaxCamNumber() {
 std::vector<int> AcsHandler::getInitialSeq() {
 }
 
-std::vector<long> AcsHandler::getTimestamp() {
+std::vector<int64_t> AcsHandler::getTimestamp() {
 }
 
 int64_t AcsHandler::getTimestamp0(int streamId) {

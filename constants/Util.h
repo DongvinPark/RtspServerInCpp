@@ -13,6 +13,8 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <future>
+#include <thread>
 
 #include "../constants/C.h"
 #include "../include/Buffer.h"
@@ -227,6 +229,25 @@ namespace Util {
 			   (static_cast<int32_t>(metaLenBuf[2]) << 8) |
 			   (static_cast<int32_t>(metaLenBuf[3]));
 	}
+
+	inline std::future<void> delayedExecutorAsyncByFuture(
+		int delayInMillis, const std::function<void()> &task
+	) {
+		return std::async(std::launch::async, [delayInMillis, task]() {
+		  std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
+		  task();
+		});
+	}
+
+	inline void delayedExecutorAsyncByThread(
+		int delayInMillis, const std::function<void()>& task
+	) {
+		std::thread([delayInMillis, task]() {
+			std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
+			task();
+		}).detach();
+	}
+
 }
 
 #endif // UTIL_H

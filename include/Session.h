@@ -87,7 +87,7 @@ public:
   std::unordered_map<int64_t, int>& getUtiTimeSecBitSizeMap();
   void addRxBitrate(RxBitrate& record);
   BlockingQueue<Buffer>& getRxBitrateQueue();
-  std::vector<int>& get_mbpsTypeList();
+  std::vector<int> get_mbpsTypeList();
   void set_mbpsTypeList(std::vector<int> input_mbpsTypeList);
 
   int getNumberOfCamDirectories() const;

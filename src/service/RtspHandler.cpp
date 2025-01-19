@@ -66,7 +66,7 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
   }
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
-    if (auto acsHandlePtr = acsHandlerPtr.lock()) {
+    if (auto ptrForAcsHandler = acsHandlerPtr.lock()) {
       // do not allowed proceeding without session id once session is set up.
       // Once session id is given to a client, all the following requests must
       // include the session id in the request.
@@ -162,13 +162,13 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
 
           // dongvin : record content's title at Session object.
           if (sessionPtr->getContentTitle() == C::EMPTY_STRING) {
-            std::string contentTitle = getContentsTitle(acsHandlePtr->getStreamUrls());
+            std::string contentTitle = getContentsTitle(ptrForAcsHandler->getStreamUrls());
             if (contentTitle != C::EMPTY_STRING) {
               sessionPtr->updateContentTitleOfCurSession(contentTitle);
             }
           }
 
-          std::vector<int64_t> ssrc = acsHandlePtr->getSsrc();
+          std::vector<int64_t> ssrc = ptrForAcsHandler->getSsrc();
           respondSetup(
             inputBuffer, transport, sessionId, ssrc[ssrcIdx], trackId,
             sessionPtr->getRefVideoSampleCnt(), sessionPtr->getNumberOfCamDirectories()
@@ -179,7 +179,110 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
           respondSetupForHybrid(inputBuffer, sessionId, hybridMode);
         }
       } else if (method == "PLAY") {
-        // TODO : implement later
+        if (isContainingPlayInfoHeader((strings))) {
+          // dongvin : receiving play req to resume play
+
+          if (sessionPtr->getPauseStatus()) {
+            // if session is in pause state
+
+            // 헤더를 파싱해서 클라이언트가 PAUSE 요청 날리기 직전까지 수신 완료한 가장 최근 샘플의 idx들을 알아낸다.
+            // Jenny, sample index can be -1
+            int receivedVideoSampleIdx = findLatestReceivedSampleIdx(strings, "videoIndex");
+            int receivedAudioSampleIdx = findLatestReceivedSampleIdx(strings, "audioIndex");
+            int receivedVideoRtpIdx = findLatestReceivedSampleIdx(strings, "videoRtpIndex");
+
+            // video & audio readInfo 내의 curSampeNo를 초기화 한다.
+            // received idx 들은 클라이언트가 이미 수신 완료한 것이므로, 이것 바로 다음 샘플부터 보내게 만든다.
+            if(receivedVideoSampleIdx != -1) ptrForAcsHandler->updateCurSampleNo(
+              C::VIDEO_ID, receivedVideoSampleIdx + 1
+            );
+            if(receivedAudioSampleIdx != -1) ptrForAcsHandler->updateCurSampleNo(
+              C::AUDIO_ID, receivedAudioSampleIdx + 1
+            );
+
+            if (receivedVideoRtpIdx > 0) {
+              ptrForAcsHandler->updateRtpRemoteCnt(receivedVideoRtpIdx);
+            }
+          }
+          respondPlayAfterPause(inputBuffer);
+          //inputBuffer.afterTx = ??; TODO : update this logic later;
+          sessionPtr->updatePauseStatus(false);
+        } else if (isSeekRequest(strings)) {
+          // dongvin, play req for Seek operation
+          sessionPtr->callStopLoaders();
+
+          std::vector<float> npt = findNormalPlayTime(strings);
+          if (npt.empty() || !isValidPlayTime(npt)) {
+            std::string nptElem = "[";
+            for (float f : npt) {
+              nptElem += std::to_string(f);
+              nptElem += ",";
+            }
+            nptElem += "]";
+            logger->severe("Dongvin, invalid npt in play req for seek : " + nptElem);
+          } else {
+            // valid npt
+            sessionPtr->onUserRequestingPlayTime(npt);
+
+            std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
+            respondPlay(inputBuffer, timestamp0, sessionId);
+            //inputBuffer.afterTx = ??; TODO : update this logic later;
+            if (sessionPtr->getPauseStatus()) {
+              sessionPtr->updatePauseStatus(false);
+              Util::delayedExecutorAsyncByFuture(
+                C::RE_PAUSE_DELAY_TIME_MILLIS,
+                [sessionPtr](){sessionPtr->updatePauseStatus(true);}
+              );
+            } else {
+              sessionPtr->updatePauseStatus(true);
+            }
+          }
+        } else {
+          // dongvin, process initial play req.
+          if (sessionPtr->get_mbpsTypeList().empty()) {
+            // TODO : implement later.
+          }
+
+          sessionPtr->updatePlayTimeDurationMillis(
+            std::max(
+              ptrForAcsHandler->getPlayTimeUs(C::VIDEO_ID)/1000,
+              ptrForAcsHandler->getPlayTimeUs(C::AUDIO_ID)/1000
+            )
+          );
+
+          std::vector<float> npt = findNormalPlayTime(strings);
+
+          if (sessionPtr->getDeviceModelNo() == C::EMPTY_STRING) {
+            std::string deviceName = findDeviceModelName(strings);
+            if (deviceName != C::EMPTY_STRING) {
+              sessionPtr->updateDeviceModelNo(deviceName);
+            }
+          }
+
+          if (sessionPtr->getManufacturer() == C::EMPTY_STRING) {
+            std::string manufacturer = findManufacturer(strings);
+            if (manufacturer != C::EMPTY_STRING) {
+              sessionPtr->updateManufacturer(manufacturer);
+            }
+          }
+
+          if (npt.empty() || !isValidPlayTime(npt)) {
+            std::string nptElem = "[";
+            for (float f : npt) {
+              nptElem += std::to_string(f);
+              nptElem += ",";
+            }
+            nptElem += "]";
+            logger->severe("Dongvin, invalid npt in play req for initial play : " + nptElem);
+          } else {
+            sessionPtr->onUserRequestingPlayTime(npt);
+
+            std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
+            respondPlay(inputBuffer, timestamp0, sessionId);
+            //inputBuffer.afterTx = ??; TODO : update this logic later;
+            sessionPtr->updatePauseStatus(false);
+          }
+        }// end of else for initial play
       } else if (method == "PAUSE") {
         // dongvin, if pause req come at puase state, just return 200 OK response.
         if (sessionPtr->getPauseStatus()) {
@@ -567,7 +670,7 @@ std::vector<float> RtspHandler::findNormalPlayTime(std::vector<std::string> stri
       return nptVector;
     }
   }
-  return std::vector<float>();
+  return {};
 }
 
 std::string RtspHandler::findDeviceModelName(std::vector<std::string> strings) {

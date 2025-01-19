@@ -127,11 +127,11 @@ namespace C {
 
     // Pause Seek
     constexpr int RE_PAUSE_DELAY_TIME_SEC = 1;
+    constexpr int RE_PAUSE_DELAY_TIME_MILLIS = 1000;
     constexpr float START_NPT[] = {0.0f, -1.0f};
 
     // Pause Switching
     constexpr int TX_SAMPLE_CNT = 10;
-    constexpr int RE_PAUSE_DELAY_TIME_MS = 100;
 
     // Filtering content
     constexpr int FILE_NUM_LIMIT = 10;

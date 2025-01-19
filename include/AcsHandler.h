@@ -44,7 +44,7 @@ public:
   int getMainVideoNumber();
   int getMaxCamNumber();
   std::vector<int> getInitialSeq();
-  std::vector<long> getTimestamp();
+  std::vector<int64_t> getTimestamp();
   int64_t getTimestamp0(int streamId);
   int64_t getUnitFrameCount(int streamId);
   std::vector<int64_t> getUnitFrameCount();

@@ -133,7 +133,8 @@ void Session::addRxBitrate(RxBitrate &record) {
 BlockingQueue<Buffer> & Session::getRxBitrateQueue() {
 }
 
-std::vector<int> & Session::get_mbpsTypeList() {
+std::vector<int> Session::get_mbpsTypeList() {
+  return {};
 }
 
 void Session::set_mbpsTypeList(std::vector<int> input_mbpsTypeList) {
