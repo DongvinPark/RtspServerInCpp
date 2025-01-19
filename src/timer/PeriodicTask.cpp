@@ -42,7 +42,7 @@ void PeriodicTask::stop() {
 
 void PeriodicTask::scheduleTask() {
     if(!running){
-        timer.expires_from_now();
+        timer.expires_after(std::chrono::milliseconds(C::ZERO));
         timer.cancel();
     } else {
         timer.expires_after(interval);
