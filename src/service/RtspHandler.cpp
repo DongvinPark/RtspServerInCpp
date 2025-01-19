@@ -301,7 +301,62 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
         inSession = false;
         wrongSessionIdRequestCnt = 0;
       } else if (method == "SET_PARAMETER") {
-        // TODO : implement later
+        // last string is the switching info.
+        // for instance, SwitchingInfo: next=1;tv=1234567;ta=45678900
+        // CameraInfo: cam=0;next=1;tv=1234567;ta=45678900
+
+        std::string info = strings[strings.size() - 1];
+        std::vector<std::string> words = Util::splitToVecBySingleChar(
+          Util::trim(Util::splitToVecBySingleChar(info, ':')[1]), ';'
+        );
+
+        // tvIdx : video's sample time index in client side
+        // taIdx : audio's sample time index in client side
+
+        int64_t tvIdx = C::UNSET;
+        int64_t taIdx = C::UNSET;
+        int nextVid = C::UNSET;
+        int cam = C::UNSET;
+        int targetBitrate = C::UNSET;
+        bool sampleLimitForPauseSwitching = false;
+        std::string pFrameControlAction = C::EMPTY_STRING;
+        for (std::string w : words) {
+          if(w.starts_with("tvIdx")) tvIdx = std::stoll(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.starts_with("taIdx")) taIdx = std::stoll(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.starts_with("next")) nextVid = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.starts_with("cam")) cam = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.starts_with("tBit")) targetBitrate = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.starts_with("limitSamples")) {
+            std::string boolStr = Util::splitToVecBySingleChar(w, '=')[1];
+            sampleLimitForPauseSwitching = boolStr == "true" ? true : false;
+          }
+          else if(w.find("-p") != std::string::npos ) pFrameControlAction = w;
+        }
+        std::vector<int64_t> switchingInfo = {tvIdx, taIdx};
+
+        logger->info2(
+          "Dongvin, id:"+sessionId+", switching request comes in!, " +
+              "cam: "+ std::to_string(cam)+"vid: "+std::to_string(nextVid)+", time: "
+              + "["+std::to_string(switchingInfo[0])+","+std::to_string(switchingInfo[1])+"] (us)"
+        );
+
+        bool isValid = false;
+        if (info.find(C::CAM_CHANG_KEY) != std::string::npos) {
+          int maxCam = ptrForAcsHandler->getMaxCamNumber();
+          int maxVnum = ptrForAcsHandler->getMainVideoNumber();
+          isValid = cam < maxCam && nextVid < maxVnum;
+          if (!isValid) {
+            logger->info("Dongvin, invalid next id or video id for cam change!");
+            respondError(inputBuffer, 400, method);
+          } else {
+            sessionPtr->onCameraChange(cam, nextVid, switchingInfo, std::move(inputBufferPtr));
+          }
+        } else if (info.find(C::BITRATE_CHANG_KEY) != std::string::npos) {
+          // TODO : implement later
+        } else {
+          logger->info("Dongvin, invalid set_parameter header!");
+          respondError(inputBuffer, 400, method);
+        }
       } else {
         logger->warning("Dongvin, invalid method: " + method);
         respondError(inputBuffer, 400, method);
