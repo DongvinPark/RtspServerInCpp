@@ -957,7 +957,74 @@ else if (method == "PAUSE") {
       }
 // ...
 ```
+<br><br/>
+27. 특정한 함수를 async 하게 실행시키는 방법
+    <br> java에는 CompletableFuture 등의 방법으로 특정 Runnable을 별도의 스레드에서 async하게 실행시킬 수 있다.
+    <br> C++에서도 std library를 이용해서 이와 같은 기능을 직접 만들어서 쓸 수 있다.
+```c++
+#include <iostream>
+#include <future>
+#include <thread>
 
+std::future<void> delayedExecutorAsyncByFuture(int delayInMillis, const std::function<void()> &task) {
+    // 전달 받은 함수 객체인 'task'를 별도의 스레드에서 실행시킨다.
+    // 아래의 delayedExecutorAsyncByThread()에 비해서 std library에서 지원하는 최신
+    // 기능들을 이용해서 작성한 버전이다.
+    // 직접 스레드를 만들고, detach() 시킬 필요가 없다.
+  return std::async(std::launch::async, [delayInMillis, task]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
+    task();
+  });
+}
+
+void delayedExecutorAsyncByThread(int delayInMillis, const std::function<void()>& task) {
+    // std::thread를 이용해서 직접 스레드를 만든 후, 거기에서 task를 실행시키고 detach()
+    // 하는 방식이다.
+    // detach() 된 스레드는 OS에서 자동으로 정리하므로, resource 누수가 일어나지 않는다.
+  std::thread([delayInMillis, task]() {
+      std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
+      task();
+  }).detach();
+}
+
+class MyClass {
+  public:
+    void printAsync() {
+    std::cout << "Async Success!!" << std::endl;
+  }
+};
+
+int main(){
+  
+  // shared ptr를 별도의 변수에 초기화 해 둔 다음, 그 변수를 이용해서
+  // weak ptr를 초기화 해야 한다.
+  // std::weak_ptr<MyClass> weakPtr = std::make_shared<MyClass>();
+  // 와 같이 한 줄에 써 버리면 shared ptr를 참조하는 객체가 단 한 개도 없게 되면서
+  // weak ptr를 lock() 해서 점근하려고 할 때 이미 expired()된 상태가 되고 만다.
+  std::shared_ptr<MyClass> sharedPtr = std::make_shared<MyClass>();
+  std::weak_ptr<MyClass> weakPtr = sharedPtr;
+
+  if (auto ptr = weakPtr.lock()) {
+    std::cout << "Delay starts 2!!!\n";
+    
+    // 람다의 캡쳐 리스트에 '참조'로 전달하는 것과 '포인터'로 전달하는 것에는 큰 차이가 있다.
+    // 참조는 복사하지 않고 전달하는 방법이지만, 포인터는 기본적으로 복사로 전달한다는 점이다.
+    // 여기서 만약에 [&ptr] 이런 식으로 포인터를 참조로 전달해버리면 async task가 
+    // 실행되지 않는다.
+    delayedExecutorAsyncByFuture(1000, [ptr]() {
+        ptr->printAsync();
+    });
+  } else {
+    // 이 부분은 출력되지 않는다.
+    std::cerr << "Weak Ptr is expired!!!\n";
+  }
+
+  // 이렇게 메인 스레드를 대기시키지 않으면 결과를 보기도 전에 프로그램이 종료돼 버린다.
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+  return 0;
+}
+```
 
 
 

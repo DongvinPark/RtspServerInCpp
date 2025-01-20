@@ -239,10 +239,6 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
           }
         } else {
           // dongvin, process initial play req.
-          if (sessionPtr->get_mbpsTypeList().empty()) {
-            // TODO : implement later.
-          }
-
           sessionPtr->updatePlayTimeDurationMillis(
             std::max(
               ptrForAcsHandler->getPlayTimeUs(C::VIDEO_ID)/1000,
@@ -351,8 +347,6 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
           } else {
             sessionPtr->onCameraChange(cam, nextVid, switchingInfo, std::move(inputBufferPtr));
           }
-        } else if (info.find(C::BITRATE_CHANG_KEY) != std::string::npos) {
-          // TODO : implement later
         } else {
           logger->info("Dongvin, invalid set_parameter header!");
           respondError(inputBuffer, 400, method);
@@ -530,10 +524,6 @@ void RtspHandler::respondCameraChange(Buffer& buffer, int targetCamId) {
                 "Server: "+ C::MY_NAME + C::CRLF2;
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
-}
-
-void RtspHandler::respondBitrateChange(Buffer& buffer) {
-  respondSwitching(buffer);
 }
 
 void RtspHandler::respondTeardown(Buffer& buffer) {

@@ -36,7 +36,6 @@ private:
   void respondPlayAfterPause(Buffer& buffer);
   void respondSwitching(Buffer& buffer);
   void respondCameraChange(Buffer& buffer, int targetCamId);
-  void respondBitrateChange(Buffer& buffer);
   void respondTeardown(Buffer& buffer);
   void respondError(Buffer& buffer, int error, std::string rtspMethod);
   void respondPause(Buffer& buffer);
