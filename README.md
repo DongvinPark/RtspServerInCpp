@@ -10,7 +10,7 @@
 
 ## 개발 정책
 - Windows, Ubuntu Linux, M chip MacOS 의 환경에서 동일한 동작을 하게 만들었습니다.
-  - 예를 들면, int64_t 와 uint32_t, result_type 등을 사용하여 동일한 동작을 보장합니다.
+  - 예를 들면, int64_t 와 int32_t, result_type 등을 사용하여 동일한 동작을 보장합니다.
 - Boost.asio 라이브러리를 사용하여 스레드의 직접적인 생성을 최소화 했습니다.
 - new와 delete를 직접 사용하는 raw memory 연산을 최소화 했습니다.
 - nullptr를 리턴하기보다는 빈 객체(empty vector, empty string)를 리턴하여 nullptr의 사용을 최소화 했습니다.

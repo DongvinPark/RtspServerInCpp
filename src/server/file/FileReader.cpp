@@ -399,7 +399,7 @@ void FileReader::loadRtpMemberVideoMetaData(
   std::vector<int16_t> sizes = getSizes(metaData);
 
   int sampleCount = 0;
-  uint64_t offset = 0;
+  int64_t offset = 0;
   std::vector<int64_t> gops = rtpInfo.kv[C::GOP_KEY];
   int gop = static_cast<int>(gops[0]);
 
