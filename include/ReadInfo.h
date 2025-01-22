@@ -4,10 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include <unordered_map>
 
-#include "../include/AudioSampleInfo.h"
-#include "../include/VideoAccess.h"
 #include "../constants/C.h"
 
 class ReadInfo {
@@ -32,11 +29,6 @@ public:
   int curMemberVid = C::INVALID;
 
   int64_t curPresentationTimeUs = C::INVALID_OFFSET;
-
-  // TODO : AudioSampleInfo and VideoAccess are non-copyable
-  // TODO : Should refactor these fields later.
-  //std::vector<AudioSampleInfo> audioMeta{};
-  //std::unordered_map<std::string, VideoAccess> videoMeta{};
 };
 
 #endif //READINFO_H

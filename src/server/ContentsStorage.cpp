@@ -38,7 +38,7 @@ FileReader & ContentsStorage::getCid(std::string cid) {
   return fileReader;
 }
 
-const std::unordered_map<std::string, FileReader> & ContentsStorage::getReaders() {
+std::unordered_map<std::string, FileReader> & ContentsStorage::getReaders() {
   return readers;
 }
 

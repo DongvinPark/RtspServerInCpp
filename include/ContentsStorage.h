@@ -1,7 +1,6 @@
 #ifndef CONTENTSSTORAGE_H
 #define CONTENTSSTORAGE_H
 #include <unordered_map>
-#include <memory>
 
 #include "../include/FileReader.h"
 
@@ -13,7 +12,7 @@ public:
   void init();
 
   FileReader& getCid(std::string cid);
-  const std::unordered_map<std::string, FileReader>& getReaders();
+  std::unordered_map<std::string, FileReader>& getReaders();
   void shutdown();
   std::string getContentRootPath() const;
 
