@@ -109,7 +109,7 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
                   Util::splitToVecBySingleChar(w, '=')[1], ','
                 );
 
-              for (int i=0; i < bitrateAndTime.size(); i+=2) {
+              for (auto i=0; i < bitrateAndTime.size(); i+=2) {
                 RxBitrate rxBitrate(
                   std::stoll(bitrateAndTime[i]), std::stoll(bitrateAndTime[i+1])
                 );
@@ -384,7 +384,7 @@ void RtspHandler::respondOptions(Buffer &buffer) {
   rsp += "CSeq: " + std::to_string(cSeq) + C::CRLF;
 
   std::string rtspMethods = "Public: ";
-  const size_t loopCnt = C::RTSP_METHOD_VECTOR.size();
+  const auto loopCnt = C::RTSP_METHOD_VECTOR.size();
   for (int i=0; i<loopCnt; i++) {
     rtspMethods += C::RTSP_METHOD_VECTOR[i];
     if (i < (loopCnt-1)) rtspMethods += ",";
@@ -595,7 +595,7 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
     std::string mediaInfo = handlerPtr->getMediaInfo();
     std::vector<std::string> lines = Util::splitToVecByString(mediaInfo, C::CRLF);
 
-    for (int i = 0; i < lines.size(); ++i) {
+    for (auto i = 0; i < lines.size(); ++i) {
       std::string line = lines[i];
       if (line.starts_with("c=")) {
         lines[i] = "c=IN IP4 0.0.0.0"; // don't need to know ip addr of client
@@ -781,7 +781,7 @@ std::string RtspHandler::getContentsTitle(std::vector<std::string> urls) {
     return C::EMPTY_STRING;
   }
   std::vector<std::string> infos = Util::splitToVecBySingleChar(urls[0], '/');
-  for (int i = infos.size() - 1; i >= 0; i--) {
+  for (auto i = infos.size() - 1; i >= 0; i--) {
     std::string elem = infos[i];
     if (elem != "trackID=0") {
       return elem;
@@ -796,7 +796,7 @@ std::string RtspHandler::getSupportingBitrateTypes(std::vector<int> bitrateTypes
       return std::to_string(sessionPtr->get_mbpsCurBitrate());
     } else {
       std::string val = C::EMPTY_STRING;
-      for (int i = 0; i < bitrateTypes.size(); i++) {
+      for (auto i = 0; i < bitrateTypes.size(); i++) {
         val += std::to_string(bitrateTypes[i]);
         if (i < bitrateTypes.size() - 1) {
           val += ",";
@@ -847,7 +847,7 @@ Map : hybridMeta<camId, val>
       std::vector<std::string> infoArr = Util::splitToVecBySingleChar(notTxIdListStr, ',');
       int camId = std::stoi(infoArr[0]);
       int viewNum = std::stoi(infoArr[1]);
-      for (int i=2; i<infoArr.size(); i++) {
+      for (auto i=2; i<infoArr.size(); i++) {
         int sampleIdx = std::stoi(infoArr[i]);
         std::string frameType = sampleIdx % gop == 0 ? C::KEY_FRAME_TYPE : C::P_FRAME_TYPE;
 

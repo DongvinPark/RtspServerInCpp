@@ -34,7 +34,7 @@ const std::string RtpInfo::toString() {
 	// just like map.entrySet(); in java.
 	for (const auto& [key, value] : kv) {
 		oss << key << ": [";
-		for (size_t i = 0; i < value.size(); ++i) {
+		for (auto i = 0; i < value.size(); ++i) {
 			oss << value[i];
 			if (i != value.size() - 1) {
 				oss << ",";
@@ -46,7 +46,7 @@ const std::string RtpInfo::toString() {
 	oss << "}";
 
 	oss << ", stream url: [";
-	for (size_t i = 0; i < urls.size(); ++i) {
+	for (auto i = 0; i < urls.size(); ++i) {
 		oss << urls[i];
 		if (i != urls.size() - 1) {
 			oss << ", ";

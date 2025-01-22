@@ -19,7 +19,7 @@ std::vector<int>& VideoSample::getCSeq() {
         return cSeq;
     }
    
-    for (int i = 0; i < rtps.size()-1; ++i) {
+    for (auto i = 0; i < rtps.size()-1; ++i) {
         cSeq.push_back(Util::findSequenceNumber(rtps.front()));
     }
     return cSeq;

@@ -304,7 +304,7 @@ std::vector<int64_t> FileReader::getValues(std::string inputMsg, std::string inp
   std::string midVal = Util::splitToVecByString(inputMsg, inputKey)[1];
   std::vector<std::string> v = Util::splitToVecBySingleChar(midVal, ',');
   std::vector<int64_t> values;
-  for (int i=0; i < v.size(); ++i) {
+  for (auto i =0; i < v.size(); ++i) {
     if (v[i].find("null") != std::string::npos) {
       continue;
     }
@@ -330,7 +330,7 @@ void FileReader::loadRtpAudioMetaData(
 
 void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMetaData) {
   std::vector<int> lenList;
-  for (int i = 0; i < audioMetaData.size(); ++i) {
+  for (auto i = 0; i < audioMetaData.size(); ++i) {
     AudioSampleInfo aInfo = audioMetaData[i];
     if (aInfo.len == 0) continue; // dummy info
     lenList.push_back(aInfo.len);
@@ -365,7 +365,7 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
   if (videos.size() != va.getConstAccessList().size()) {
     throw std::runtime_error("opening video reading ifstreams failed!");
   }
-  for (int i = 0; i < videos.size(); ++i) {
+  for (auto i = 0; i < videos.size(); ++i) {
     if (!va.getConstAccessList()[i].is_open()) {
       throw std::runtime_error("opening video reading ifstreams failed! filename : " + videos[i].filename().string());
     }
@@ -443,7 +443,7 @@ void FileReader::showVideoMinMaxSize(
   const std::vector<VideoSampleInfo> &videoMetaData, int memberId
 ) {
   std::vector<int> lenList;
-  for (int i=0; i < videoMetaData.size(); ++i) {
+  for (auto i=0; i < videoMetaData.size(); ++i) {
     VideoSampleInfo vInfo = videoMetaData[i];
     if (vInfo.getSize()==0) continue; // dummy info
     lenList.push_back(vInfo.getSize());
@@ -506,7 +506,7 @@ std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) 
   std::vector<int16_t> sizes;
   sizes.reserve(metaData.size() / 2); // reserve memory for efficiency
 
-  for (size_t i = 0; i < metaData.size(); i += 2) {
+  for (auto i = 0; i < metaData.size(); i += 2) {
     // execute bitwise operation to two bytes(big-endian)
     int16_t value = (static_cast<int16_t>(metaData[i]) << 8) | static_cast<int16_t>(metaData[i + 1]);
     sizes.push_back(value);

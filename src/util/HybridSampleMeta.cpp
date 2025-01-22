@@ -47,7 +47,7 @@ void HybridSampleMeta::recordChannelInfo(std::vector<unsigned char>& data, unsig
 }
 
 void HybridSampleMeta::recordPayLoad(std::vector<unsigned char>& data, const std::string& payLoad) const {
-    for (size_t i = C::RTP_CHANNEL_INFO_META_LENGTH; i < data.size(); ++i) {
+    for (auto i = C::RTP_CHANNEL_INFO_META_LENGTH; i < data.size(); ++i) {
         data[i] = static_cast<unsigned char>(payLoad[i - C::RTP_CHANNEL_INFO_META_LENGTH]);
     }
 }

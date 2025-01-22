@@ -276,16 +276,36 @@ RtpInfo FileReader::getRtpInfoCopyWithLock() {
     function signature tip;
     
     > when returning '&'.
-        permit modification:
+        리턴 받은 참조를 caller 쪽에서 이용해서 수정하는 것을 허용할 때.
             std::vector<Buffer>& getAllRtps();
-        forbidden modification:
+            
+        리턴 받은 참조를 caller 쪽에서 이용해서 수정하는 것을 금지할 때.
             const std::vector<Buffer>& getAllRtps();
-        forbidden modification and can be called only by const object
+            
+        리턴 받은 참조를 Caller 쪽에서 이용해서 수정하는 것을 금지할 뿐만 아니라, const 타입 객체일 경우
+        아래의 시그니처로 선언된 함수만 호출할 수 있게 재한함.
             const std::vector<Buffer>& getAllRtps() const;
 
     > when return value.
         int size() const;
     */
+    
+// 위의 case 들 중에서, 참조 타입을 리턴하는 경우 중 3 번째 상황은 아래의 예시로 설명할 수 있다.
+// const 타입으로 선언된 FileReader 객체는 f1() const; 와 같은 시그니처를 가진 멤버 함수만 호출할 수 있다. 
+class FileReader {
+public:
+    void f1() const { /* does not modify object */ }
+    void f2() const { /* does not modify object */ }
+    void f3() { /* modifies object */ }  // const 객체에서는 이 함수를 호출할 수가 없다!!
+};
+
+int main() {
+    const FileReader reader;  // Const object
+    reader.f1();  // OK
+    reader.f2();  // OK
+    // reader.f3();  // Error: f3 is not const-qualified
+}
+    
 ```
 <br><br/>
 11. 반복자는 copy, sort 등에 유용하게 사용된다.
@@ -1024,6 +1044,30 @@ int main(){
 
   return 0;
 }
+```
+<br><br/>
+28. 웬만하면 auto를 사용하자. Effective Modern C++ 
+    <br> 특히, range for 를 이용해서 map을 순회할 때 비효율적인 copy 동작을 예방할 수 있다.
+    <br> auto를 쓰면 타입 불일치로 인해 컴파일러가 맵의 구성 요소들을 하는 수 없이 복사하는 일을 방지할 수 있다.
+```c++
+std::unordered_map<std::string, int> map;
+
+// ...
+
+// 맵을 순회하는 단순한 예제이지만, std::unordered_map의 '키'에 해당하는 부분은
+// const 이기 때문에 타입의 불일치가 일어난다.
+// 컴파일러는 이를 감지하고 하는 수 없이 원본 맵 내의 pair의 복사본을 만들어낸다.
+// 불필요한 숨겨진 복사 행위가 일어나는 것이다.
+for(const std::pair<std::string, int>& p : map){
+// ...
+}
+
+// 대신 이렇게 auto를 쓰면 컴파일러가 알아서 나 대신 정확한 타입을 추론해 내므로,
+// 맵 순회 시 불필요한 복사가 일어나지 않는다.
+for(const auto& p : map){
+// ...
+}
+
 ```
 
 
