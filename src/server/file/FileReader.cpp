@@ -125,12 +125,13 @@ std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
   );
 }
 
-const std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock() {
+std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock() {
   std::lock_guard<std::mutex> guard(lock);
   // do not copy. just return const ref('&')
   if (videoFiles.empty()) {
     // return empty map.
-    return std::unordered_map<std::string, VideoAccess>{};
+    //return std::unordered_map<std::string, VideoAccess>{};
+    return videoFiles;
   } else {
     return videoFiles;
   }

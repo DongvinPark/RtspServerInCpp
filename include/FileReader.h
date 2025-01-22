@@ -40,7 +40,7 @@ public:
     int getAudioSampleSize() const;
     int getVideoSampleSize() const;
     std::vector<AudioSampleInfo> getAudioMetaCopyWithLock();
-    const std::unordered_map<std::string, VideoAccess>& getVideoMetaWithLock();
+    std::unordered_map<std::string, VideoAccess>& getVideoMetaWithLock();
 
     // reading sample
     AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap);

@@ -110,6 +110,24 @@ int main() {
     logger->warning("=================================================================");
     return 0;
 }
+
+/*
+
+    test usage of VideoAccess in FileReader.
+
+    std::cout <<"!!! FireReader test start !!!" << std::endl;
+    FileReader& fileReader = contentsStorage.getReaders().at("enhypen-test-1cam-H");
+    VideoAccess& videoAccess = fileReader.getVideoMetaWithLock().at("cam0");
+    std::ifstream& fStream = videoAccess.getConstAccessList()[0];
+    fStream.seekg(0, std::ios::beg);
+    std::vector<unsigned char> buffer(10);
+    if (!fStream.read(reinterpret_cast<std::istream::char_type *>(buffer.data()), 10)) {
+        throw std::ios_base::failure("Failed to read the file");
+    }
+    std::cout << "file read result : " << std::string(buffer.begin(), buffer.end()) << "\n";
+
+*/
+
 /*
 *** for prev test ***
 

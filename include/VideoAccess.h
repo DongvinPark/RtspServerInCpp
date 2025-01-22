@@ -19,7 +19,7 @@ public:
     std::vector<std::ifstream>& getAccessList();
     std::vector<std::vector<VideoSampleInfo>>& getVideoSampleInfoList();
 
-    const std::vector<std::ifstream>& getConstAccessList() const;
+    std::vector<std::ifstream>& getConstAccessList();
     const std::vector<std::vector<VideoSampleInfo>>& getConstVideoSampleInfoList() const;
 
     void setMeta(const std::vector<std::vector<VideoSampleInfo>>& inputMeta);

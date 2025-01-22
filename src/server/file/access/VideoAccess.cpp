@@ -38,7 +38,7 @@ std::vector<std::vector<VideoSampleInfo>>& VideoAccess::getVideoSampleInfoList()
     return meta;
 }
 
-const std::vector<std::ifstream>& VideoAccess::getConstAccessList() const {
+std::vector<std::ifstream>& VideoAccess::getConstAccessList() {
     return accesses;
 }
 
