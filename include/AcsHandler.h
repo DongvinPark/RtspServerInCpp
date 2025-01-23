@@ -30,8 +30,8 @@ public:
 
   void setChannel(int streamId, std::vector<int> ch);
   void initUserRequestingPlaytime(std::vector<float> timeS);
-  void setRtpInfo(RtpInfo& rtpInfo);
-  void setReader(std::weak_ptr<FileReader> reader);
+  void setRtpInfo(RtpInfo inputRtpInfo);
+  bool setReader(std::weak_ptr<FileReader> inputReaderPtr);
   int getLastVideoSampleNumber();
   int getLastAudioSampleNumber();
   std::vector<unsigned char> getAccData();

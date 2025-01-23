@@ -12,72 +12,190 @@ AcsHandler::AcsHandler(
   parentSessionPtr(inputParentSessionPtr),
   contentsStorage(inputContentsStorage){}
 
-AcsHandler::~AcsHandler() {}
+AcsHandler::~AcsHandler(){
+  shutdown();
+}
 
 void AcsHandler::updateRtpRemoteCnt(int cnt) {
+  videoRtpRemoveCnt = cnt;
 }
 
 void AcsHandler::updateCurSampleNo(int mediaType, int idx) {
+  if (sInfo.contains(mediaType)){
+    sInfo.at(mediaType).setCurSampleNo(idx);
+  } else {
+    logger->severe("Dongvin, Invalid streamId on updateCurSampleNo!");
+  }
 }
 
 int AcsHandler::getCamId() {
+  return camId;
 }
 
 void AcsHandler::shutdown() {
+  sInfo.clear();
 }
 
 std::weak_ptr<FileReader> AcsHandler::getFileReaderPtr() {
+  return fileReaderPtr;
 }
 
 void AcsHandler::setChannel(int streamId, std::vector<int> ch) {
+  if (sInfo.contains(streamId)){
+    ReadInfo& readInfo = sInfo[streamId];
+    readInfo.channel = ch;
+  } else {
+    logger->severe("Dongvin, Invalid streamId on setChannel!");
+  }
 }
 
 void AcsHandler::initUserRequestingPlaytime(std::vector<float> timeS) {
+  if (timeS.empty()) return;
+
+  for (auto& pair : sInfo){
+    int streamId = pair.first;
+    ReadInfo& info = pair.second;
+
+    info.startSampleNo = findKeySampleNumber(streamId, Util::secToUs(timeS[0]), C::NEXT_KEY);
+    info.endSampleNo = findSampleNumber(streamId, Util::secToUs(timeS[1]));
+    info.curSampleNo = info.startSampleNo;
+
+    std::unique_ptr<Buffer> rtpPtr = get1stRtpOfRefSample(streamId, info.startSampleNo);
+    info.timestamp = Util::findTimestamp(*rtpPtr);
+    info.refSeq0 = Util::findSequenceNumber(*rtpPtr);
+
+    // check --> removable.
+    checkTimestamp(streamId, info);
+
+    info.unitFrameCount = static_cast<int>(getUnitFrameCount(streamId));
+    logger->info("Dongvin, init read info completed. streamId : " + std::to_string(streamId));
+  }
 }
 
-void AcsHandler::setRtpInfo(RtpInfo &rtpInfo) {
+void AcsHandler::setRtpInfo(RtpInfo inputRtpInfo) {
+  this->rtpInfo = inputRtpInfo;
+
+  std::vector<int64_t> us = getUnitFrameTimeUs();
+  sInfo.at(C::VIDEO_ID).unitTimeUs = us[C::VIDEO_ID];
+  sInfo.at(C::AUDIO_ID).unitTimeUs = us[C::AUDIO_ID];
 }
 
-void AcsHandler::setReader(std::weak_ptr<FileReader> reader) {
+bool AcsHandler::setReader(std::weak_ptr<FileReader> inputReaderPtr) {
+  this->fileReaderPtr = inputReaderPtr;
+  if (auto readerPtr = fileReaderPtr.lock()) {
+
+    auto& videoMetaMap = readerPtr->getVideoMetaWithLock();
+    if (videoMetaMap.empty()){
+      logger->severe("Dongvin, video meta init wrong!");
+      return false;
+    }
+
+    int refVideoSampleSize = readerPtr->getVideoSampleSize();
+    int audioSampleSize = readerPtr->getAudioSampleSize();
+
+    if (refVideoSampleSize != C::INVALID && audioSampleSize != C::INVALID) {
+      sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize;
+      sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize;
+
+      setRtpInfo(readerPtr->getRtpInfoCopyWithLock());
+      return true;
+    }
+    logger->severe(
+      "Dongvin, video meta init wrong! refVideoSampleCnt : audioSampleCnt "
+      + std::to_string(refVideoSampleSize) + "/" + std::to_string(audioSampleSize)
+    );
+    return false;
+  }
+  logger->severe("Dongvin, failed to init FileReader ptr!");
+  return false;
 }
 
 int AcsHandler::getLastVideoSampleNumber() {
+  return sInfo.at(C::VIDEO_ID).maxSampleNo;
 }
 
 int AcsHandler::getLastAudioSampleNumber() {
+  return sInfo.at(C::AUDIO_ID).maxSampleNo;
 }
 
 std::vector<unsigned char> AcsHandler::getAccData() {
+  if (auto readerPtr = fileReaderPtr.lock()) {
+    return readerPtr->getAccDataCopyWithLock();
+  }
+  logger->severe("Dongvin, failed to get FileReader ptr!");
+  return {};
 }
 
 std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
+  if (auto readerPtr = fileReaderPtr.lock()) {
+    return readerPtr->getAllV0ImagesCopyWithLock();
+  }
+  logger->severe("Dongvin, failed to get FileReader ptr!");
+  return {};
 }
 
 std::unique_ptr<AVSampleBuffer> AcsHandler::getNextSample() {
 }
 
 bool AcsHandler::isDone(int streamId) {
+  if (sInfo.empty()) return false;
+  if (!sInfo.contains(streamId)) return false;
+  return sInfo.at(streamId).isDone();
 }
 
 int64_t AcsHandler::getUnitFrameTimeUs(int streamId) {
+  int targetStreamId = -1;
+  if(streamId > 1) {
+    targetStreamId = 0;
+  } else {
+    targetStreamId = streamId;
+  }
+  return sInfo.at(targetStreamId).unitTimeUs;
 }
 
 std::string AcsHandler::getMediaInfo() {
+  if (auto readerPtr = fileReaderPtr.lock()) {
+    return readerPtr->getMediaInfoCopyWithLock();
+  }
+  logger->severe("Dongvin, failed to get FileReader ptr!");
+  return C::EMPTY_STRING;
 }
 
 std::vector<int64_t> AcsHandler::getSsrc() {
+  return rtpInfo.kv.at(C::SSRC_KEY);
 }
 
 int AcsHandler::getMainVideoNumber() {
+  if (auto readerPtr = fileReaderPtr.lock()) {
+    const auto& videoMeta = readerPtr->getVideoMetaWithLock();
+    return videoMeta.at(C::REF_CAM).getFileNumber();
+  }
+  logger->severe("Dongvin, failed to get FileReader ptr!");
+  return C::INVALID;
 }
 
 int AcsHandler::getMaxCamNumber() {
+  if (auto readerPtr = fileReaderPtr.lock()) {
+    return static_cast<int>(readerPtr->getVideoMetaWithLock().size());
+  }
+  logger->severe("Dongvin, failed to get FileReader ptr!");
+  return C::INVALID;
 }
 
 std::vector<int> AcsHandler::getInitialSeq() {
+  std::vector<int> seqVec;
+  for (auto streamId = 0; streamId < sInfo.size(); streamId++) {
+    seqVec.push_back(sInfo[streamId].refSeq0);
+  }
+  return seqVec;
 }
 
 std::vector<int64_t> AcsHandler::getTimestamp() {
+  std::vector<int64_t> timestampVec;
+  for (auto streamId = 0; streamId < sInfo.size(); streamId++) {
+    timestampVec.push_back(sInfo[streamId].timestamp);
+  }
+  return timestampVec;
 }
 
 int64_t AcsHandler::getTimestamp0(int streamId) {
@@ -122,12 +240,57 @@ void AcsHandler::findNextSampleForSwitching(int vid, std::vector<int64_t> timeIn
 }
 
 std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampleNo) {
+  if (auto readerPtr = fileReaderPtr.lock()) {
+    if (auto sessionPtr = parentSessionPtr.lock()) {
+      if (streamId == C::VIDEO_ID) {
+        return std::make_unique<Buffer>(
+          readerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
+          .getFirstRtp()
+        );
+      }
+      // audio sample. one audio sample is consist of one rtp packet.
+      return std::make_unique<Buffer>(
+        readerPtr->readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
+      );
+    }
+    logger->severe("Dongvin, fail to get Session Ptr!");
+    return nullptr;
+  }
+  logger->severe("Dongvin, fail to get FileReader Ptr!");
+  return nullptr;
 }
 
 void AcsHandler::checkTimestamp(int streamId, ReadInfo &readInfo) {
+  int64_t t = getTimestamp0(streamId) + (readInfo.startSampleNo * getUnitFrameTimeUs(streamId));
+  if (t != readInfo.timestamp) {
+    logger->warning("Dongvin, video timestamp calculation is wrong.");
+  }
 }
 
 int AcsHandler::findKeySampleNumber(int streamId, int64_t timeUs, int way) {
+  int gop = static_cast<int>(getGop()[0]);
+
+  if(timeUs<0 || timeUs>=getPlayTimeUs(streamId)) {
+    int max = sInfo.at(streamId).maxSampleNo;
+    int residue = max%gop;
+    return residue==0?max:max-residue;
+  } else if(timeUs==0) {
+    return 0;
+  }
+
+  int sampleNo = getSampleNumber(streamId, timeUs);
+  if(streamId==C::VIDEO_ID){
+    int indexInGop = sampleNo%gop;
+    if(indexInGop!=0){
+      if(way==C::NEXT_KEY) sampleNo += gop-indexInGop;
+      else if (way==C::PREVIOUS_KEY) sampleNo -= indexInGop;
+      else {
+        if(indexInGop>=gop/2) sampleNo += gop-indexInGop;
+        else sampleNo -= indexInGop;
+      }
+    }
+  }
+  return sampleNo;
 }
 
 int AcsHandler::findSampleNumber(int streamId, int64_t timeUs) {

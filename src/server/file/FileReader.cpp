@@ -100,7 +100,7 @@ std::vector<std::vector<unsigned char>> FileReader::getAllV0ImagesCopyWithLock()
 }
 
 int FileReader::getAudioSampleSize() const {
-  return audioFile.getConstMeta().size();
+  return static_cast<int>(audioFile.getConstMeta().size());
 }
 
 int FileReader::getVideoSampleSize() const {
@@ -127,14 +127,8 @@ std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
 
 std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock() {
   std::lock_guard<std::mutex> guard(lock);
-  // do not copy. just return const ref('&')
-  if (videoFiles.empty()) {
-    // return empty map.
-    //return std::unordered_map<std::string, VideoAccess>{};
-    return videoFiles;
-  } else {
-    return videoFiles;
-  }
+  // do not copy. just return ref('&')
+  return videoFiles;
 }
 
 AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) {
