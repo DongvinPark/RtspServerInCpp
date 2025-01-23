@@ -72,10 +72,10 @@ private:
 
   std::shared_ptr<Logger> logger;
   std::string sessionId;
-
+  std::weak_ptr<Session> parentSessionPtr;
   std::weak_ptr<FileReader> fileReaderPtr;
+  ContentsStorage& contentsStorage;
 
-  // TODO : refer to comments in 'ReadInfo' class
   std::unordered_map<int, ReadInfo> sInfo{};
   RtpInfo rtpInfo;
   int camId = C::ZERO;

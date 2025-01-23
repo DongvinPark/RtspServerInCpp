@@ -45,12 +45,10 @@ public:
     // reading sample
     AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap);
     std::vector<VideoSample>& readRefVideoSampleWithLock(
-        int sampleNo, int mbpsCurBitrate, std::vector<int> possibleBitrateList,
-        HybridMetaMapType& hybridMetaMap
+        int sampleNo, HybridMetaMapType& hybridMetaMap
     );
     std::vector<VideoSample>& readVideoSampleWithLock(
         int camId, int vid, int memberId, int sampleNo,
-        int mbpsCurBitrate, std::vector<int> possibleBitrateList,
         HybridMetaMapType& hybridMetaMap
     );
 

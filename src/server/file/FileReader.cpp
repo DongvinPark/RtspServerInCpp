@@ -141,10 +141,9 @@ AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapTyp
   std::lock_guard<std::mutex> guard(lock);
 }
 
-std::vector<VideoSample> & FileReader::readRefVideoSampleWithLock(int sampleNo,
-  int mbpsCurBitrate,
-  std::vector<int> possibleBitrateList,
-  HybridMetaMapType &hybridMetaMap) {
+std::vector<VideoSample> & FileReader::readRefVideoSampleWithLock(
+  int sampleNo, HybridMetaMapType &hybridMetaMap
+) {
   std::lock_guard<std::mutex> guard(lock);
 }
 
@@ -152,9 +151,8 @@ std::vector<VideoSample> & FileReader::readVideoSampleWithLock(int camId,
   int vid,
   int memberId,
   int sampleNo,
-  int mbpsCurBitrate,
-  std::vector<int> possibleBitrateList,
-  HybridMetaMapType &hybridMetaMap) {
+  HybridMetaMapType &hybridMetaMap
+) {
   std::lock_guard<std::mutex> guard(lock);
 }
 

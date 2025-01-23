@@ -172,13 +172,13 @@ namespace Util {
 		return findSequenceNumber(firstRtp);
 	}
 
-	inline uint32_t findTimestamp(Buffer rtp) {
+	inline int64_t findTimestamp(const Buffer& rtp) {
 		ParsableByteArray rtpPacket(rtp);
 		rtpPacket.skipBytes(C::TCP_RTP_HEAD_LEN + 4);
 		return rtpPacket.readUnsignedInt();
 	}
 
-	inline uint32_t findTimestampInVideoSample(VideoSample& sample) {
+	inline int64_t findTimestampInVideoSample(VideoSample& sample) {
 		return findTimestamp(sample.getFirstRtp());
 	}
 
