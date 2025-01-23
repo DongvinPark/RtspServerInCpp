@@ -36,14 +36,10 @@ void Server::start() {
 
   try {
     while (true) {
+      std::cout << "Waiting for new client's connection..." << std::endl;
       tcp::socket socket(io_context);
       acceptor.accept(socket);
       std::string sessionId = getSessionId();
-
-      logger->warning(
-        "Dongvin, new client arrives, id: " + sessionId
-        + ", total number of clients: " + std::to_string(sessions.size())
-      );
 
       // makes session and starts it.
       std::shared_ptr<Session> sessionPtr = std::make_shared<Session>(
@@ -60,6 +56,10 @@ void Server::start() {
 
       // register session pointer at session map
       sessions.insert_or_assign(sessionId, sessionPtr);
+      logger->warning(
+        "Dongvin, new client arrives, id: " + sessionId
+        + ", total number of clients: " + std::to_string(sessions.size())
+      );
     }
   } catch (const std::exception& e) {
     std::ostringstream oss;

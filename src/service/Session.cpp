@@ -1,4 +1,7 @@
 #include "../include/Session.h"
+
+#include <iostream>
+
 #include "../constants/C.h"
 
 
@@ -34,7 +37,9 @@ void Session::start() {
     try {
       while (true) {
         std::unique_ptr<Buffer> bufferPtr = receive(socket);
-        handleRtspRequest(std::move(bufferPtr));
+        if (bufferPtr != nullptr) {
+          handleRtspRequest(std::move(bufferPtr));
+        }
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
@@ -58,13 +63,8 @@ void Session::start() {
 
   // TODO : implement BitrateRecorderTimer Task using PeriodicTask
 
-  std::thread rxThread(rxTask);
-  std::thread txThread(txTask);
-
-  if (rxThread.joinable()) rxThread.join();
-  if (txThread.joinable()) txThread.join();
-
-
+  std::thread(rxTask).detach();
+  std::thread(txTask).detach();
 }
 
 std::string Session::getSessionId() {
@@ -162,6 +162,8 @@ void Session::shutdownSession() {
 }
 
 void Session::handleRtspRequest(std::unique_ptr<Buffer> bufPtr) {
+  rtspHandlerPtr->run(std::move(bufPtr));
+  queueTx(std::move(bufPtr));
 }
 
 bool Session::onCid(std::string inputCid) {
@@ -205,6 +207,7 @@ void Session::onPlayDone(int streamId) {
 }
 
 void Session::queueTx(std::unique_ptr<Buffer> bufPtr) {
+  txQ.put(std::move(bufPtr));
 }
 
 void Session::recordBitrateTestResult() {
@@ -217,10 +220,34 @@ bool Session::isPlayDone(int streamId) {
 }
 
 void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
+  sentBitsSize += bufPtr->len;
+  boost::system::error_code ignored_error;
+  boost::asio::write(socket, boost::asio::buffer(bufPtr->buf), ignored_error);
+  std::cout << "!!! 전송 완료 !!!" << std::endl;
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
+  if (!socket.is_open()) {
+    throw std::runtime_error("socket is not open");
+  }
+  std::vector<unsigned char> buf(2*1024);
+  boost::system::error_code error;
+
+  std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);
+  if (error == boost::asio::error::eof) {
+    // Connection closed cleanly by peer
+    std::cerr << "Connection closed by peer." << std::endl;
+    return nullptr;
+  }
+  if (error) {
+    throw boost::system::system_error(error); // Other errors
+  }
+  std::cout << "!!! 리시브 완료 !!! : " << std::endl;
+
+  auto bufferPtr = std::make_unique<Buffer>(buf, 0, bytesRead);
+  return bufferPtr;
 }
 
 std::unique_ptr<Buffer> Session::takeTxq() {
+  return txQ.take();
 }

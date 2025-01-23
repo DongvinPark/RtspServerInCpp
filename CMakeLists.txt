@@ -74,7 +74,6 @@ add_executable(AlphaStreamer3.1Cpp
         include/ContentsStorage.h
         src/server/ContentsStorage.cpp
         include/BlockingQueue.h
-        src/util/BlockingQueue.cpp
         include/RtspHandler.h
         src/service/RtspHandler.cpp
         include/RtpHandler.h
