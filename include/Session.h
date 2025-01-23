@@ -43,7 +43,7 @@ class Session {
 public:
   explicit Session(
     boost::asio::io_context& inputIoContext,
-    boost::asio::ip::tcp::socket& inputSocket,
+    std::shared_ptr<boost::asio::ip::tcp::socket> inputSocketPtr,
     std::string inputSessionId,
     Server& inputServer,
     ContentsStorage& inputContentsStorage,
@@ -134,7 +134,7 @@ private:
   std::shared_ptr<Logger> logger;
   std::mutex lock;
   boost::asio::io_context& io_context;
-  boost::asio::ip::tcp::socket& socket;
+  std::shared_ptr<boost::asio::ip::tcp::socket> socketPtr;
   std::string sessionId;
   Server& parentServer;
   ContentsStorage& contentsStorage;

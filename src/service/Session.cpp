@@ -7,7 +7,7 @@
 
 Session::Session(
   boost::asio::io_context & inputIoContext,
-  boost::asio::ip::tcp::socket & inputSocket,
+  std::shared_ptr<boost::asio::ip::tcp::socket> inputSocketPtr,
   std::string inputSessionId,
   Server & inputServer,
   ContentsStorage & inputContentsStorage,
@@ -15,7 +15,7 @@ Session::Session(
 )
   : logger(Logger::getLogger(C::SESSION)),
     io_context(inputIoContext),
-    socket(inputSocket),
+    socketPtr(inputSocketPtr),
     sessionId(inputSessionId),
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
@@ -23,7 +23,7 @@ Session::Session(
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
-  auto clientIpAddressEndpoint = socket.local_endpoint();
+  auto clientIpAddressEndpoint = socketPtr->local_endpoint();
   clientRemoteAddress = clientIpAddressEndpoint.address().to_string();
 }
 
@@ -36,8 +36,9 @@ void Session::start() {
   auto rxTask = [&](){
     try {
       while (true) {
-        std::unique_ptr<Buffer> bufferPtr = receive(socket);
+        std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
         if (bufferPtr != nullptr) {
+          std::cout << "!!! get ptr from receive !!!\n";
           handleRtspRequest(std::move(bufferPtr));
         }
       }
@@ -162,8 +163,8 @@ void Session::shutdownSession() {
 }
 
 void Session::handleRtspRequest(std::unique_ptr<Buffer> bufPtr) {
-  rtspHandlerPtr->run(std::move(bufPtr));
-  queueTx(std::move(bufPtr));
+  std::cout << "handle rtsp req enter !!!\n";
+  queueTx(std::move(rtspHandlerPtr->run(std::move(bufPtr))));
 }
 
 bool Session::onCid(std::string inputCid) {
@@ -222,7 +223,7 @@ bool Session::isPlayDone(int streamId) {
 void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += bufPtr->len;
   boost::system::error_code ignored_error;
-  boost::asio::write(socket, boost::asio::buffer(bufPtr->buf), ignored_error);
+  boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
   std::cout << "!!! 전송 완료 !!!" << std::endl;
 }
 
@@ -242,7 +243,8 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   if (error) {
     throw boost::system::system_error(error); // Other errors
   }
-  std::cout << "!!! 리시브 완료 !!! : " << std::endl;
+  std::cout << "!!! received !!! : " << std::endl;
+  std::cout << "received : " << std::string(buf.begin(), buf.end()) << std::endl;
 
   auto bufferPtr = std::make_unique<Buffer>(buf, 0, bytesRead);
   return bufferPtr;

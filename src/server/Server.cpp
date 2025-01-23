@@ -36,14 +36,13 @@ void Server::start() {
 
   try {
     while (true) {
-      std::cout << "Waiting for new client's connection..." << std::endl;
-      tcp::socket socket(io_context);
-      acceptor.accept(socket);
+      auto socketPtr = std::make_shared<tcp::socket>(io_context);
+      acceptor.accept(*socketPtr);
       std::string sessionId = getSessionId();
 
       // makes session and starts it.
       std::shared_ptr<Session> sessionPtr = std::make_shared<Session>(
-        io_context, socket, sessionId,
+        io_context, socketPtr, sessionId,
         *this, contentsStorage, sntpTimeProvider
       );
 

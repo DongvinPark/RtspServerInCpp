@@ -25,11 +25,13 @@ void RtspHandler::shutdown() {
 }
 
 std::unique_ptr<Buffer> RtspHandler::run(std::unique_ptr<Buffer> inputBufferPtr) {
+  std::cout << "!!! RtspHandler::run start" << std::endl;
   std::string req = inputBufferPtr->getString();
   logger->info("Dongvin, " + sessionId + ", rtsp req: " + req);
   if (req.find(C::CRLF2) != std::string::npos) {
     if (watingReq == C::EMPTY_STRING) watingReq = req;
     else watingReq += req;
+    std::cout << "!!! nullptr return !!! " << std::endl;
     return nullptr;
   }
   if (watingReq != C::EMPTY_STRING) {
