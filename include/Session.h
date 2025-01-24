@@ -59,6 +59,10 @@ public:
 
   void start();
 
+  void setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr);
+  void setRtspHandlerPtr(std::shared_ptr<RtspHandler> inputRtspHandlerPtr);
+  void setRtpHandlerPtr(std::shared_ptr<RtpHandler> inputRtpHandlerPtr);
+
   std::string getSessionId();
   std::string getClientRemoteAddress();
   int64_t getSessionInitTimeSecUtc() const;
@@ -107,7 +111,7 @@ public:
   void onUserRequestingPlayTime(std::vector<float> playTimeSec); // TODO: need to test at multi platform.
 
   void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> switchingRspPtr, bool neetToLimitSample);
-  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> camChangeRspPtr);
+  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& camChangeRspPtr);
 
   void onPlayStart();
   void onTeardown();
@@ -126,6 +130,9 @@ private:
 
   bool isPlayDone(int streamId);
   void transmit(std::unique_ptr<Buffer> bufPtr);
+
+  void asyncRead();
+  void asyncWrite();
 
   std::unique_ptr<Buffer> receive(boost::asio::ip::tcp::socket& socket);
 
@@ -167,6 +174,9 @@ private:
 
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
+
+  std::atomic<bool> txInProgress = false;
+  std::array<char, 2048> rxBuffer;
 };
 
 #endif //SESSION_H

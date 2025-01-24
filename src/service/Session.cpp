@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "../../constants/Util.h"
 #include "../constants/C.h"
 
 
@@ -15,7 +16,7 @@ Session::Session(
 )
   : logger(Logger::getLogger(C::SESSION)),
     io_context(inputIoContext),
-    socketPtr(inputSocketPtr),
+    socketPtr(std::move(inputSocketPtr)),
     sessionId(inputSessionId),
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
@@ -30,15 +31,70 @@ Session::Session(
 Session::~Session() {
 }
 
+void Session::asyncRead() {
+  socketPtr->async_read_some(
+      boost::asio::buffer(rxBuffer),
+      [this](boost::system::error_code ec, std::size_t bytesTransferred) {
+          if (!ec) {
+              std::cout << "!!! Async read completed: " << bytesTransferred << " bytes !!!" << std::endl;
+
+              // Process the incoming request
+              std::string receivedData(rxBuffer.data(), bytesTransferred);
+              std::vector<unsigned char> data(receivedData.begin(), receivedData.end());
+              handleRtspRequest(std::make_unique<Buffer>(data));
+
+              // Continue reading
+              asyncRead();
+          } else {
+              logger->severe("Session " + sessionId + " read error: " + ec.message());
+              shutdownSession();
+          }
+      });
+}
+
+void Session::asyncWrite() {
+  txInProgress = true;
+
+  // Fetch the next message to send from the queue
+  std::unique_ptr<Buffer> bufferPtr = takeTxq();
+  if (!bufferPtr || bufferPtr->len == C::INVALID) {
+    txInProgress = false;
+    return; // No more messages to send
+  }
+
+  // Perform asynchronous write operation
+  boost::asio::async_write(
+      *socketPtr,
+      boost::asio::buffer(bufferPtr->buf),
+      [this, bufferPtr = std::move(bufferPtr)](boost::system::error_code ec, std::size_t /*bytesTransferred*/) {
+          if (!ec) {
+              std::cout << "!!! Async write completed !!!" << std::endl;
+
+              if (bufferPtr->afterTx) {
+                  bufferPtr->afterTx();
+              }
+
+              // Continue writing if there are more messages in the queue
+              asyncWrite();
+          } else {
+              logger->severe("Session " + sessionId + " write error: " + ec.message());
+              shutdownSession();
+          }
+      });
+}
+
+
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
+  // Start asynchronous read operation
+  asyncRead();
 
-  auto rxTask = [&](){
+  /*auto rxTask = [&](){
     try {
       while (true) {
+        std::cout << "!!! rx while enter !!!\n";
         std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
         if (bufferPtr != nullptr) {
-          std::cout << "!!! get ptr from receive !!!\n";
           handleRtspRequest(std::move(bufferPtr));
         }
       }
@@ -53,8 +109,19 @@ void Session::start() {
       while (true) {
         std::unique_ptr<Buffer> bufferPtr = takeTxq();
         if (bufferPtr == nullptr || bufferPtr->len == C::INVALID) break;
+
+        std::vector<std::string> resVec = Util::splitToVecByStringForRtspMsg(bufferPtr->getString(), C::CRLF);
+        std::cout << "!!! res check !!!" << std::endl;
+
+        for (const auto & res : resVec)
+        {
+          std::cout << res << std::endl;
+        }
         transmit(std::move(bufferPtr));
-        if (bufferPtr->afterTx != nullptr) bufferPtr->afterTx();
+        if (bufferPtr->afterTx != nullptr){
+          std::cout << "after tx not null!!!" << std::endl;
+          bufferPtr->afterTx();
+        }
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop tx. exception : " + e.what());
@@ -65,7 +132,19 @@ void Session::start() {
   // TODO : implement BitrateRecorderTimer Task using PeriodicTask
 
   std::thread(rxTask).detach();
-  std::thread(txTask).detach();
+  std::thread(txTask).detach();*/
+}
+
+void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
+  this->acsHandlerPtr = std::move(inputAcsHandlerPtr);
+}
+
+void Session::setRtspHandlerPtr(std::shared_ptr<RtspHandler> inputRtspHandlerPtr){
+  this->rtspHandlerPtr = std::move(inputRtspHandlerPtr);
+}
+
+void Session::setRtpHandlerPtr(std::shared_ptr<RtpHandler> inputRtpHandlerPtr){
+  this->rtpHandlerPtr = std::move(inputRtpHandlerPtr);
 }
 
 std::string Session::getSessionId() {
@@ -164,10 +243,19 @@ void Session::shutdownSession() {
 
 void Session::handleRtspRequest(std::unique_ptr<Buffer> bufPtr) {
   std::cout << "handle rtsp req enter !!!\n";
-  queueTx(std::move(rtspHandlerPtr->run(std::move(bufPtr))));
+  Buffer& inputBuffer = *bufPtr;
+  rtspHandlerPtr->run(inputBuffer);
+  queueTx(std::move(bufPtr));
+
+  // If not already writing, start the asynchronous write process
+  if (!txInProgress) {
+    asyncWrite();
+  }
 }
 
 bool Session::onCid(std::string inputCid) {
+  // TODO : update later!
+  return true;
 }
 
 void Session::onChannel(int trackId, std::vector<int> channels) {
@@ -188,7 +276,7 @@ void Session::onCameraChange(
   int nextCam,
   int nextId,
   std::vector<int64_t> switchingTimeInfo,
-  std::unique_ptr<Buffer> camChangeRspPtr
+  Buffer& camChangeRspPtr
 ) {
 }
 
@@ -224,7 +312,7 @@ void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += bufPtr->len;
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
-  std::cout << "!!! 전송 완료 !!!" << std::endl;
+  std::cout << "!!! Tx completed !!!" << std::endl;
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
@@ -235,17 +323,18 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   boost::system::error_code error;
 
   std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);
+  std::cout << "!!! boost read completed!!!" << bytesRead << " bytes" << std::endl;
   if (error == boost::asio::error::eof) {
     // Connection closed cleanly by peer
     std::cerr << "Connection closed by peer." << std::endl;
     return nullptr;
   }
   if (error) {
+    std::cerr << error.message() << std::endl;
     throw boost::system::system_error(error); // Other errors
   }
-  std::cout << "!!! received !!! : " << std::endl;
-  std::cout << "received : " << std::string(buf.begin(), buf.end()) << std::endl;
 
+  buf.resize(bytesRead);
   auto bufferPtr = std::make_unique<Buffer>(buf, 0, bytesRead);
   return bufferPtr;
 }

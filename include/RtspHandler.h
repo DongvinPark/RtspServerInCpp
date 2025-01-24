@@ -16,9 +16,9 @@ public:
   ~RtspHandler();
 
   void shutdown();
-  std::unique_ptr<Buffer> run(std::unique_ptr<Buffer> inputBufferPtr);
-  std::unique_ptr<Buffer> handleRtspRequest(
-    std::string reqStr, std::unique_ptr<Buffer> inputBufferPtr
+  void run(Buffer& inputBuffer);
+  void handleRtspRequest(
+    std::string reqStr, Buffer& inputBuffer
   );
 
 private:

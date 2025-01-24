@@ -108,6 +108,30 @@ namespace Util {
 		return tokens;
 	}
 
+	inline std::vector<std::string> splitToVecByStringForRtspMsg(
+	const std::string& str, const std::string& delimiter
+	) {
+		std::vector<std::string> tokens;
+		size_t start = 0;
+		size_t end = str.find(delimiter);
+
+		while (end != std::string::npos) {
+			tokens.push_back(str.substr(start, end - start));
+			start = end + delimiter.length();
+			end = str.find(delimiter, start);
+		}
+
+		// add the last element
+		tokens.push_back(str.substr(start));
+		std::vector<std::string> result;
+		for (auto & token : tokens){
+			if (token != C::EMPTY_STRING) {
+				result.push_back(token);
+			}
+		}
+		return result;
+	}
+
 	// delete the leading and trailing whitespace chars
 	inline std::string trim(const std::string& str) {
 		const size_t start = str.find_first_not_of(" \t\r\n");

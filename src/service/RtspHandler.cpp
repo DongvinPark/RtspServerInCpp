@@ -24,73 +24,85 @@ RtspHandler::~RtspHandler() {
 void RtspHandler::shutdown() {
 }
 
-std::unique_ptr<Buffer> RtspHandler::run(std::unique_ptr<Buffer> inputBufferPtr) {
+void RtspHandler::run(Buffer& inputBuffer) {
   std::cout << "!!! RtspHandler::run start" << std::endl;
-  std::string req = inputBufferPtr->getString();
+  std::string req = inputBuffer.getString();
   logger->info("Dongvin, " + sessionId + ", rtsp req: " + req);
-  if (req.find(C::CRLF2) != std::string::npos) {
+  /*if (req.find(C::CRLF2) != std::string::npos) {
     if (watingReq == C::EMPTY_STRING) watingReq = req;
     else watingReq += req;
     std::cout << "!!! nullptr return !!! " << std::endl;
-    return nullptr;
+    return;
   }
   if (watingReq != C::EMPTY_STRING) {
     req = (watingReq+req);
     watingReq = C::EMPTY_STRING;
-  }
+  }*/
 
-  return handleRtspRequest(req, std::move(inputBufferPtr));
+  handleRtspRequest(req, inputBuffer);
 }
 
-std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
-  std::string reqStr, std::unique_ptr<Buffer> inputBufferPtr
+void RtspHandler::handleRtspRequest(
+  std::string reqStr, Buffer& inputBuffer
 ) {
   int idx = reqStr.find(' ');
   std::string method = reqStr.substr(0, idx);
-  Buffer& inputBuffer = *inputBufferPtr;
+  std::cout << "!!! method : "<<method << std::endl;
   if (std::ranges::find(C::RTSP_METHOD_VECTOR, method) == C::RTSP_METHOD_VECTOR.end()) {
     logger->severe("Dongvin, not implemented method! : " + method);
     respondError(inputBuffer, 405, method);
-    return inputBufferPtr;
+    return;
   }
 
-  std::vector<std::string> strings = Util::splitToVecByString(reqStr, C::CRLF);
+  std::vector<std::string> strings = Util::splitToVecByStringForRtspMsg(reqStr, C::CRLF);
+  for (const auto & string : strings)
+  {
+    std::cout << "!!!received req check!"<<string << std::endl;
+  }
   int _cSeq = findCSeq(strings);
   if (_cSeq == -1) {
     // invalid CSeq. bad req.
     logger->severe("Dongvin, failed to find CSeq header!");
+    std::cout << "!!! findCSeq returned -1" << std::endl;
     respondError(inputBuffer, 400, method);
+    return;
   }
   int next = cSeq + 1;
   if (next != _cSeq) {
     logger->severe("Dongvin, bad sequence number!");
+    std::cout << "!!! CSeq not match !!!" << std::endl;
     respondError(inputBuffer, 400, method);
+    return;
   }
+
+  std::cout << "!!! CSeq !!! " << _cSeq <<std::endl;
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
     if (auto ptrForAcsHandler = acsHandlerPtr.lock()) {
       // do not allowed proceeding without session id once session is set up.
       // Once session id is given to a client, all the following requests must
       // include the session id in the request.
-      if (inSession && !hasSessionId(strings)) {
+      /*if (inSession && !hasSessionId(strings)) {
         wrongSessionIdRequestCnt++;
         if (wrongSessionIdRequestCnt >= C::WRONG_SESSION_ID_TOLERANCE_CNT) {
           // some kind of punks are sending wrong requests on the port assigned to
           // my client. I shut down this port to protect my client's QOE. Not answer to
           // the bad guy any longer so as not to give any hint of the correct session id.
           logger->warning(
-            "Dongvin, illegal requests with invalid session id are given "
+            /*"Dongvin, illegal requests with invalid session id are given "
             + std::to_string(C::WRONG_SESSION_ID_TOLERANCE_CNT)+" times in total. "
-            +"We believe there is something wrong. We shut down this connection.");
+            +"We believe there is something wrong. We shut down this connection.");#1#
           sessionPtr->shutdownSession();
-          return nullptr;
+          return;
         }
         logger->severe("Dongvin, failed to find session id!");
+        std::cout << "error 1" << std::endl;
         respondError(inputBuffer, 400, method);
-        return inputBufferPtr;
-      }
+        return;
+      }*/
 
       cSeq = _cSeq;
+      std::cout << "!!! CSeq assign !!! " << cSeq <<std::endl;
 
       if (method == "OPTIONS") {
         if (isThereMonitoringInfoHeader(strings)) {
@@ -127,9 +139,12 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
         bool isContentExists = sessionPtr->onCid(cid);
         if (isContentExists) {
           respondOptions(inputBuffer);
+          return;
         } else {
           logger->severe("Dongvin, server doesn't have content : " + cid);
+          std::cout << "error 2 content not exits !!! : " + cid << std::endl;
           respondError(inputBuffer, 400, method);
+          return;
         }
       } else if (method == "DESCRIBE") {
         // assume url and username are correct or same. Don't check again.
@@ -144,6 +159,7 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
         if (transport == C::EMPTY_STRING && hybridMode == C::EMPTY_STRING) {
           logger->severe("Dongvin, invalid SETUP header!");
           respondError(inputBuffer, 400, method);
+          return;
         } else if (transport != C::EMPTY_STRING && hybridMode == C::EMPTY_STRING) {
           // process the setup req on track ids.
           int trackId = findTrackId(strings[0]);
@@ -222,6 +238,8 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
             }
             nptElem += "]";
             logger->severe("Dongvin, invalid npt in play req for seek : " + nptElem);
+            respondError(inputBuffer, 400, method);
+            return;
           } else {
             // valid npt
             sessionPtr->onUserRequestingPlayTime(npt);
@@ -346,31 +364,35 @@ std::unique_ptr<Buffer> RtspHandler::handleRtspRequest(
           if (!isValid) {
             logger->info("Dongvin, invalid next id or video id for cam change!");
             respondError(inputBuffer, 400, method);
+            return;
           } else {
-            sessionPtr->onCameraChange(cam, nextVid, switchingInfo, std::move(inputBufferPtr));
+            sessionPtr->onCameraChange(cam, nextVid, switchingInfo, inputBuffer);
           }
         } else {
           logger->info("Dongvin, invalid set_parameter header!");
           respondError(inputBuffer, 400, method);
+          return;
         }
       } else {
         logger->warning("Dongvin, invalid method: " + method);
         respondError(inputBuffer, 400, method);
+        return;
       }
 
-      if (inputBufferPtr->getString().size() > 0) {
-        logger->info("Dongvin, id : " + sessionId + ", rtsp response: \n" + inputBufferPtr->getString());
+      if (inputBuffer.getString().size() > 0) {
+        logger->info("Dongvin, id : " + sessionId + ", rtsp response: \n" + inputBuffer.getString());
       }
-      return inputBufferPtr;
+      return;
     } else {
       logger->severe("Dongvin, failed to get weak acs handler ptr!");
       respondError(inputBuffer, 500, method);
+      return;
     }
   } else {
     logger->severe("Dongvin, failed to get weak session ptr!");
     respondError(inputBuffer, 500, method);
+    return;
   }
-  return nullptr;
 }
 
 bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
@@ -875,6 +897,6 @@ Map : hybridMeta<camId, val>
         }
 
       }//for
-    } else logger->severe("RtspHandler: AcsHandlerPtr is null");
-  } else logger->severe("RtspHandler: SessionPtr is null");
+    } //else logger->severe("RtspHandler: AcsHandlerPtr is null");
+  } //else logger->severe("RtspHandler: SessionPtr is null");
 }

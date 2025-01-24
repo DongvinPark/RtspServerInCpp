@@ -51,6 +51,9 @@ void Server::start() {
       auto rtspHandlerPtr = std::make_shared<RtspHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
       auto rtpHandlerPtr = std::make_shared<RtpHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
 
+      sessionPtr->setAcsHandlerPtr(inputAcsHandlerPtr);
+      sessionPtr->setRtspHandlerPtr(rtspHandlerPtr);
+      sessionPtr->setRtpHandlerPtr(rtpHandlerPtr);
       sessionPtr->start();
 
       // register session pointer at session map
