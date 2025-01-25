@@ -297,7 +297,7 @@ void Session::handleRtspRequest(std::unique_ptr<Buffer> bufPtr) {
 
     // If not already writing, start the asynchronous write process
     if (!txInProgress) {
-      asyncWrite();
+      //asyncWrite();
     }
   } catch (const std::exception& ex) {
     std::cerr << "Exception in handleRtspRequest: " << ex.what() << std::endl;
