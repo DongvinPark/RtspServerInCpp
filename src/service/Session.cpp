@@ -20,7 +20,8 @@ Session::Session(
     sessionId(inputSessionId),
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
-    sntpRefTimeProvider(inputSntpRefTimeProvider) {
+    sntpRefTimeProvider(inputSntpRefTimeProvider),
+    strand(boost::asio::make_strand(io_context)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
@@ -32,64 +33,96 @@ Session::~Session() {
 }
 
 void Session::asyncRead() {
+  std::cout << "!!! asyncRead called !!!\n";
   socketPtr->async_read_some(
       boost::asio::buffer(rxBuffer),
-      [this](boost::system::error_code ec, std::size_t bytesTransferred) {
-          if (!ec) {
-              std::cout << "!!! Async read completed: " << bytesTransferred << " bytes !!!" << std::endl;
+      boost::asio::bind_executor(
+          strand, // Ensure the handler executes in the strand
+          [this](boost::system::error_code ec, std::size_t bytesTransferred) {
+              if (!ec) {
+                  std::cout << "!!! Async read completed: " << bytesTransferred << " bytes !!!" << std::endl;
 
-              // Process the incoming request
-              std::string receivedData(rxBuffer.data(), bytesTransferred);
-              std::vector<unsigned char> data(receivedData.begin(), receivedData.end());
-              handleRtspRequest(std::make_unique<Buffer>(data));
+                  // Process the incoming request
+                  std::string receivedData(rxBuffer.data(), bytesTransferred);
+                  std::vector<unsigned char> data(receivedData.begin(), receivedData.end());
+                  handleRtspRequest(std::make_unique<Buffer>(data));
 
-              // Continue reading
-              asyncRead();
-          } else {
-              logger->severe("Session " + sessionId + " read error: " + ec.message());
-              shutdownSession();
-          }
-      });
+                  // Continue reading
+                  asyncRead();
+              } else {
+                  if (ec == boost::asio::error::eof) {
+                      std::cout << "Connection closed by peer." << std::endl;
+                  } else {
+                      std::cout << "Read error: " << ec.message() << std::endl;
+                  }
+
+                  logger->severe("Session " + sessionId + " read error: " + ec.message());
+                  shutdownSession();
+              }
+          }));
 }
 
+
 void Session::asyncWrite() {
-  txInProgress = true;
+  std::cout << "!!! async write called !!!\n";
+    boost::asio::post(strand, [this]() {
+        txInProgress = true;
 
-  // Fetch the next message to send from the queue
-  std::unique_ptr<Buffer> bufferPtr = takeTxq();
-  if (!bufferPtr || bufferPtr->len == C::INVALID) {
-    txInProgress = false;
-    return; // No more messages to send
-  }
+        // Fetch the next message to send from the queue
+        std::unique_ptr<Buffer> bufferPtr = takeTxq();
+        if (!bufferPtr || bufferPtr->len == C::INVALID) {
+            std::cerr << "!!! No buffer to send. Queue is empty. !!!" << std::endl;
+            txInProgress = false;
+            return;
+        }
 
-  // Perform asynchronous write operation
-  boost::asio::async_write(
-      *socketPtr,
-      boost::asio::buffer(bufferPtr->buf),
-      [this, bufferPtr = std::move(bufferPtr)](boost::system::error_code ec, std::size_t /*bytesTransferred*/) {
-          if (!ec) {
-              std::cout << "!!! Async write completed !!!" << std::endl;
+        // Check socket state before proceeding
+        if (!socketPtr->is_open()) {
+            std::cerr << "!!! Socket is not open. Cannot perform write operation. !!!" << std::endl;
+            txInProgress = false;
+            return;
+        }
 
-              if (bufferPtr->afterTx) {
-                  bufferPtr->afterTx();
-              }
+        if (bufferPtr->buf.empty()) {
+            std::cerr << "!!! Buffer is empty. Skipping write operation. !!!" << std::endl;
+            txInProgress = false;
+            return;
+        }
 
-              // Continue writing if there are more messages in the queue
-              asyncWrite();
-          } else {
-              logger->severe("Session " + sessionId + " write error: " + ec.message());
-              shutdownSession();
-          }
-      });
+        // Log buffer size for debugging
+        std::cout << "!!! Preparing to send buffer of size: " << bufferPtr->buf.size() << " bytes !!!" << std::endl;
+
+        // Perform asynchronous write operation
+        boost::asio::async_write(
+            *socketPtr,
+            boost::asio::buffer(bufferPtr->buf),
+            [this, bufferPtr = std::move(bufferPtr)](boost::system::error_code ec, std::size_t bytesTransferred) {
+                if (!ec) {
+                    std::cout << "!!! Async write completed: " << bytesTransferred << " bytes !!!" << std::endl;
+
+                    if (bufferPtr->afterTx) {
+                        std::cout << "!!! Executing afterTx callback !!!" << std::endl;
+                        bufferPtr->afterTx();
+                    }
+
+                    // Continue writing if there are more messages in the queue
+                    asyncWrite();
+                } else {
+                    std::cerr << "!!! Async write error: " << ec.message() << " !!!" << std::endl;
+                    logger->severe("Session " + sessionId + " write error: " + ec.message());
+                    shutdownSession();
+                }
+            });
+    });
 }
 
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
   // Start asynchronous read operation
-  asyncRead();
+  //asyncRead();
 
-  /*auto rxTask = [&](){
+  auto rxTask = [&](){
     try {
       while (true) {
         std::cout << "!!! rx while enter !!!\n";
@@ -132,7 +165,7 @@ void Session::start() {
   // TODO : implement BitrateRecorderTimer Task using PeriodicTask
 
   std::thread(rxTask).detach();
-  std::thread(txTask).detach();*/
+  std::thread(txTask).detach();
 }
 
 void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
@@ -242,16 +275,39 @@ void Session::shutdownSession() {
 }
 
 void Session::handleRtspRequest(std::unique_ptr<Buffer> bufPtr) {
-  std::cout << "handle rtsp req enter !!!\n";
-  Buffer& inputBuffer = *bufPtr;
-  rtspHandlerPtr->run(inputBuffer);
-  queueTx(std::move(bufPtr));
+  if (!bufPtr || bufPtr->buf.empty()) {
+    std::cerr << "Empty or invalid buffer received!" << std::endl;
+    return;
+  }
 
-  // If not already writing, start the asynchronous write process
-  if (!txInProgress) {
-    asyncWrite();
+  if (!rtspHandlerPtr) {
+    std::cerr << "rtspHandlerPtr is null!" << std::endl;
+    return;
+  }
+
+  try {
+    std::cout << "Processing RTSP request..." << std::endl;
+    Buffer& inputBuffer = *bufPtr;
+
+    // Process the RTSP request
+    rtspHandlerPtr->run(inputBuffer);
+
+    // Queue the response for transmission
+    queueTx(std::move(bufPtr));
+
+    // If not already writing, start the asynchronous write process
+    if (!txInProgress) {
+      asyncWrite();
+    }
+  } catch (const std::exception& ex) {
+    std::cerr << "Exception in handleRtspRequest: " << ex.what() << std::endl;
+    shutdownSession();
+  } catch (...) {
+    std::cerr << "Unknown error in handleRtspRequest!" << std::endl;
+    shutdownSession();
   }
 }
+
 
 bool Session::onCid(std::string inputCid) {
   // TODO : update later!
