@@ -157,8 +157,8 @@ bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirec
     camDirectoryList.push_back(camDirectory);
   }
   // sort ascending order of filenames
-  std::ranges::sort(
-    camDirectoryList,
+  std::sort(
+    camDirectoryList.begin(), camDirectoryList.end(),
     [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
       return lhs.filename() < rhs.filename();
     }
@@ -328,7 +328,7 @@ void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMe
     lenList.push_back(aInfo.len);
   }
   // int sort ascending
-  std::ranges::sort(lenList.begin(), lenList.end());
+  std::sort(lenList.begin(), lenList.end());
   int64_t min = lenList[0];
   int64_t max = lenList[lenList.size() - 1];
   logger->info(
@@ -343,8 +343,8 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
   VideoAccess va{};
 
   // open ifstreams for member viedos
-  std::ranges::sort(
-    videos,
+  std::sort(
+    videos.begin(), videos.end(),
     [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {
       return lhs.filename() < rhs.filename();
     }
@@ -440,7 +440,7 @@ void FileReader::showVideoMinMaxSize(
     if (vInfo.getSize()==0) continue; // dummy info
     lenList.push_back(vInfo.getSize());
   }
-  std::ranges::sort(lenList.begin(), lenList.end());
+  std::sort(lenList.begin(), lenList.end());
   int64_t min = lenList[0];
   int64_t max = lenList[lenList.size() - 1];
   logger->info(

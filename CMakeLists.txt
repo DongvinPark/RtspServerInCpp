@@ -24,6 +24,13 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
     # No additional libraries required for macOS
     set(PLATFORM_LIBS "")
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Find Boost
+    find_package(Boost REQUIRED)
+
+    # Link pthread library for Linux
+    set(PLATFORM_LIBS pthread)
 endif()
 
 # Include directories
@@ -31,32 +38,32 @@ include_directories(${Boost_INCLUDE_DIRS} src)
 
 # Add the executable
 add_executable(AlphaStreamer3.1Cpp
-    src/main.cpp
+        src/main.cpp
         include/Logger.h
-    src/util/Logger.cpp
+        src/util/Logger.cpp
         include/Buffer.h
-	src/util/Buffer.cpp
+        src/util/Buffer.cpp
         include/ParsableByteArray.h
-    src/util/ParsableByteArray.cpp
+        src/util/ParsableByteArray.cpp
         include/RtpInfo.h
-    src/util/RtpInfo.cpp
+        src/util/RtpInfo.cpp
         include/RtpMetaInfo.h
-    src/util/RtpMetaInfo.cpp
+        src/util/RtpMetaInfo.cpp
         include/Server.h
-    src/server/Server.cpp
+        src/server/Server.cpp
         include/AudioSample.h
-    src/server/file/AudioSample.cpp
+        src/server/file/AudioSample.cpp
         include/VideoSample.h
-    src/server/file/VideoSample.cpp
+        src/server/file/VideoSample.cpp
         constants/Util.h
         include/AVSampleBuffer.h
-    src/util/AVSampleBuffer.cpp
+        src/util/AVSampleBuffer.cpp
         include/SntpRefTimeProvider.h
-    src/server/SntpRefTimeProvider.cpp
+        src/server/SntpRefTimeProvider.cpp
         include/PeriodicTask.h
-    src/timer/PeriodicTask.cpp
+        src/timer/PeriodicTask.cpp
         include/RxBitrate.h
-    src/util/RxBitrate.cpp
+        src/util/RxBitrate.cpp
         include/FileReader.h
         src/server/file/FileReader.cpp
         include/AudioSampleInfo.h
@@ -84,7 +91,5 @@ add_executable(AlphaStreamer3.1Cpp
         src/service/ReadInfo.cpp
 )
 
-# Link Boost libraries and platform-specific libraries only for Windows
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(AlphaStreamer3.1Cpp Boost::system ${PLATFORM_LIBS})
-endif()
+# Link Boost libraries and platform-specific libraries
+target_link_libraries(AlphaStreamer3.1Cpp ${Boost_LIBRARIES} ${PLATFORM_LIBS})

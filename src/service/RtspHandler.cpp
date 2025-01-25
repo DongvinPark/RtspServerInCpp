@@ -48,7 +48,7 @@ void RtspHandler::handleRtspRequest(
   int idx = reqStr.find(' ');
   std::string method = reqStr.substr(0, idx);
   std::cout << "!!! method : "<<method << std::endl;
-  if (std::ranges::find(C::RTSP_METHOD_VECTOR, method) == C::RTSP_METHOD_VECTOR.end()) {
+  if (std::find(C::RTSP_METHOD_VECTOR.begin(), C::RTSP_METHOD_VECTOR.end(), method) == C::RTSP_METHOD_VECTOR.end()) {
     logger->severe("Dongvin, not implemented method! : " + method);
     respondError(inputBuffer, 405, method);
     return;
