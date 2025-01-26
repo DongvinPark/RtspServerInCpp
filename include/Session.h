@@ -105,7 +105,7 @@ public:
   void shutdownSession();
 
   // for rtsp messages
-  void handleRtspRequest(std::unique_ptr<Buffer> bufPtr);
+  void handleRtspRequest(Buffer& buf);
   bool onCid(std::string inputCid);
   void onChannel(int trackId, std::vector<int> channels);
   void onUserRequestingPlayTime(std::vector<float> playTimeSec); // TODO: need to test at multi platform.
