@@ -45,8 +45,8 @@ void Session::start() {
         if (bufferPtr != nullptr) {
           Buffer& buf = *bufferPtr;
           handleRtspRequest(buf);
-          //queueTx(std::move(bufferPtr));
-          transmit(std::move(bufferPtr));
+          queueTx(std::move(bufferPtr));
+          //transmit(std::move(bufferPtr));
         }
       }
     } catch (const std::exception & e) {
@@ -57,7 +57,23 @@ void Session::start() {
 
   auto txTask = [&](){
     try {
+      long loopCnt = 0;
+      int callCnt = 0;
       while (true) {
+        if (loopCnt % 500000 == 0) {
+          std::unique_ptr<Buffer> bufferPtr = std::make_unique<Buffer>();
+          std::vector<unsigned char> payload;
+          payload.push_back('$');
+          payload.push_back('a');
+          payload.push_back('b');
+          payload.push_back('c');
+          payload.push_back('\n');
+          queueTx(std::move(bufferPtr));
+          transmit(takeTxq());
+          std::cout << "!!! tx from another thread !!!" << std::endl;
+          callCnt++;
+          if (callCnt > 9) break;
+        }
         /*std::unique_ptr<Buffer> bufferPtrToTx = takeTxq();
         if (bufferPtrToTx == nullptr || bufferPtrToTx->len == C::INVALID) break;
 
@@ -274,6 +290,7 @@ bool Session::isPlayDone(int streamId) {
 }
 
 void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
+  std::lock_guard<std::mutex> guard(lock);
   sentBitsSize += bufPtr->len;
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
