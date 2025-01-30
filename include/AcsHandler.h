@@ -26,12 +26,10 @@ public:
   int getCamId();
   void shutdown();
 
-  std::weak_ptr<FileReader> getFileReaderPtr();
-
   void setChannel(int streamId, std::vector<int> ch);
   void initUserRequestingPlaytime(std::vector<float> timeS);
   void setRtpInfo(RtpInfo inputRtpInfo);
-  bool setReader(std::weak_ptr<FileReader> inputReaderPtr);
+  bool setReaderAndContentTitle(FileReader& inputReader, std::string contentTitle);
   int getLastVideoSampleNumber();
   int getLastAudioSampleNumber();
   std::vector<unsigned char> getAccData();
@@ -73,8 +71,8 @@ private:
   std::shared_ptr<Logger> logger;
   std::string sessionId;
   std::weak_ptr<Session> parentSessionPtr;
-  std::weak_ptr<FileReader> fileReaderPtr;
   ContentsStorage& contentsStorage;
+  std::string contentTitle = C::EMPTY_STRING;
 
   std::unordered_map<int, ReadInfo> sInfo{};
   RtpInfo rtpInfo;

@@ -16,7 +16,7 @@
 using HybridMetaMapType
     = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 
-class FileReader {
+class FileReader : public std::enable_shared_from_this<FileReader> {
 public:
     explicit FileReader(const std::filesystem::path& path);
     ~FileReader();

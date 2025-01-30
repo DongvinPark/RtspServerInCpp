@@ -190,7 +190,10 @@ void Session::handleRtspRequest(Buffer& buf) {
 
 
 bool Session::onCid(std::string inputCid) {
-  // TODO : update later!
+  logger->warning("Dongvin, requested content : " + inputCid + ", session id : " + sessionId);
+  FileReader& fileReader = contentsStorage.getCid(inputCid);
+  acsHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
+  std::cout << "!!! oncid true !!!" << std::endl;
   return true;
 }
 

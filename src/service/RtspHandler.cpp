@@ -63,6 +63,7 @@ void RtspHandler::handleRtspRequest(
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
     if (auto ptrForAcsHandler = acsHandlerPtr.lock()) {
+      std::cout << "acs handler lock enter " << std::endl;
       // do not allowed proceeding without session id once session is set up.
       // Once session id is given to a client, all the following requests must
       // include the session id in the request.

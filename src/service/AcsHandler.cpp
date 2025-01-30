@@ -36,10 +36,6 @@ void AcsHandler::shutdown() {
   sInfo.clear();
 }
 
-std::weak_ptr<FileReader> AcsHandler::getFileReaderPtr() {
-  return fileReaderPtr;
-}
-
 void AcsHandler::setChannel(int streamId, std::vector<int> ch) {
   if (sInfo.contains(streamId)){
     ReadInfo& readInfo = sInfo[streamId];
@@ -80,33 +76,39 @@ void AcsHandler::setRtpInfo(RtpInfo inputRtpInfo) {
   sInfo.at(C::AUDIO_ID).unitTimeUs = us[C::AUDIO_ID];
 }
 
-bool AcsHandler::setReader(std::weak_ptr<FileReader> inputReaderPtr) {
-  this->fileReaderPtr = inputReaderPtr;
-  if (auto readerPtr = fileReaderPtr.lock()) {
-
-    auto& videoMetaMap = readerPtr->getVideoMetaWithLock();
-    if (videoMetaMap.empty()){
-      logger->severe("Dongvin, video meta init wrong!");
-      return false;
-    }
-
-    int refVideoSampleSize = readerPtr->getVideoSampleSize();
-    int audioSampleSize = readerPtr->getAudioSampleSize();
-
-    if (refVideoSampleSize != C::INVALID && audioSampleSize != C::INVALID) {
-      sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize;
-      sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize;
-
-      setRtpInfo(readerPtr->getRtpInfoCopyWithLock());
-      return true;
-    }
-    logger->severe(
-      "Dongvin, video meta init wrong! refVideoSampleCnt : audioSampleCnt "
-      + std::to_string(refVideoSampleSize) + "/" + std::to_string(audioSampleSize)
-    );
+bool AcsHandler::setReaderAndContentTitle(FileReader& inputReader, std::string inputContentTitle) {
+  if (inputContentTitle != C::EMPTY_STRING) {
+    contentTitle = inputContentTitle;
+  }
+  std::cout << "set reader enter" << std::endl;
+  auto& videoMetaMap = inputReader.getVideoMetaWithLock();
+  std::cout << "passed 1 " << std::endl;
+  if (videoMetaMap.empty()){
+    logger->severe("Dongvin, video meta init wrong!");
     return false;
   }
-  logger->severe("Dongvin, failed to init FileReader ptr!");
+
+  std::cout << "passed 2 before" << std::endl;
+  int refVideoSampleSize = inputReader.getVideoSampleSize();
+  std::cout << "passed 2 after" << std::endl;
+  int audioSampleSize = inputReader.getAudioSampleSize();
+  std::cout << "passed 3 " << std::endl;
+
+  if (refVideoSampleSize != C::INVALID && audioSampleSize != C::INVALID) {
+    std::cout << "true if enter : " << refVideoSampleSize << "," << audioSampleSize << std::endl;
+    sInfo.emplace(C::VIDEO_ID, ReadInfo());
+    sInfo.emplace(C::AUDIO_ID, ReadInfo());
+
+    sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize;
+    sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize;
+
+    setRtpInfo(inputReader.getRtpInfoCopyWithLock());
+    return true;
+  }
+  logger->severe(
+    "Dongvin, video meta init wrong! refVideoSampleCnt : audioSampleCnt "
+    + std::to_string(refVideoSampleSize) + "/" + std::to_string(audioSampleSize)
+  );
   return false;
 }
 
@@ -119,19 +121,11 @@ int AcsHandler::getLastAudioSampleNumber() {
 }
 
 std::vector<unsigned char> AcsHandler::getAccData() {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    return readerPtr->getAccDataCopyWithLock();
-  }
-  logger->severe("Dongvin, failed to get FileReader ptr!");
-  return {};
+  return contentsStorage.getCid(contentTitle).getAccDataCopyWithLock();
 }
 
 std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    return readerPtr->getAllV0ImagesCopyWithLock();
-  }
-  logger->severe("Dongvin, failed to get FileReader ptr!");
-  return {};
+  return contentsStorage.getCid(contentTitle).getAllV0ImagesCopyWithLock();
 }
 
 std::unique_ptr<AVSampleBuffer> AcsHandler::getNextSample() {
@@ -154,11 +148,7 @@ int64_t AcsHandler::getUnitFrameTimeUs(int streamId) {
 }
 
 std::string AcsHandler::getMediaInfo() {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    return readerPtr->getMediaInfoCopyWithLock();
-  }
-  logger->severe("Dongvin, failed to get FileReader ptr!");
-  return C::EMPTY_STRING;
+  return contentsStorage.getCid(contentTitle).getMediaInfoCopyWithLock();
 }
 
 std::vector<int64_t> AcsHandler::getSsrc() {
@@ -166,20 +156,13 @@ std::vector<int64_t> AcsHandler::getSsrc() {
 }
 
 int AcsHandler::getMainVideoNumber() {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    const auto& videoMeta = readerPtr->getVideoMetaWithLock();
-    return videoMeta.at(C::REF_CAM).getFileNumber();
-  }
-  logger->severe("Dongvin, failed to get FileReader ptr!");
-  return C::INVALID;
+  FileReader& fileReader = contentsStorage.getCid(contentTitle);
+  const auto& videoMeta = fileReader.getVideoMetaWithLock();
+  return videoMeta.at(C::REF_CAM).getFileNumber();
 }
 
 int AcsHandler::getMaxCamNumber() {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    return static_cast<int>(readerPtr->getVideoMetaWithLock().size());
-  }
-  logger->severe("Dongvin, failed to get FileReader ptr!");
-  return C::INVALID;
+  return static_cast<int>(contentsStorage.getCid(contentTitle).getVideoMetaWithLock().size());
 }
 
 std::vector<int> AcsHandler::getInitialSeq() {
@@ -240,23 +223,21 @@ void AcsHandler::findNextSampleForSwitching(int vid, std::vector<int64_t> timeIn
 }
 
 std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampleNo) {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    if (auto sessionPtr = parentSessionPtr.lock()) {
-      if (streamId == C::VIDEO_ID) {
-        return std::make_unique<Buffer>(
-          readerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
-          .getFirstRtp()
-        );
-      }
-      // audio sample. one audio sample is consist of one rtp packet.
+  FileReader& fileReader = contentsStorage.getCid(contentTitle);
+
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    if (streamId == C::VIDEO_ID) {
       return std::make_unique<Buffer>(
-        readerPtr->readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
+        fileReader.readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
+        .getFirstRtp()
       );
     }
-    logger->severe("Dongvin, fail to get Session Ptr!");
-    return nullptr;
+    // audio sample. one audio sample is consist of one rtp packet.
+    return std::make_unique<Buffer>(
+      fileReader.readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
+    );
   }
-  logger->severe("Dongvin, fail to get FileReader Ptr!");
+  logger->severe("Dongvin, fail to get Session Ptr!");
   return nullptr;
 }
 
@@ -341,11 +322,11 @@ int AcsHandler::getSampleTimeIndex(int streamId, int64_t timestamp) {
 }
 
 int64_t AcsHandler::getTimestamp(int sampleNo) {
-  if (auto readerPtr = fileReaderPtr.lock()) {
-    if (auto sessionPtr = parentSessionPtr.lock()) {
-      return Util::findTimestampInVideoSample(
-        readerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
-      );
-    } else return C::INVALID_BYTE;
-  } else return C::INVALID_OFFSET;
+  FileReader& fileReader = contentsStorage.getCid(contentTitle);
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    return Util::findTimestampInVideoSample(
+      fileReader.readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
+    );
+  }
+  return C::INVALID_BYTE;
 }

@@ -367,7 +367,7 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
   int memberVideoId = 0;
   for (std::ifstream& access : va.getAccessList()) {
     if (access.is_open()) {
-      auto videoSampleMetaList = va.getVideoSampleInfoList();
+      auto& videoSampleMetaList = va.getVideoSampleInfoList();
       int64_t videoFileSize = Util::getFileSize(videos.at(memberVideoId));
       loadRtpMemberVideoMetaData(videoFileSize, access, videoSampleMetaList, memberVideoId);
       memberVideoId++;
