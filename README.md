@@ -16,8 +16,7 @@
 - nullptr를 리턴하기보다는 빈 객체(empty vector, empty string)를 리턴하여 nullptr의 사용을 최소화 했습니다.
 - std 라이브러리를 최대한 많이 사용하여 직접적인 메모리 관리를 최소화 했습니다.
   - 특히, std::unique_ptr와 std::shared_ptr을 적극 활용합니다.
-- C++ std library에서 지원하지 않는 컨테이너는 직접 구현했습니다.
-  - 예를 들면, java의 LinkedBlockingQueue 등이 있습니다.
+- C++ std library에서 지원하지 않는 컨테이너는 최대한 사용하지 않습니다.
 <br><br/>
 
 ## 개발환경 셋팅

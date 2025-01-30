@@ -1046,7 +1046,7 @@ int main(){
 }
 ```
 <br><br/>
-28. 웬만하면 auto를 사용하자. Effective Modern C++ 
+28. 웬만하면 auto를 사용하자. Effective Modern C++ 에서 등장한 내용이다.
     <br> 특히, range for 를 이용해서 map을 순회할 때 비효율적인 copy 동작을 예방할 수 있다.
     <br> auto를 쓰면 타입 불일치로 인해 컴파일러가 맵의 구성 요소들을 하는 수 없이 복사하는 일을 방지할 수 있다.
 ```c++
@@ -1067,10 +1067,93 @@ for(const std::pair<std::string, int>& p : map){
 for(const auto& p : map){
 // ...
 }
-
 ```
+<br><br/>
+29. auto 와 auto& 를 잘 구분해서 써야 한다.
+    <br> 그렇지 않으면, 원하지 않는 비효율적인 복사가 일어나거나,
+    <br> 원본 객체가 아닌, 복사된 객체에 수정이 돼 버리는 대참사가 벌어질 수 있다.
+```c++
+// FileReader 클래스 내부에서 이런 일이 있었다.
+void FileReader::loadRtpVideoMetaData(
+const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& videos
+) {
+  VideoAccess va{};
 
+  // ... 다른 작업들을 마친 뒤,
 
+  // VideoAccess va{} 객체 내의 meta 필드를 초기화 해주는 함수를 호출한다.
+  int memberVideoId = 0;
+  for (std::ifstream& access : va.getAccessList()) {
+    if (access.is_open()) {
+    
+      // 여기서 auto&가 아니라, 그냥 auto videoSampleMetaList ... 이런 식으로 정의해버리면,
+      // 원본 객체인 VideoAccess va{}; 내의 meta 멤버가 아니라, 복사된 meta 에다가
+      // VideoSampleInfo를 추가하는 로직 오류가 발생한다.
+      // 이렇게 현재 함수 범위 내에서만 존재하는 임시 복사본 객체는 현재 함수의 범위가 끝나면 자동으로 
+      // 삭제되고 만다.
+      auto& videoSampleMetaList = va.getVideoSampleInfoList();
+      int64_t videoFileSize = Util::getFileSize(videos.at(memberVideoId));
+      loadRtpMemberVideoMetaData(videoFileSize, access, videoSampleMetaList, memberVideoId);
+      memberVideoId++;
+    } else {
+      logger->severe("Failed to open video reading ifstream!");
+      throw std::runtime_error("Failed to open video reading ifstream!");
+    }
+  }
+
+  videoFiles.insert({inputCamDir.filename().string(), std::move(va)});
+}
+```
+<br><br/>
+30. 템플릿 클래스 인스턴스화 문제.
+    <br> 현재는 사용하지 않지만, BlockingQueue 클래스를 쓰던 때가 있었다.
+    <br> 핵심은, 이러한 클래스의 경우 .h와 .cpp로 정의와 구현을 분리하지 말고 .h 내에 모든 구현을 전부 집어 넣어야 한다는 점이다.
+```c++
+/*
+Chat GPT에 따르면, 템플릿 클래스들은 구체적인 타입과 함께 사용되지 않는 한, 인스턴스화 되지 않는다.
+std::unique_ptr<Buffer>와 같은 구체적인 타입이 들어가 있는 txQ가 초기화 돼야 비로소 인스턴스화 된다.
+
+그런데, 이러한 상태에서 .h는 존재하지만, 구현이 .cpp에 분리돼 있을 때는 컴파일러가 템플릿 클래스의
+코드를 생성해 낼 때 필요한 정의를 찾지 못해서 
+
+Undefined symbols for architecture arm64:
+  "BlockingQueue<std::__1::unique_ptr<Buffer, std::__1::default_delete<Buffer>>>::put(std::__1::unique_ptr<Buffer, std::__1::default_delete<Buffer>>&&)", referenced from:
+...
+와 같은 링크 에러가 발생하는 것이다.
+
+해결책은 위에서 설명한 대로, 구현을 .cpp에 따로 빼내는 것이 아니라, .h 내에 전부 집어 넣는 것이다.
+*/
+```
+<br><br/>
+31. interrupted by signal 11:SIGSEGV 에러 메시지
+    <br> 이건 주로 invalid memory access 상황에서 발생하는 에러 메시지다.
+    <br> 이게 뜰 경우, exception을 던지거나 로그를 남기기도 전에 프로그램이 죽기 때문에 디버깅 하기가 매우 까다롭고, 정확히 어디에서 에러가 난 것인지 표시조차 되지를 않는다;;
+```c++
+// 주로 아래의 3 가지 상황 중 하나에 해당할 때 발생한다.
+
+1. 특정 루프 또는 함수의 범위를 벗어나서 삭제된 객체에 접근할 때.
+>> 예를 들어서 while(true) 루프 안에서 만든 소켓을 std::shared_ptr에 저장하지 않고
+    나중에 다른 함수에서 접근하려고 할 때.
+
+2. 비어 있는 벡터에 [0] 과 같이 인덱스 접근을 시도했을 때.
+
+3. 이미 소멸된 객체를 가리키고 있는 std::shared_ptr를 대상으로 역참조 연산인 '*' 를 시도했을 때.
+
+4. 서로 다른 두 스레드가 하나의 자료구조에 대해서 마구잡이로 접근하려 할 때.
+>> 예를 들어서, BlockingQueue에 대해서 한 스레드는 put()을 하고, 한 스레드는 take()를 하려 하는데,
+    이게 정확하게 컨트롤 되지 않을 때. 
+    
+5. 동일한 소켓에 서로 다른 스레드가 동시에 read 또는 write하려고 할 때.
+>> socket은 기본적으로 thread safe하지 않다는 점을 기억해야 한다!!
+```
+<br><br/>
+32. unique_ptr를 요소로서 가지고 있는 BlockingQueue를 설계하는 것.
+    <br> 이런 자료구조는 thread safe하게 디자인하기가 매우 까다롭다.
+    <br> 최대한 단일 스레드에서 처리할 수 있게 설계하거나, 아니면 boost.asio의 io_context를 쓰거나,
+    <br> boost 라이브러리 내의 Lock-Free, concurrent 등의 라이브러리에서 제공하는 자료구조를 쓰자.
+    <br> 다시 한 번 강조하지만, 성능 문제가 없는 한 웬만하면 꼭 단일 스레드로 처리하자.
+    
+    
 
 
 
