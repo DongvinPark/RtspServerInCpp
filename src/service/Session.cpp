@@ -40,13 +40,11 @@ void Session::start() {
   auto rxTask = [&](){
     try {
       while (true) {
-        std::cout << "!!! rx while enter !!!\n";
         std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
         if (bufferPtr != nullptr) {
           Buffer& buf = *bufferPtr;
           handleRtspRequest(buf);
-          queueTx(std::move(bufferPtr));
-          //transmit(std::move(bufferPtr));
+          transmit(std::move(bufferPtr));
         }
       }
     } catch (const std::exception & e) {
@@ -55,51 +53,9 @@ void Session::start() {
     }
   };
 
-  auto txTask = [&](){
-    try {
-      long loopCnt = 0;
-      int callCnt = 0;
-      while (true) {
-        if (loopCnt % 500000 == 0) {
-          std::unique_ptr<Buffer> bufferPtr = std::make_unique<Buffer>();
-          std::vector<unsigned char> payload;
-          payload.push_back('$');
-          payload.push_back('a');
-          payload.push_back('b');
-          payload.push_back('c');
-          payload.push_back('\n');
-          queueTx(std::move(bufferPtr));
-          transmit(takeTxq());
-          std::cout << "!!! tx from another thread !!!" << std::endl;
-          callCnt++;
-          if (callCnt > 9) break;
-        }
-        /*std::unique_ptr<Buffer> bufferPtrToTx = takeTxq();
-        if (bufferPtrToTx == nullptr || bufferPtrToTx->len == C::INVALID) break;
-
-        std::vector<std::string> resVec = Util::splitToVecByStringForRtspMsg(bufferPtrToTx->getString(), C::CRLF);
-        std::cout << "!!! res check !!!" << std::endl;
-
-        for (const auto & res : resVec)
-        {
-          std::cout << res << std::endl;
-        }
-        transmit(std::move(bufferPtrToTx));
-        if (bufferPtrToTx->afterTx != nullptr){
-          std::cout << "after tx not null!!!" << std::endl;
-          bufferPtrToTx->afterTx();
-        }*/
-      }
-    } catch (const std::exception & e) {
-      logger->severe("session " + sessionId + " failed. stop tx. exception : " + e.what());
-      recordBitrateTestResult();
-    }
-  };
-
   // TODO : implement BitrateRecorderTimer Task using PeriodicTask
 
   std::thread(rxTask).detach();
-  std::thread(txTask).detach();
 }
 
 void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
@@ -175,9 +131,6 @@ std::unordered_map<int64_t, int> & Session::getUtiTimeSecBitSizeMap() {
 }
 
 void Session::addRxBitrate(RxBitrate &record) {
-}
-
-BlockingQueue<Buffer> & Session::getRxBitrateQueue() {
 }
 
 std::vector<int> Session::get_mbpsTypeList() {
@@ -276,10 +229,6 @@ void Session::onTransmitAudioSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs
 void Session::onPlayDone(int streamId) {
 }
 
-void Session::queueTx(std::unique_ptr<Buffer> bufPtr) {
-  txQ.put(std::move(bufPtr));
-}
-
 void Session::recordBitrateTestResult() {
 }
 
@@ -319,14 +268,4 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   buf.resize(bytesRead);
   auto bufferPtr = std::make_unique<Buffer>(buf, 0, bytesRead);
   return bufferPtr;
-}
-
-std::unique_ptr<Buffer> Session::takeTxq() {
-  try {
-    return txQ.take();
-  } catch (std::exception& ex) {
-    std::cout << "Exception in takeTxq !!!" << std::endl;
-    std::cerr << ex.what() << std::endl;
-    return nullptr;
-  }
 }

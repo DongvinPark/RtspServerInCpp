@@ -80,7 +80,6 @@ add_executable(AlphaStreamer3.1Cpp
         src/service/Session.cpp
         include/ContentsStorage.h
         src/server/ContentsStorage.cpp
-        include/BlockingQueue.h
         include/RtspHandler.h
         src/service/RtspHandler.cpp
         include/RtpHandler.h

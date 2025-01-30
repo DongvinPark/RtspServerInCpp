@@ -9,7 +9,6 @@
 #include "../include/Server.h"
 #include "../include/ContentsStorage.h"
 #include "../include/SntpRefTimeProvider.h"
-#include "../include/BlockingQueue.h"
 #include "../include/Buffer.h"
 #include "../constants/C.h"
 #include "../include/AcsHandler.h"
@@ -90,7 +89,6 @@ public:
   int get_kbpsCurBitrate();
   std::unordered_map<int64_t, int>& getUtiTimeSecBitSizeMap();
   void addRxBitrate(RxBitrate& record);
-  BlockingQueue<Buffer>& getRxBitrateQueue();
   std::vector<int> get_mbpsTypeList();
   void set_mbpsTypeList(std::vector<int> input_mbpsTypeList);
 
@@ -121,8 +119,6 @@ public:
 
   void onPlayDone(int streamId);
 
-  void queueTx(std::unique_ptr<Buffer> bufPtr);
-
   void recordBitrateTestResult();
 
 private:
@@ -136,8 +132,6 @@ private:
 
   std::unique_ptr<Buffer> receive(boost::asio::ip::tcp::socket& socket);
 
-  std::unique_ptr<Buffer> takeTxq();
-
   std::shared_ptr<Logger> logger;
   std::mutex lock;
   boost::asio::io_context& io_context;
@@ -147,7 +141,6 @@ private:
   ContentsStorage& contentsStorage;
   SntpRefTimeProvider& sntpRefTimeProvider;
   std::string cid = C::EMPTY_STRING;
-  BlockingQueue<std::unique_ptr<Buffer>> txQ;
 
   // members need to be iupdated after.
   std::shared_ptr<AcsHandler> acsHandlerPtr = nullptr;
@@ -169,9 +162,9 @@ private:
 
   int kbpsCurrentBitrate = C::ZERO;
   std::unordered_map<int64_t, int> utcTimeSecBitSizeMap;
-  BlockingQueue<Buffer> rxBitrateQueue;
   std::atomic<int> sentBitsSize = C::ZERO;
 
+  std::vector<RxBitrate> rxBitrateRecord{};
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
 
