@@ -34,8 +34,6 @@ Session::~Session() {
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
-  // Start asynchronous read operation
-  //asyncRead();
 
   auto rxTask = [&](){
     try {
@@ -44,6 +42,13 @@ void Session::start() {
         if (bufferPtr != nullptr) {
           Buffer& buf = *bufferPtr;
           handleRtspRequest(buf);
+
+          std::string res = buf.getString();
+          logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
+          for (auto& reqLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
+            logger->info(reqLine);
+          }
+          std::cout << "\n";
           transmit(std::move(bufferPtr));
         }
       }
@@ -173,9 +178,6 @@ void Session::handleRtspRequest(Buffer& buf) {
   }
 
   try {
-    std::cout << "Processing RTSP request..." << std::endl;
-
-    // Process the RTSP request
     rtspHandlerPtr->run(buf);
   } catch (const std::exception& ex) {
     std::cerr << "Exception in handleRtspRequest: " << ex.what() << std::endl;
@@ -243,7 +245,6 @@ void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += bufPtr->len;
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
-  std::cout << "!!! Tx completed !!!" << std::endl;
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
@@ -254,7 +255,6 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   boost::system::error_code error;
 
   std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);
-  std::cout << "!!! boost read completed!!!" << bytesRead << " bytes" << std::endl;
   if (error == boost::asio::error::eof) {
     // Connection closed cleanly by peer
     std::cerr << "Connection closed by peer." << std::endl;

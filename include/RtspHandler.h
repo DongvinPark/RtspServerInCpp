@@ -71,7 +71,7 @@ private:
 
   int cSeq = C::UNSET;
   std::string sessionId = C::EMPTY_STRING;
-  bool inSession = true;
+  bool inSession = false;
   int wrongSessionIdRequestCnt = C::ZERO;
 
   std::string frontVideoTrackUrl = C::EMPTY_STRING;

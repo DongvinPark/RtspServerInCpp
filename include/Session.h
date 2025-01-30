@@ -168,8 +168,6 @@ private:
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
 
-  std::atomic<bool> txInProgress = false;
-  std::array<char, 2048> rxBuffer;
   boost::asio::strand<boost::asio::io_context::executor_type> strand;
 };
 
