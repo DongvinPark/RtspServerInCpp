@@ -92,8 +92,8 @@ public:
   std::vector<int> get_mbpsTypeList();
   void set_mbpsTypeList(std::vector<int> input_mbpsTypeList);
 
-  int getNumberOfCamDirectories() const;
-  int getRefVideoSampleCnt() const;
+  int getNumberOfCamDirectories();
+  int getRefVideoSampleCnt();
   std::shared_ptr<RtpHandler> getRtpHandlerPtr();
 
   std::string getContentRootPath() const;

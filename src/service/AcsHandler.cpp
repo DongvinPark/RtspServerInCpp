@@ -38,8 +38,10 @@ void AcsHandler::shutdown() {
 
 void AcsHandler::setChannel(int streamId, std::vector<int> ch) {
   if (sInfo.contains(streamId)){
-    ReadInfo& readInfo = sInfo[streamId];
-    readInfo.channel = ch;
+    std::cout << "sInfo contains!!!\n";
+    ReadInfo& readInfo = sInfo.at(streamId);
+    readInfo.channel = std::move(ch);
+    std::cout << "init check!!!" << readInfo.channel.size() << std::endl;
   } else {
     logger->severe("Dongvin, Invalid streamId on setChannel!");
   }

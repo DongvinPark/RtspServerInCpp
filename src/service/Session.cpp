@@ -106,9 +106,11 @@ void Session::updatePauseStatus(bool inputPausedStatus) {
 }
 
 std::string Session::getContentTitle() {
+  return this->contentTitle;
 }
 
 void Session::updateContentTitleOfCurSession(std::string inputContentTitle) {
+  contentTitle = inputContentTitle;
 }
 
 int64_t Session::getPlayTimeDurationMillis() {
@@ -145,10 +147,24 @@ std::vector<int> Session::get_mbpsTypeList() {
 void Session::set_mbpsTypeList(std::vector<int> input_mbpsTypeList) {
 }
 
-int Session::getNumberOfCamDirectories() const {
+int Session::getNumberOfCamDirectories() {
+  std::string contentTitle = getContentTitle();
+  if(contentsStorage.getReaders().count(contentTitle)) {
+    return contentsStorage.getReaders().at(contentTitle).getNumberOfCamDirectories();
+  } else {
+    logger->severe("Dongvin, faild to find content in ContentsStorage! :: getNumberOfCamDirectories()");
+    return C::INVALID;
+  }
 }
 
-int Session::getRefVideoSampleCnt() const {
+int Session::getRefVideoSampleCnt() {
+  std::string contentTitle = getContentTitle();
+  if (contentsStorage.getReaders().contains(contentTitle)) {
+    return contentsStorage.getReaders().at(contentTitle).getRefVideoSampleCnt();
+  } else {
+    logger->severe("Dongvin, faild to find content in ContentsStorage! :: getRefVideoSampleCnt()");
+    return C::INVALID;
+  }
 }
 
 std::shared_ptr<RtpHandler> Session::getRtpHandlerPtr() {
@@ -197,6 +213,11 @@ bool Session::onCid(std::string inputCid) {
 }
 
 void Session::onChannel(int trackId, std::vector<int> channels) {
+  if (acsHandlerPtr) {
+    acsHandlerPtr->setChannel(trackId, channels);
+  } else {
+    logger->severe("Dongvin, No acs handler found!");
+  }
 }
 
 void Session::onUserRequestingPlayTime(std::vector<float> playTimeSec) {

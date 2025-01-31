@@ -27,7 +27,7 @@ FileReader::FileReader(FileReader && other) noexcept
 
 // public
 int FileReader::getNumberOfCamDirectories() const {
-  return videoFiles.size();
+  return static_cast<int>(videoFiles.size());
 }
 
 int FileReader::getRefVideoSampleCnt() const {

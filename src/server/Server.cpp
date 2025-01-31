@@ -102,6 +102,6 @@ void Server::afterTerminatingSession(std::string sessionId) {
 
 std::string Server::getSessionId() {
   connectionCnt++;
-  return "client:" + std::to_string(connectionCnt) + ":"
+  return std::to_string(connectionCnt) + "_"
   + Util::getRandomKey(C::SESSION_KEY_BIT_SIZE);
 }

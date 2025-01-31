@@ -142,14 +142,23 @@ void RtspHandler::handleRtspRequest(
           return;
         }
 
+        std::cout << "!!! transport!!!" <<transport << std::endl;
+        std::cout << "!!! hybrid!!!"<< hybridMode << std::endl;
+        std::cout << "!!! notToTx!!!"<< notToTxList << std::endl;
+
         if (transport != C::EMPTY_STRING && hybridMode == C::EMPTY_STRING) {
+          std::cout << "!!! common setup enter!!!\n";
           // process the setup req on track ids.
           int trackId = findTrackId(strings[0]);
           std::vector<int> channels = findChannels(transport);
 
+          std::cout << "trackId: " << trackId << std::endl;
+          std::cout << "channels: " << channels.size() << channels[0] << "," << channels[1] << std::endl;
+
           // don't make new thread for reading member videos.
           // the thread reading ref front video samples must read the member video samples too.
           if (trackId <= C::AUDIO_ID) {
+            std::cout << "onChannel enter!!!\n";
             sessionPtr->onChannel(trackId, channels);
           }
 
@@ -163,7 +172,9 @@ void RtspHandler::handleRtspRequest(
           // dongvin : record content's title at Session object.
           if (sessionPtr->getContentTitle() == C::EMPTY_STRING) {
             std::string contentTitle = getContentsTitle(ptrForAcsHandler->getStreamUrls());
+            std::cout <<"!!! found title !!!" << contentTitle << std::endl;
             if (contentTitle != C::EMPTY_STRING) {
+              std::cout << "update enter!!!\n";
               sessionPtr->updateContentTitleOfCurSession(contentTitle);
             }
           }
@@ -175,6 +186,7 @@ void RtspHandler::handleRtspRequest(
           );
           return;
         } else {
+          std::cout << "!!! hybrid setup enter !!!\n";
           // process not tx sample numbers for hybrid D & S.
           parseHybridVideoSampleMetaDataForDandS(notToTxList);
           respondSetupForHybrid(inputBuffer, sessionId, hybridMode);
@@ -437,7 +449,7 @@ void RtspHandler::respondSetup(
                 "Session: "+ sessionId + C::CRLF +
                 "RefVideoSampleCnt: " + std::to_string(refVideoSampleCnt) + C::CRLF +
                 "camDirectoryCnt: " + std::to_string(camDirectoryCnt) + C::CRLF +
-                transport+";ssrc="+ std::to_string(ssrc) + C::CRLF2;
+                "Transport: " + transport+";ssrc="+ std::to_string(ssrc) + C::CRLF2;
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
