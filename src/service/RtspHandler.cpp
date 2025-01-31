@@ -63,7 +63,6 @@ void RtspHandler::handleRtspRequest(
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
     if (auto ptrForAcsHandler = acsHandlerPtr.lock()) {
-      std::cout << "acs handler lock enter " << std::endl;
       // do not allowed proceeding without session id once session is set up.
       // Once session id is given to a client, all the following requests must
       // include the session id in the request.
@@ -81,7 +80,6 @@ void RtspHandler::handleRtspRequest(
           return;
         }
         logger->severe("Dongvin, failed to find session id!");
-        std::cout << "error 1" << std::endl;
         respondError(inputBuffer, 400, method);
         return;
       }
@@ -126,7 +124,6 @@ void RtspHandler::handleRtspRequest(
           return;
         }
         logger->severe("Dongvin, server doesn't have content : " + cid);
-        std::cout << "error 2 content not exits !!! : " + cid << std::endl;
         respondError(inputBuffer, 400, method);
         return;
       } else if (method == "DESCRIBE") {
@@ -604,21 +601,20 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
   if (auto handlerPtr = acsHandlerPtr.lock()) {
 
     std::vector<int64_t> unitCnt = handlerPtr->getUnitFrameCount();
-    std::cout << "!!! unitCnt get !!! " << unitCnt[0] << "," << unitCnt[1] << std::endl;
     std::vector<int64_t> gop = handlerPtr->getGop();
-    std::cout << "!!! gop get !!! " << gop[0] << "," << gop[1] << std::endl;
 
     std::string mediaInfo = handlerPtr->getMediaInfo();
     std::vector<std::string> lines = Util::splitToVecByString(mediaInfo, C::CRLF);
 
     for (auto i = 0; i < lines.size(); ++i) {
       std::string line = lines[i];
+      if (line == C::EMPTY_STRING) continue;
+
       if (line.starts_with("c=")) {
         lines[i] = "c=IN IP4 0.0.0.0"; // don't need to know ip addr of client
       } else if (line.starts_with("a=control:")){
         int trackId = std::stoi(Util::splitToVecBySingleChar(line, '=')[2]);
-
-        std::string track = "/trackID="+trackId;
+        std::string track = "/trackID="+std::to_string(trackId);
         lines[i] = "a=control:"+C::DUMMY_CONTENT_BASE+track;
         if(trackId <= C::AUDIO_ID){
           handlerPtr->setStreamUrl(trackId, fullCid+track);
@@ -631,12 +627,12 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
         if(Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).starts_with("97")){ // audio
           // refer to Table 9 (streamType Values) in ISO/IEC 14496-1 (coding of audio-visual objects)
           lines[i] +=";streamType=5";
-          lines[i] += ";ucnt="+unitCnt[1];
+          lines[i] += ";ucnt="+std::to_string(unitCnt[1]);
         } else if (Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).starts_with("96")){ // video
           // refer to Table 9 (streamType Values) in ISO/IEC 14496-1 (coding of audio-visual objects)
           lines[i] +=";streamType=4";
-          lines[i] += ";dGop="+gop[0];
-          lines[i] += ";ucnt="+unitCnt[0];
+          lines[i] += ";dGop="+std::to_string(gop[0]);
+          lines[i] += ";ucnt="+std::to_string(unitCnt[0]);
         }
       } else if (line.starts_with("b=AS:")) {
         // dongvin : 최초 재생 시 사용하게 될 bitrate를 기록해 둔다.
@@ -647,18 +643,19 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
       }
     }//for
 
-    std::string result = "";
+    std::string result = C::EMPTY_STRING;
     for (std::string line : lines) {
       if (line == C::EMPTY_STRING) {
         continue;
       }
-      result += line + C::CRLF;
+      std::cout << "apended!!!" << line << std::endl;
+      result += (line + C::CRLF);
     }
 
     return result;
-  } else {
-    return C::EMPTY_STRING;
   }
+  logger->severe("Dongvin, failed to get AcsHandler weak ptr lock!");
+  return C::EMPTY_STRING;
 }
 
 int RtspHandler::findTrackId(std::string line0) {

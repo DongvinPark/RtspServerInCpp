@@ -80,22 +80,16 @@ bool AcsHandler::setReaderAndContentTitle(FileReader& inputReader, std::string i
   if (inputContentTitle != C::EMPTY_STRING) {
     contentTitle = inputContentTitle;
   }
-  std::cout << "set reader enter" << std::endl;
   auto& videoMetaMap = inputReader.getVideoMetaWithLock();
-  std::cout << "passed 1 " << std::endl;
   if (videoMetaMap.empty()){
     logger->severe("Dongvin, video meta init wrong!");
     return false;
   }
 
-  std::cout << "passed 2 before" << std::endl;
   int refVideoSampleSize = inputReader.getVideoSampleSize();
-  std::cout << "passed 2 after" << std::endl;
   int audioSampleSize = inputReader.getAudioSampleSize();
-  std::cout << "passed 3 " << std::endl;
 
   if (refVideoSampleSize != C::INVALID && audioSampleSize != C::INVALID) {
-    std::cout << "true if enter : " << refVideoSampleSize << "," << audioSampleSize << std::endl;
     sInfo.emplace(C::VIDEO_ID, ReadInfo());
     sInfo.emplace(C::AUDIO_ID, ReadInfo());
 
@@ -198,6 +192,10 @@ std::vector<std::string> AcsHandler::getStreamUrls() {
 }
 
 void AcsHandler::setStreamUrl(int streamId, std::string url) {
+  if (rtpInfo.urls.empty()) {
+    rtpInfo.urls.push_back(C::EMPTY_STRING);
+    rtpInfo.urls.push_back(C::EMPTY_STRING);
+  }
   rtpInfo.urls[streamId] = url;
 }
 
