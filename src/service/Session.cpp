@@ -166,7 +166,7 @@ int Session::getNumberOfCamDirectories() {
 
 int Session::getRefVideoSampleCnt() {
   std::string contentTitle = getContentTitle();
-  if (contentsStorage.getReaders().contains(contentTitle)) {
+  if (contentsStorage.getReaders().find(contentTitle) != contentsStorage.getReaders().end()) {
     return contentsStorage.getReaders().at(contentTitle).getRefVideoSampleCnt();
   } else {
     logger->severe("Dongvin, faild to find content in ContentsStorage! :: getRefVideoSampleCnt()");

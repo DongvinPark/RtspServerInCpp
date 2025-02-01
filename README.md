@@ -22,12 +22,12 @@
 ## CMakeLists.txt 빌드 및 실행 테스트 결과
 - 다음의 OS 및 boost 라이브러리 버전에 대하여 현재 master 브랜치의 CMakeLists.txt의 빌드와 프로젝트의 실행이 되는 것을 확인했습니다.
 - 다른 운영체제 하에서는 세부적인 수정이 필요할 수 있습니다.
-  - Window 11, boost 1.86.0
+  - Window 11, C++ 17 or later, boost 1.86.0
   - Linux
-    - Ubuntu 20.04 LTS, boost 1.71.0
-    - Ubuntu 22.04 LTS, boost 1.74.0
-    - Amazon Linux 2023, boost 1.75.0
-  - MacOS ??, boost ??
+    - Ubuntu 20.04 LTS, C++ 17 or later, boost 1.71.0
+    - Ubuntu 22.04 LTS, C++ 17 or later, boost 1.74.0
+    - Amazon Linux 2023, C++ 17 or later, boost 1.75.0
+  - MacOS ??, C++ 17 or later, boost ??
 <br><br/>
 
 ## 개발환경 셋팅

@@ -99,7 +99,7 @@ void RtspHandler::handleRtspRequest(
             );
 
           for (std::string w : words) {
-            if (w.starts_with("rb")) {
+            if (w.rfind("rb", 0) == 0) {
               std::vector<std::string> bitrateAndTime =
                 Util::splitToVecBySingleChar(
                   Util::splitToVecBySingleChar(w, '=')[1], ','
@@ -327,12 +327,12 @@ void RtspHandler::handleRtspRequest(
         bool sampleLimitForPauseSwitching = false;
         std::string pFrameControlAction = C::EMPTY_STRING;
         for (std::string w : words) {
-          if(w.starts_with("tvIdx")) tvIdx = std::stoll(Util::splitToVecBySingleChar(w, '=')[1]);
-          else if(w.starts_with("taIdx")) taIdx = std::stoll(Util::splitToVecBySingleChar(w, '=')[1]);
-          else if(w.starts_with("next")) nextVid = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
-          else if(w.starts_with("cam")) cam = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
-          else if(w.starts_with("tBit")) targetBitrate = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
-          else if(w.starts_with("limitSamples")) {
+          if(w.rfind("tvIdx", 0) == 0) tvIdx = std::stoll(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.rfind("taIdx", 0) == 0) taIdx = std::stoll(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.rfind("next", 0) == 0) nextVid = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.rfind("cam", 0) == 0) cam = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.rfind("tBit", 0) == 0) targetBitrate = std::stoi(Util::splitToVecBySingleChar(w, '=')[1]);
+          else if(w.rfind("limitSamples", 0) == 0) {
             std::string boolStr = Util::splitToVecBySingleChar(w, '=')[1];
             sampleLimitForPauseSwitching = boolStr == "true" ? true : false;
           }
@@ -610,31 +610,31 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
       std::string line = lines[i];
       if (line == C::EMPTY_STRING) continue;
 
-      if (line.starts_with("c=")) {
+      if (line.rfind("c=", 0) == 0) {
         lines[i] = "c=IN IP4 0.0.0.0"; // don't need to know ip addr of client
-      } else if (line.starts_with("a=control:")){
+      } else if (line.rfind("a=control:", 0) == 0){
         int trackId = std::stoi(Util::splitToVecBySingleChar(line, '=')[2]);
         std::string track = "/trackID="+std::to_string(trackId);
         lines[i] = "a=control:"+C::DUMMY_CONTENT_BASE+track;
         if(trackId <= C::AUDIO_ID){
           handlerPtr->setStreamUrl(trackId, fullCid+track);
         }
-      } else if (line.starts_with("AS")){ // application specific for bandwidth.
+      } else if (line.rfind("AS", 0) == 0){ // application specific for bandwidth.
         lines[i] = C::EMPTY_STRING;
-      } else if (line.starts_with("a=tool:")) {
+      } else if (line.rfind("a=tool:", 0) == 0) {
         lines[i] = C::EMPTY_STRING;
-      } else if (line.starts_with("a=fmtp:")) {
-        if(Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).starts_with("97")){ // audio
+      } else if (line.rfind("a=fmtp:", 0) == 0) {
+        if(Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).rfind("97", 0) == 0){ // audio
           // refer to Table 9 (streamType Values) in ISO/IEC 14496-1 (coding of audio-visual objects)
           lines[i] +=";streamType=5";
           lines[i] += ";ucnt="+std::to_string(unitCnt[1]);
-        } else if (Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).starts_with("96")){ // video
+        } else if (Util::trim( Util::splitToVecBySingleChar(line, ':')[1] ).rfind("96", 0) == 0){ // video
           // refer to Table 9 (streamType Values) in ISO/IEC 14496-1 (coding of audio-visual objects)
           lines[i] +=";streamType=4";
           lines[i] += ";dGop="+std::to_string(gop[0]);
           lines[i] += ";ucnt="+std::to_string(unitCnt[0]);
         }
-      } else if (line.starts_with("b=AS:")) {
+      } else if (line.rfind("b=AS:", 0) == 0) {
         // dongvin : 최초 재생 시 사용하게 될 bitrate를 기록해 둔다.
         int kbps = std::stoi(Util::splitToVecBySingleChar(line, ':')[1] );
         if (auto sessionPtr = parentSessionPtr.lock()) {
@@ -678,7 +678,7 @@ std::string RtspHandler::findHybridMode(std::vector<std::string> strings) {
   for (std::string elem : strings) {
     if ( elem.find("HybridMode") != std::string::npos) {
       std::string mode = Util::splitToVecBySingleChar(elem, ' ')[1];
-      if (C::HYBRID_MODE_SET.contains(mode)) {
+      if (C::HYBRID_MODE_SET.find(mode) != C::HYBRID_MODE_SET.end()) {
         return mode;
       } else {
         return C::EMPTY_STRING;
@@ -756,7 +756,7 @@ int RtspHandler::findLatestReceivedSampleIdx(
   // PLAY req header example
   // PlayInfo: videoIndex=144;videoRtpIndex=8;audioIndex=228;
   for (std::string headerLine: strings) {
-    if (headerLine.starts_with("PlayInfo")) {
+    if (headerLine.rfind("PlayInfo", 0) == 0) {
       std::string HeaderValue = Util::splitToVecByString(headerLine, " ")[1];
       for (std::string value: Util::splitToVecBySingleChar(headerLine, ';')) {
         if (value.find(filter) != std::string::npos) {
@@ -864,14 +864,14 @@ Map : hybridMeta<camId, val>
         int sampleIdx = std::stoi(infoArr[i]);
         std::string frameType = sampleIdx % gop == 0 ? C::KEY_FRAME_TYPE : C::P_FRAME_TYPE;
 
-        if (!hybridMetaMap.contains(camId)) {
+        if (hybridMetaMap.find(camId) == hybridMetaMap.end()) {
           // put empty map if key 'camId' was not found.
           hybridMetaMap[camId] = {};
         }
 
         auto& viewNumberAndFrameTypeMap = hybridMetaMap[camId];
         std::string viewNumberFrameKey = std::to_string(viewNum) + frameType;
-        if (!viewNumberAndFrameTypeMap.contains(viewNumberFrameKey)) {
+        if (viewNumberAndFrameTypeMap.find(viewNumberFrameKey) == viewNumberAndFrameTypeMap.end()) {
           viewNumberAndFrameTypeMap[viewNumberFrameKey] = {};
         }
 
@@ -881,7 +881,7 @@ Map : hybridMeta<camId, val>
           sampleIdx, C::INVALID_OFFSET, C::INVALID_OFFSET, C::INVALID_OFFSET
         );
 
-        if (!sampleMetaMap.contains(sampleIdx)) {
+        if (sampleMetaMap.find(sampleIdx) == sampleMetaMap.end()) {
           sampleMetaMap[sampleIdx] = hybridSampleMeta;
         }
 

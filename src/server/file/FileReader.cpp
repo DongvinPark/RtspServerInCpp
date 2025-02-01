@@ -104,12 +104,12 @@ int FileReader::getAudioSampleSize() const {
 }
 
 int FileReader::getVideoSampleSize() const {
-  if (videoFiles.contains(C::REF_CAM)) {
+  if (videoFiles.find(C::REF_CAM) != videoFiles.end()) {
     return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
   } else {
     // adaptive bitrate supporting case
     for (std::string possibleRefCam : C::ADAPTIVE_BITRATE_REF_CAM_LIST) {
-      if (videoFiles.contains(possibleRefCam)) {
+      if (videoFiles.find(possibleRefCam) != videoFiles.end()) {
         return videoFiles.at(possibleRefCam).getConstVideoSampleInfoList()[0].size();
       }
     }
@@ -281,12 +281,12 @@ void FileReader::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
         if (key == C::MEDIA_INFO_KEY) {
           rtspSdpMessage = msg;
         } else {
-          rtpInfo.kv.insert_or_assign(key, getValues(msg, key));
+          rtpInfo.kv.insert({key, getValues(msg, key)});
         }
       }
     }// inner
 
-    if (msg.starts_with("m=video")) {
+    if (msg.rfind("m=video", 0) == 0) {
       rtspSdpMessage += msg;
     }
   }//outer
@@ -506,27 +506,3 @@ std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) 
 
   return sizes;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

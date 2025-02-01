@@ -21,7 +21,7 @@ void AcsHandler::updateRtpRemoteCnt(int cnt) {
 }
 
 void AcsHandler::updateCurSampleNo(int mediaType, int idx) {
-  if (sInfo.contains(mediaType)){
+  if (sInfo.find(mediaType) != sInfo.end()){
     sInfo.at(mediaType).setCurSampleNo(idx);
   } else {
     logger->severe("Dongvin, Invalid streamId on updateCurSampleNo!");
@@ -37,7 +37,7 @@ void AcsHandler::shutdown() {
 }
 
 void AcsHandler::setChannel(int streamId, std::vector<int> ch) {
-  if (sInfo.contains(streamId)){
+  if (sInfo.find(streamId) != sInfo.end()){
     ReadInfo& readInfo = sInfo.at(streamId);
     readInfo.channel = std::move(ch);
   } else {
@@ -127,7 +127,7 @@ std::unique_ptr<AVSampleBuffer> AcsHandler::getNextSample() {
 
 bool AcsHandler::isDone(int streamId) {
   if (sInfo.empty()) return false;
-  if (!sInfo.contains(streamId)) return false;
+  if (sInfo.find(streamId) == sInfo.end()) return false;
   return sInfo.at(streamId).isDone();
 }
 

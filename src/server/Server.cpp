@@ -58,7 +58,7 @@ void Server::start() {
       sessionPtr->start();
 
       // register session pointer at session map
-      sessions.insert_or_assign(sessionId, sessionPtr);
+      sessions.insert({sessionId, sessionPtr});
       logger->warning(
         "Dongvin, new client arrives, id: " + sessionId
         + ", total number of clients: " + std::to_string(sessions.size())
