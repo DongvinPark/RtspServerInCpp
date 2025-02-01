@@ -20,6 +20,10 @@
 #include "../include/Buffer.h"
 #include "../include/ParsableByteArray.h"
 #include "../include/VideoSample.h"
+#include "../include/HybridSampleMeta.h"
+
+using HybridMetaMapType
+	= std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 
 namespace Util {
 
@@ -270,6 +274,25 @@ namespace Util {
 			std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
 			task();
 		}).detach();
+	}
+
+	inline std::optional<HybridSampleMeta> getHybridSampleMetaSafe(
+		const HybridMetaMapType& hybridMetaMap,
+		int camId,
+		const std::string& vidAndFrameType,
+		int sampleNo
+	) {
+		// iterator is small object to copy. so, used auto, not auto&
+		auto camIt = hybridMetaMap.find(camId);
+		if (camIt == hybridMetaMap.end()) return std::nullopt;
+
+		auto vidFrameTypeIt = camIt->second.find(vidAndFrameType);
+		if (vidFrameTypeIt == camIt->second.end()) return std::nullopt;
+
+		auto sampleIt = vidFrameTypeIt->second.find(sampleNo);
+		if (sampleIt == vidFrameTypeIt->second.end()) return std::nullopt;
+
+		return sampleIt->second;
 	}
 
 }
