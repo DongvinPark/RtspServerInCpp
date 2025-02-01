@@ -41,9 +41,10 @@ void Server::start() {
       std::string sessionId = getSessionId();
 
       // makes session and starts it.
+      std::chrono::milliseconds zeroInterval(C::ZERO);
       std::shared_ptr<Session> sessionPtr = std::make_shared<Session>(
         io_context, socketPtr, sessionId,
-        *this, contentsStorage, sntpTimeProvider
+        *this, contentsStorage, sntpTimeProvider, zeroInterval
       );
 
       // used weak pointer to break the circular dependencies

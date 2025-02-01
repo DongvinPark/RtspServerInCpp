@@ -23,6 +23,7 @@ public:
         TaskCallback task
     );
     void setTask(TaskCallback inputTask);
+    void setInterval(std::chrono::milliseconds inputInterval);
     void start();
     void stop();
 

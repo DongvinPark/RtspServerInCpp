@@ -15,6 +15,7 @@
 #include "../include/RtspHandler.h"
 #include "../include/RtpHandler.h"
 #include "../include/RxBitrate.h"
+#include "../include/PeriodicTask.h"
 
 // forward declaration of Server, ContentsStorage, and SntpRefTimeProvider
 // to prevent circular referencing
@@ -46,7 +47,8 @@ public:
     std::string inputSessionId,
     Server& inputServer,
     ContentsStorage& inputContentsStorage,
-    SntpRefTimeProvider& inputSntpRefTimeProvider
+    SntpRefTimeProvider& inputSntpRefTimeProvider,
+    std::chrono::milliseconds inputIntervalMs
   );
   ~Session();
 
@@ -169,6 +171,10 @@ private:
   HybridMetaMapType hybridMeta;
 
   boost::asio::strand<boost::asio::io_context::executor_type> strand;
+
+  PeriodicTask rtspTask;
+  PeriodicTask videoSampleReadingTask;
+  PeriodicTask audioSampleReadingTask;
 };
 
 #endif //SESSION_H

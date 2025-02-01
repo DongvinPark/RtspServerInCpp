@@ -31,6 +31,7 @@ namespace C {
     constexpr int SOCKET_TIMEOUT_MS = 10*1000;
     const std::string EMPTY_STRING = "";
     constexpr int ZERO = 0;
+    constexpr int ONE = 1;
     constexpr int WRONG_SESSION_ID_TOLERANCE_CNT = 5;
     constexpr int URL_SPLIT_BY_SEMI_COLON_LENGTH = 3;
 

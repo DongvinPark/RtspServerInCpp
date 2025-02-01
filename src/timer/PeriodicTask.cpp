@@ -26,6 +26,10 @@ void PeriodicTask::setTask(TaskCallback inputTask) {
     isTaskSet = true;
 }
 
+void PeriodicTask::setInterval(std::chrono::milliseconds inputInterval) {
+    interval = inputInterval;
+}
+
 void PeriodicTask::start() {
     if (!isTaskSet) {
         logger->severe("no task to run!");

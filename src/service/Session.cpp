@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../../constants/Util.h"
+#include "../../include/PeriodicTask.h"
 #include "../constants/C.h"
 
 
@@ -12,7 +13,8 @@ Session::Session(
   std::string inputSessionId,
   Server & inputServer,
   ContentsStorage & inputContentsStorage,
-  SntpRefTimeProvider & inputSntpRefTimeProvider
+  SntpRefTimeProvider & inputSntpRefTimeProvider,
+  std::chrono::milliseconds inputIntervalMs
 )
   : logger(Logger::getLogger(C::SESSION)),
     io_context(inputIoContext),
@@ -21,7 +23,10 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    strand(boost::asio::make_strand(io_context)){
+    strand(boost::asio::make_strand(io_context)),
+    rtspTask(inputIoContext, inputIntervalMs),
+    videoSampleReadingTask(inputIoContext, inputIntervalMs),
+    audioSampleReadingTask(inputIoContext, inputIntervalMs){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
@@ -37,20 +42,18 @@ void Session::start() {
 
   auto rxTask = [&](){
     try {
-      while (true) {
-        std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
-        if (bufferPtr != nullptr) {
-          Buffer& buf = *bufferPtr;
-          handleRtspRequest(buf);
+      std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
+      if (bufferPtr != nullptr) {
+        Buffer& buf = *bufferPtr;
+        handleRtspRequest(buf);
 
-          std::string res = buf.getString();
-          logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
-          for (auto& reqLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
-            logger->info(reqLine);
-          }
-          std::cout << "\n";
-          transmit(std::move(bufferPtr));
+        std::string res = buf.getString();
+        logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
+        for (auto& reqLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
+          logger->info(reqLine);
         }
+        std::cout << "\n";
+        transmit(std::move(bufferPtr));
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
@@ -58,9 +61,12 @@ void Session::start() {
     }
   };
 
-  // TODO : implement BitrateRecorderTimer Task using PeriodicTask
+  rtspTask.setTask(rxTask);
+  const std::chrono::milliseconds rtspInterval(C::ONE);
+  rtspTask.setInterval(rtspInterval);
+  rtspTask.start();
 
-  std::thread(rxTask).detach();
+  // TODO : implement BitrateRecorderTimer Task using PeriodicTask
 }
 
 void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
