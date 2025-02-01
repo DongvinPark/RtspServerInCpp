@@ -15,6 +15,7 @@
 #include <cctype>
 #include <future>
 #include <thread>
+#include <optional>
 
 #include "../constants/C.h"
 #include "../include/Buffer.h"
