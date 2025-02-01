@@ -175,6 +175,7 @@ private:
   PeriodicTask rtspTask;
   PeriodicTask videoSampleReadingTask;
   PeriodicTask audioSampleReadingTask;
+  PeriodicTask bitrateRecodeTask;
 };
 
 #endif //SESSION_H

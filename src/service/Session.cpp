@@ -26,7 +26,8 @@ Session::Session(
     strand(boost::asio::make_strand(io_context)),
     rtspTask(inputIoContext, inputIntervalMs),
     videoSampleReadingTask(inputIoContext, inputIntervalMs),
-    audioSampleReadingTask(inputIoContext, inputIntervalMs){
+    audioSampleReadingTask(inputIoContext, inputIntervalMs),
+    bitrateRecodeTask(inputIoContext, inputIntervalMs){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
