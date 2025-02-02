@@ -302,7 +302,7 @@ namespace Util {
 		std::tm utcTime{};
 
 		#ifdef _WIN32  // Windows
-			gmtime_s(&utc_tm, &now_c);
+			gmtime_s(&utcTime, &nowTime);
 		#else  // Linux / macOS
 			utcTime = *std::gmtime(&nowTime);
 		#endif
