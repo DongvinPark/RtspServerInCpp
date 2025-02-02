@@ -1152,6 +1152,15 @@ Undefined symbols for architecture arm64:
     <br> 최대한 단일 스레드에서 처리할 수 있게 설계하거나, 아니면 boost.asio의 io_context를 쓰거나,
     <br> boost 라이브러리 내의 Lock-Free, concurrent 등의 라이브러리에서 제공하는 자료구조를 쓰자.
     <br> 다시 한 번 강조하지만, 성능 문제가 없는 한 웬만하면 꼭 단일 스레드로 처리하자.
+<br><br/>
+33. java의 str.startsWith("..")는 C++17에서는 rfind()를 이용해서 대체할 수 있다.
+    <br> C++20에서는 str.starts_with("...") 이 std library에서 지원되지만, 이전 버전에서는 지원되지 않는다.
+```c++
+bool startsWith(const std::string& str, const std::string& prefix) {
+    // 문자열이 prefix 로 시작하면 true, 아니면 false를 리턴.
+    return str.rfind(prefix, 0) == 0;
+}
+```
     
     
 
