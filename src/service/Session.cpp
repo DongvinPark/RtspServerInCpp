@@ -113,9 +113,11 @@ void Session::updateManufacturer(std::string inputManufacturer) {
 }
 
 bool Session::getPauseStatus() {
+  return isPaused;
 }
 
 void Session::updatePauseStatus(bool inputPausedStatus) {
+  isPaused = inputPausedStatus;
 }
 
 std::string Session::getContentTitle() {
@@ -127,6 +129,7 @@ void Session::updateContentTitleOfCurSession(std::string inputContentTitle) {
 }
 
 int64_t Session::getPlayTimeDurationMillis() {
+  return playTimeMillis;
 }
 
 void Session::updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis) {
@@ -152,6 +155,7 @@ std::unordered_map<int64_t, int> & Session::getUtiTimeSecBitSizeMap() {
 }
 
 void Session::addRxBitrate(RxBitrate &record) {
+  rxBitrateRecord.push_back(std::move(record));
 }
 
 std::vector<int> Session::get_mbpsTypeList() {
@@ -194,18 +198,9 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 }
 
 void Session::shutdownSession() {
-  // close all handlers and socket
-  socketPtr->close();
-  acsHandlerPtr->shutdown();
-
-  // stop all timers
-  rtspTask.stop();
-  bitrateRecodeTask.stop();
-  videoSampleReadingTask.stop();
-  audioSampleReadingTask.stop();
-  logger->info("Dongvin, stopped all timers. session id : " + sessionId);
-
-  // TODO : need to implement bitrate recording saving logic.
+  closeHandlersAndSocket();
+  stopAllTimerTasks();
+  recordBitrateTestResult();
 }
 
 void Session::handleRtspRequest(Buffer& buf) {
@@ -247,6 +242,11 @@ void Session::onChannel(int trackId, std::vector<int> channels) {
 }
 
 void Session::onUserRequestingPlayTime(std::vector<float> playTimeSec) {
+  logger->info(
+    "Dongvin, cid: " + cid + ", play starting point : "
+    + std::to_string(playTimeSec[0]) + "," + std::to_string(playTimeSec[1]) + " (sec)"
+  );
+  acsHandlerPtr->initUserRequestingPlaytime(playTimeSec);
 }
 
 void Session::onSwitching(
@@ -283,9 +283,24 @@ void Session::onPlayDone(int streamId) {
 }
 
 void Session::recordBitrateTestResult() {
+  for (auto& record : rxBitrateRecord) {
+    // TODO : need to implement bitrate recording saving logic later.
+    std::cout << record.getBitrate() << "," << record.getUtcTimeMillis() << std::endl;
+  }
 }
 
-void Session::closeHandlers() {
+void Session::stopAllTimerTasks() {
+  rtspTask.stop();
+  bitrateRecodeTask.stop();
+  videoSampleReadingTask.stop();
+  audioSampleReadingTask.stop();
+  logger->info("Dongvin, stopped all timers. session id : " + sessionId);
+}
+
+void Session::closeHandlersAndSocket() {
+  socketPtr->close();
+  acsHandlerPtr->shutdown();
+  logger->info("Dongvin, closed socket and acs handler. session id : " + sessionId);
 }
 
 bool Session::isPlayDone(int streamId) {

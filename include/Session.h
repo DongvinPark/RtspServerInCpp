@@ -124,7 +124,8 @@ public:
   void recordBitrateTestResult();
 
 private:
-  void closeHandlers();
+  void stopAllTimerTasks();
+  void closeHandlersAndSocket();
 
   bool isPlayDone(int streamId);
   void transmit(std::unique_ptr<Buffer> bufPtr);

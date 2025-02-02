@@ -230,7 +230,7 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
         .getFirstRtp()
       );
     }
-    // audio sample. one audio sample is consist of one rtp packet.
+    // audio sample. one audio sample == one rtp packet.
     return std::make_unique<Buffer>(
       fileReader.readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
     );

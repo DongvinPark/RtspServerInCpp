@@ -95,7 +95,9 @@ int main() {
     // Wait for shutdown to complete
     shutdownFuture.wait();
 
-    // do cleaning before shutting down.
+    // do cleaning before shutting down. shutdonw all sessions and close boost asio io_context worker thread pool.
+    server.shutdownServer();
+
     for (auto& thread : threadVec) {
         if (thread.joinable()) {
             std::cout << "Joining io_context.run() worker thread " << thread.get_id() << "...\n";
