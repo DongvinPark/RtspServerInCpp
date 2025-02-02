@@ -66,8 +66,8 @@ public:
 
   std::string getSessionId();
   std::string getClientRemoteAddress();
-  int64_t getSessionInitTimeSecUtc() const;
-  int64_t getSessionDestroyTimeSecUtc() const;
+  int64_t getSessionInitTimeSecUtc();
+  int64_t getSessionDestroyTimeSecUtc();
 
   std::string getDeviceModelNo();
   void updateDeviceModelNo(std::string name);
@@ -164,7 +164,7 @@ private:
   int64_t playTimeMillis = C::INVALID_OFFSET;
 
   int kbpsCurrentBitrate = C::ZERO;
-  std::unordered_map<int64_t, int> utcTimeSecBitSizeMap;
+  std::unordered_map<int64_t, int32_t> utcTimeSecBitSizeMap;
   std::atomic<int> sentBitsSize = C::ZERO;
 
   std::vector<RxBitrate> rxBitrateRecord{};

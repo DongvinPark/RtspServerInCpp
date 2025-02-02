@@ -40,6 +40,7 @@ Session::~Session() {
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
+  sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
   auto rxTask = [&](){
     try {
@@ -69,7 +70,22 @@ void Session::start() {
   rtspTask.setInterval(rtspInterval);
   rtspTask.start();
 
-  // TODO : implement BitrateRecorderTimer Task using PeriodicTask
+  auto txBitrateTask = [&]() {
+    int32_t sentBit = sentBitsSize;
+    sentBitsSize = 0;
+    int64_t recordTimeUtcSec = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
+    if (utcTimeSecBitSizeMap.find(recordTimeUtcSec) != utcTimeSecBitSizeMap.end()) {
+      int32_t prev = utcTimeSecBitSizeMap[recordTimeUtcSec];
+      prev += sentBit;
+      utcTimeSecBitSizeMap[recordTimeUtcSec] = prev;
+    } else {
+      utcTimeSecBitSizeMap.insert({recordTimeUtcSec, sentBit});
+    }
+  };
+  bitrateRecodeTask.setTask(txBitrateTask);
+  const std::chrono::milliseconds bitrateInterval(C::TX_BITRATE_SAMPLING_PERIOD_MS); // 1 sec
+  bitrateRecodeTask.setInterval(bitrateInterval);
+  bitrateRecodeTask.start();
 }
 
 void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
@@ -85,15 +101,19 @@ void Session::setRtpHandlerPtr(std::shared_ptr<RtpHandler> inputRtpHandlerPtr){
 }
 
 std::string Session::getSessionId() {
+  return sessionId;
 }
 
 std::string Session::getClientRemoteAddress() {
+  return clientRemoteAddress;
 }
 
-int64_t Session::getSessionInitTimeSecUtc() const {
+int64_t Session::getSessionInitTimeSecUtc() {
+  return sessionInitTimeSecUtc;
 }
 
-int64_t Session::getSessionDestroyTimeSecUtc() const {
+int64_t Session::getSessionDestroyTimeSecUtc() {
+  return sessionDestroyTimeSecUtc;
 }
 
 std::string Session::getDeviceModelNo() {
@@ -140,6 +160,7 @@ void Session::callStopLoaders() {
 }
 
 int Session::get_mbpsCurBitrate() const {
+  return kbpsCurrentBitrate/1000;
 }
 
 void Session::set_kbpsBitrate(int input_kbps) {
@@ -152,6 +173,7 @@ int Session::get_kbpsCurBitrate() {
 }
 
 std::unordered_map<int64_t, int> & Session::getUtiTimeSecBitSizeMap() {
+  return utcTimeSecBitSizeMap;
 }
 
 void Session::addRxBitrate(RxBitrate &record) {
@@ -198,6 +220,7 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 }
 
 void Session::shutdownSession() {
+  sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   closeHandlersAndSocket();
   stopAllTimerTasks();
   recordBitrateTestResult();
@@ -283,10 +306,76 @@ void Session::onPlayDone(int streamId) {
 }
 
 void Session::recordBitrateTestResult() {
-  for (auto& record : rxBitrateRecord) {
-    // TODO : need to implement bitrate recording saving logic later.
-    std::cout << record.getBitrate() << "," << record.getUtcTimeMillis() << std::endl;
+  std::string utcTime = Util::getCurrentUtcTimeString();
+
+  std::string resultFileName = contentTitle + "_"
+    + utcTime + "_"
+    + deviceModelNo + "_"
+    + manufacturer + "_"
+    + sessionId + "_"
+    + clientRemoteAddress + ".txt";
+
+  std::ostringstream serverSideStream;
+  serverSideStream << "Server_Tx_Bitrate_Record\n";
+  std::vector<std::pair<int64_t, int32_t>> txRecord;
+  for (auto& pair : utcTimeSecBitSizeMap) {
+    txRecord.push_back(std::make_pair(pair.first, pair.second));
   }
+  // sort in ascending order based on the first elem : the utc time sec.
+  std::sort(txRecord.begin(), txRecord.end(), [](const auto& a, const auto& b) {
+      return a.first < b.first;
+  });
+  int64_t bitSizeSum = 0;
+  for (auto& pair : txRecord) {
+    serverSideStream << pair.first << "," << pair.second << "\n";
+    bitSizeSum += pair.second;
+  }
+  serverSideStream << "\n\n";
+
+  int64_t playTimeDurationMillis =
+    ( (txRecord.at(txRecord.size()-1)).first - (txRecord.at(0).first) )*1000;
+  float avgTxMbps =
+    (static_cast<float>(bitSizeSum)/static_cast<float>(1000) )/ static_cast<float>(playTimeDurationMillis);
+
+  std::ostringstream clientSideStream;
+  clientSideStream << "Client_Rx_Bitrate_Record\n";
+  int64_t rxBitSizeSum = 0;
+  for (auto& record : rxBitrateRecord) {
+    clientSideStream << std::to_string(record.getUtcTimeMillis()/1000) << "," << record.getBitrate() << "\n";
+    rxBitSizeSum += record.getBitrate();
+  }
+
+  int64_t clientPlayTimeDurationMillis = 1;
+  if (rxBitrateRecord.size() > 2) {
+    clientPlayTimeDurationMillis =
+      rxBitrateRecord.at(rxBitrateRecord.size()-1).getUtcTimeMillis() - rxBitrateRecord.at(0).getUtcTimeMillis();
+  }
+  float avgRxMbps =
+    (static_cast<float>(rxBitSizeSum)/static_cast<float>(1000)) / static_cast<float>(clientPlayTimeDurationMillis);
+
+  std::ostringstream testInfos;
+  testInfos << "TestInfo\n";
+  testInfos << "Contents=" << contentTitle << "\n";
+  testInfos << "ContentsPlayTimeDurationMillis=" << playTimeMillis << "\n";
+  testInfos << "ContentsAvgFullStreamingBitrateMbps=" << get_mbpsCurBitrate() << "\n";
+  testInfos << "ServerRealAvgTxBitrateMbps=" << avgTxMbps << "\n";
+  testInfos << "ClientRealAvgRxBitrateMbps=" << avgRxMbps << "\n";
+  testInfos << "DeviceModel=" << deviceModelNo << "\n";
+  testInfos << "Manufacturer=" << manufacturer << "\n";
+  testInfos << "SessionId=" << sessionId << "\n";
+  testInfos << "ClientIPAddr=" << clientRemoteAddress << "\n\n";
+
+  std::string testInfo = testInfos.str();
+  std::string serverSideInfo = serverSideStream.str();
+  std::string clientSideInfo = clientSideStream.str();
+  std::string finalRecord;
+  finalRecord += testInfo;
+  finalRecord += serverSideInfo;
+  finalRecord += clientSideInfo;
+
+  // TODO : save later.
+  std::cout << "final record test !!!";
+  std::cout << finalRecord;
 }
 
 void Session::stopAllTimerTasks() {
@@ -308,7 +397,7 @@ bool Session::isPlayDone(int streamId) {
 
 void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
   std::lock_guard<std::mutex> guard(lock);
-  sentBitsSize += bufPtr->len;
+  sentBitsSize += (bufPtr->len * 8);
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
 }

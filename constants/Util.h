@@ -296,6 +296,22 @@ namespace Util {
 		return sampleIt->second;
 	}
 
+	inline std::string getCurrentUtcTimeString() {
+		auto now = std::chrono::system_clock::now();
+		std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
+		std::tm utcTime{};
+
+		#ifdef _WIN32  // Windows
+			gmtime_s(&utc_tm, &now_c);
+		#else  // Linux / macOS
+			utcTime = *std::gmtime(&nowTime);
+		#endif
+
+		std::ostringstream oss;
+		oss << std::put_time(&utcTime, "UTC%Y-%m-%dT%H:%M:%S");
+		return oss.str();
+	}
+
 }
 
 #endif // UTIL_H
