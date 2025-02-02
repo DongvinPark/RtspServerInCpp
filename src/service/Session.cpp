@@ -55,6 +55,8 @@ void Session::start() {
         }
         std::cout << "\n";
         transmit(std::move(bufferPtr));
+      } else {
+        shutdownSession();
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
@@ -95,15 +97,19 @@ int64_t Session::getSessionDestroyTimeSecUtc() const {
 }
 
 std::string Session::getDeviceModelNo() {
+  return deviceModelNo;
 }
 
 void Session::updateDeviceModelNo(std::string name) {
+  deviceModelNo = name;
 }
 
 std::string Session::getManufacturer() {
+  return manufacturer;
 }
 
 void Session::updateManufacturer(std::string inputManufacturer) {
+  manufacturer = inputManufacturer;
 }
 
 bool Session::getPauseStatus() {
@@ -124,6 +130,7 @@ int64_t Session::getPlayTimeDurationMillis() {
 }
 
 void Session::updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis) {
+  playTimeMillis = inputPlayTimeDurationMillis;
 }
 
 void Session::callStopLoaders() {
@@ -187,6 +194,18 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 }
 
 void Session::shutdownSession() {
+  // close all handlers and socket
+  socketPtr->close();
+  acsHandlerPtr->shutdown();
+
+  // stop all timers
+  rtspTask.stop();
+  bitrateRecodeTask.stop();
+  videoSampleReadingTask.stop();
+  audioSampleReadingTask.stop();
+  logger->info("Dongvin, stopped all timers. session id : " + sessionId);
+
+  // TODO : need to implement bitrate recording saving logic.
 }
 
 void Session::handleRtspRequest(Buffer& buf) {
@@ -250,6 +269,8 @@ void Session::onPlayStart() {
 }
 
 void Session::onTeardown() {
+  logger->severe("Dongvin, teardown current session. session id : " + sessionId);
+  shutdownSession();
 }
 
 void Session::onTransmitVideoSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs) {
@@ -279,7 +300,7 @@ void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   if (!socket.is_open()) {
-    throw std::runtime_error("socket is not open");
+    throw std::runtime_error("socket is not open. session id : " + sessionId);
   }
   std::vector<unsigned char> buf(2*1024);
   boost::system::error_code error;
@@ -287,7 +308,7 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);
   if (error == boost::asio::error::eof) {
     // Connection closed cleanly by peer
-    std::cerr << "Connection closed by peer." << std::endl;
+    std::cerr << "Connection closed by peer. session id : " << sessionId << std::endl;
     return nullptr;
   }
   if (error) {

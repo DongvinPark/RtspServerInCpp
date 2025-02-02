@@ -17,12 +17,7 @@ RtspHandler::RtspHandler(
     acsHandlerPtr(inputAcsHandlerPtr),
     sessionId(inputSessionId) {}
 
-RtspHandler::~RtspHandler() {
-
-}
-
-void RtspHandler::shutdown() {
-}
+RtspHandler::~RtspHandler() = default;
 
 void RtspHandler::run(Buffer& inputBuffer) {
   std::string req = inputBuffer.getString();

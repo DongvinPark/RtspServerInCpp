@@ -15,7 +15,6 @@ public:
   );
   ~RtspHandler();
 
-  void shutdown();
   void run(Buffer& inputBuffer);
   void handleRtspRequest(
     std::string reqStr, Buffer& inputBuffer
