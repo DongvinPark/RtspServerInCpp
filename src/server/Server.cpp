@@ -15,7 +15,7 @@ Server::Server(
   ContentsStorage& inputContentsStorage,
   const std::string &inputStorage,
   SntpRefTimeProvider& inputSntpRefTimeProvider,
-  std::filesystem::path& inputProjectRoot
+  std::string inputProjectRoot
 ) : logger(Logger::getLogger(C::SERVER)),
     io_context(inputIoContext),
     contentsStorage(inputContentsStorage),
@@ -81,7 +81,7 @@ ContentsStorage & Server::getContentsStorage() {
   return contentsStorage;
 }
 
-std::filesystem::path& Server::getProjectRootPath(){
+std::string Server::getProjectRootPath(){
   return projectRootPath;
 }
 

@@ -380,7 +380,7 @@ void Session::recordBitrateTestResult() {
   finalRecord += clientSideInfo;
 
   std::string projectRootPath = parentServer.getProjectRootPath();
-  std::string finalPath = projectRootPath + DIR_SEPARATOR + resultFileName;
+  std::filesystem::path finalPath(projectRootPath + DIR_SEPARATOR + resultFileName);
 
   std::ofstream outFile(finalPath);
   try {

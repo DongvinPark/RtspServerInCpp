@@ -37,8 +37,7 @@ namespace Util {
 		const std::string pickUpString =
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 			"abcdefghijklmnopqrstuvwxyz"
-			"0123456789"
-			"+_-.";
+			"0123456789";
 
 		int keyLength = bitLength / 8; // convert bit len to byte len
 
@@ -308,7 +307,7 @@ namespace Util {
 		#endif
 
 		std::ostringstream oss;
-		oss << std::put_time(&utcTime, "UTC%Y-%m-%dT%H:%M:%S");
+		oss << std::put_time(&utcTime, "UTC%Y_%m_%dT%H_%M_%S");
 		return oss.str();
 	}
 

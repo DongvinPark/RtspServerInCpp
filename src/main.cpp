@@ -128,7 +128,7 @@ int main() {
     ContentsStorage contentsStorage(contentsRootPath);
     contentsStorage.init();
 
-    std::filesystem::path projectRootDirPath = getProjectRoot();
+    std::string projectRootDirPath = getProjectRoot();
 
     Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider, projectRootDirPath);
     // server.start(); is blocking function.
