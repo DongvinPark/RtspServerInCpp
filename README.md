@@ -27,7 +27,7 @@
     - Ubuntu 20.04 LTS, C++ 17 or later, boost 1.71.0
     - Ubuntu 22.04 LTS, C++ 17 or later, boost 1.74.0
     - Amazon Linux 2023, C++ 17 or later, boost 1.75.0
-  - MacOS ??, C++ 17 or later, boost ??
+  - MacOS Sequoia 15.2, C++ 17 or later, boost 1.87.0
 <br><br/>
 
 ## 개발환경 셋팅
