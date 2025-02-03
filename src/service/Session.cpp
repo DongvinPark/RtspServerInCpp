@@ -6,6 +6,11 @@
 #include "../../include/PeriodicTask.h"
 #include "../constants/C.h"
 
+#ifdef _WIN32
+    const char DIR_SEPARATOR = '\\';
+#else
+const char DIR_SEPARATOR = '/';
+#endif
 
 Session::Session(
   boost::asio::io_context & inputIoContext,
@@ -217,6 +222,7 @@ int Session::getCamId() const {
 }
 
 HybridMetaMapType & Session::getHybridMetaMap() {
+  return hybridMeta;
 }
 
 void Session::shutdownSession() {
@@ -373,9 +379,23 @@ void Session::recordBitrateTestResult() {
   finalRecord += serverSideInfo;
   finalRecord += clientSideInfo;
 
-  // TODO : save later.
-  std::cout << "final record test !!!";
-  std::cout << finalRecord;
+  std::string projectRootPath = parentServer.getProjectRootPath();
+  std::string finalPath = projectRootPath + DIR_SEPARATOR + resultFileName;
+
+  std::ofstream outFile(finalPath);
+  try {
+    if (outFile.is_open()) {
+      outFile << finalRecord;  // Write content to file
+      outFile.close();      // Close the file
+      logger->warning("Dongvin, bitrate record successfully saved. session id : " + sessionId);
+    } else {
+      logger->severe("Dongvin, bitrate record failed. session id : " + sessionId);
+    }
+  } catch (const std::exception& e){
+    outFile.close();
+    logger->severe("Dongvin, exception was thrown in saving bitrate record. session id : " + sessionId);
+    std::cerr << e.what() << std::endl;
+  }
 }
 
 void Session::stopAllTimerTasks() {

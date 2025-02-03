@@ -14,13 +14,15 @@ Server::Server(
   boost::asio::io_context& inputIoContext,
   ContentsStorage& inputContentsStorage,
   const std::string &inputStorage,
-  SntpRefTimeProvider& inputSntpRefTimeProvider
+  SntpRefTimeProvider& inputSntpRefTimeProvider,
+  std::filesystem::path& inputProjectRoot
 ) : logger(Logger::getLogger(C::SERVER)),
     io_context(inputIoContext),
     contentsStorage(inputContentsStorage),
     storage(inputStorage),
     sntpTimeProvider(inputSntpRefTimeProvider),
-    connectionCnt(0) {}
+    connectionCnt(0),
+    projectRootPath(inputProjectRoot){}
 
 Server::~Server() {
   shutdownServer();
@@ -77,6 +79,10 @@ std::unordered_map<std::string, std::shared_ptr<Session>> & Server::getSessions(
 
 ContentsStorage & Server::getContentsStorage() {
   return contentsStorage;
+}
+
+std::filesystem::path& Server::getProjectRootPath(){
+  return projectRootPath;
 }
 
 void Server::shutdownServer() {

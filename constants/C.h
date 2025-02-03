@@ -23,7 +23,7 @@ namespace C {
     constexpr char ACS_HANDLER[] = "AcsHandler";
 
     // General constants
-    const std::string VERSION = "1.0.4";
+    const std::string VERSION = "1.0.0";
     const std::string MY_NAME = "alphaStreamer-3.1/" + VERSION;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
     constexpr int SESSION_CLOSE_TIMEOUT_MS = 10*1000;

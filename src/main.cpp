@@ -4,7 +4,18 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <future> // For std::promise and std::future
+#include <future> // for std::promise and std::future
+#include <filesystem>
+
+// to find absolute path of project root dir
+#ifdef _WIN32
+    #include <windows.h>
+#elif __APPLE__
+    #include <libproc.h>
+    #include <unistd.h>
+#elif __linux__
+    #include <unistd.h>
+#endif
 
 #include "../include/Logger.h"
 #include "../constants/C.h"
@@ -18,6 +29,36 @@
 // 1.0.0        2024.12.27      Util, DTO, and FileRaader Initialized
 
 using boost::asio::ip::tcp;
+
+std::string getExecutablePath() {
+    char path[1024];
+
+#ifdef _WIN32
+    GetModuleFileNameA(NULL, path, sizeof(path));
+#elif __APPLE__
+    proc_pidpath(getpid(), path, sizeof(path));
+#elif __linux__
+    ssize_t count = readlink("/proc/self/exe", path, sizeof(path));
+    if (count != -1) path[count] = '\0'; // Null-terminate
+#endif
+
+    return std::string(path);
+}
+
+// Function to find the project root directory
+std::string getProjectRoot() {
+    std::filesystem::path exePath = getExecutablePath();
+
+    // Traverse up until we find the "RtspServer" directory
+    while (exePath.has_parent_path()) {
+        exePath = exePath.parent_path();
+        if (exePath.filename() == "RtspServerInCpp") {
+            return exePath.string();
+        }
+    }
+
+    return ""; // If not found, return empty string
+}
 
 std::string getContentsRootPath() {
 #ifdef __linux__
@@ -87,7 +128,9 @@ int main() {
     ContentsStorage contentsStorage(contentsRootPath);
     contentsStorage.init();
 
-    Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider);
+    std::filesystem::path projectRootDirPath = getProjectRoot();
+
+    Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider, projectRootDirPath);
     // server.start(); is blocking function.
     // if server stop with uncaught exception, the following shutting down logic will never work.
     server.start();

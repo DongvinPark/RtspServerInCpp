@@ -20,7 +20,8 @@ public:
     boost::asio::io_context& inputIoContext,
     ContentsStorage& inputContentsStorage,
     const std::string &inputStorage,
-    SntpRefTimeProvider& inputSntpRefTimeProvider
+    SntpRefTimeProvider& inputSntpRefTimeProvider,
+    std::filesystem::path& projectRoot
   );
   ~Server();
 
@@ -28,6 +29,7 @@ public:
 
   std::unordered_map<std::string, std::shared_ptr<Session>>& getSessions();
   ContentsStorage& getContentsStorage();
+  std::filesystem::path& getProjectRootPath();
 
   void shutdownServer();
   void afterTerminatingSession(std::string sessionId);
@@ -37,6 +39,7 @@ private:
 
   std::shared_ptr<Logger> logger;
   boost::asio::io_context& io_context;
+  std::filesystem::path& projectRootPath;
   // used shared_ptr for better ownership management
   std::unordered_map<std::string, std::shared_ptr<Session>> sessions;
   ContentsStorage& contentsStorage;
