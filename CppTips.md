@@ -1148,10 +1148,12 @@ Undefined symbols for architecture arm64:
 ```
 <br><br/>
 32. unique_ptr를 요소로서 가지고 있는 BlockingQueue를 설계하는 것.
-    <br> 이런 자료구조는 thread safe하게 디자인하기가 매우 까다롭다.
-    <br> 최대한 단일 스레드에서 처리할 수 있게 설계하거나, 아니면 boost.asio의 io_context를 쓰거나,
-    <br> boost 라이브러리 내의 Lock-Free, concurrent 등의 라이브러리에서 제공하는 자료구조를 쓰자.
-    <br> 다시 한 번 강조하지만, 성능 문제가 없는 한 웬만하면 꼭 단일 스레드로 처리하자.
+```text
+    - 이런 자료구조는 thread safe하게 디자인하기가 매우 까다롭다.
+    - 최대한 단일 스레드에서 처리할 수 있게 설계하거나, 아니면 boost.asio의 io_context를 쓰거나,
+    - boost 라이브러리 내의 Lock-Free, concurrent 등의 라이브러리에서 제공하는 자료구조를 쓰자.
+    - 다시 한 번 강조하지만, 성능 문제가 없는 한 웬만하면 단일 스레드로 처리하는게 좋다.
+```
 <br><br/>
 33. java의 str.startsWith("..")는 C++17에서는 rfind()를 이용해서 대체할 수 있다.
     <br> C++20에서는 str.starts_with("...") 이 std library에서 지원되지만, 이전 버전에서는 지원되지 않는다.
@@ -1161,7 +1163,28 @@ bool startsWith(const std::string& str, const std::string& prefix) {
     return str.rfind(prefix, 0) == 0;
 }
 ```
+<br><br/>
+34. C++ 에서는 시간을 다루는 라이브러리가 많다. java의 System.currentTimeMillis() 와 System.nanoTime()을 C++에서 다음과 같이 구현할 수 있다.
+    <br> currentTimeMillis()는 1970년 1월 1일 자정 ~ 현재까지의 시간 차이를 밀리초로 나타낸 값을 리턴한다.
+    <br> nanoTimes()는 wall-clock이 아니며, 시간 간격(ex : 함수 수행 완료에 걸린 시간) 측정에 사용된다.
+```c++
+    // Util.h 에 구현돼 있다.
     
+inline int64_t getCurrentTimeMillis(){
+        // time_since_epoch 를 쓰고 있다.
+		return std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::high_resolution_clock::now().time_since_epoch()
+		).count();
+	}
+
+inline int64_t getElapsedTimeNanoSec(){
+	    // time_since_epoch 같은 특정 고정 기준 시각 대신,
+	    // steady_clock 을 사용한다.
+		return std::chrono::duration_cast<std::chrono::nanoseconds>(
+			std::chrono::steady_clock::now().time_since_epoch()
+		).count();
+	}
+```
     
 
 

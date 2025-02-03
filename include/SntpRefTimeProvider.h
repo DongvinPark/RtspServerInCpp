@@ -25,7 +25,7 @@ private:
     void writeTimeStamp(std::vector<uint8_t>& buffer, size_t offset, int64_t time);
     int64_t readTimeStamp(const std::vector<uint8_t>& buffer, size_t offset);
     int64_t read32(const std::vector<uint8_t>& buffer, size_t offset);
-    void onReadSntpTime(int64_t ntpTimeMs);
+    void onReadSntpTime();
 
     std::shared_ptr<Logger> logger;
     boost::asio::io_context& ioContext;

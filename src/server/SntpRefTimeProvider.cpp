@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <random>
 
+#include "../../constants/Util.h"
+
 SntpRefTimeProvider::SntpRefTimeProvider(boost::asio::io_context& inputIoContext)
     : logger(Logger::getLogger(C::SNTP_REF_TIME_PROVIDER)),
     ioContext(inputIoContext),
@@ -38,9 +40,7 @@ int64_t SntpRefTimeProvider::getRefTimeMillisForCurrentTask() {
         // high_resolution_clock can be implemented differently according to
         // paltform(Window, Linux, MacOS).
         // duration_cast ensures this implementation to use only millisecond unit.
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch()
-        ).count()
+        Util::getElapsedTimeNanoSec()
     );
 }
 
@@ -73,13 +73,9 @@ void SntpRefTimeProvider::readTime() {
 
         // get current time and write it to the request packet
         int64_t requestTime = // UTC time 1970.1.1, ms, local UTC time
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::high_resolution_clock::now().time_since_epoch()
-            ).count();
+            Util::getCurrentTimeMillis();
         int64_t requestTicks = //nano sec. device time from boot
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::high_resolution_clock::now().time_since_epoch()
-            ).count();
+            Util::getElapsedTimeNanoSec();
 
         writeTimeStamp(buffer, C::TRANSMIT_TIME_OFFSET, requestTime);
 
@@ -98,9 +94,7 @@ void SntpRefTimeProvider::readTime() {
             return;
         }
 
-        int64_t responseTicks = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch()
-        ).count();
+        int64_t responseTicks = Util::getElapsedTimeNanoSec();
         int64_t responseTime = requestTime + (responseTicks - requestTicks) / 1000000;
 
         /*
@@ -146,7 +140,7 @@ void SntpRefTimeProvider::readTime() {
 
         // we pass the time immediately to listener so as not to include the additional delay
         // by the internal sw works.
-        onReadSntpTime(originSntpTime);
+        onReadSntpTime();
 
         socket.close();
     } catch (const std::exception& e) {
@@ -195,12 +189,8 @@ int64_t SntpRefTimeProvider::read32(
     return static_cast<int64_t>(byte1 | byte2 | byte3 | byte4);
 }
 
-void SntpRefTimeProvider::onReadSntpTime(int64_t ntpTimeMs_) {
-    int64_t curRefTime = getRefTime(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch()
-        ).count()
-    );
+void SntpRefTimeProvider::onReadSntpTime() {
+    int64_t curRefTime = getRefTime(Util::getElapsedTimeNanoSec());
 
     int64_t diff = 0LL;
     // the noise on clock can make this abrupt change, actually AWGN.
@@ -210,21 +200,17 @@ void SntpRefTimeProvider::onReadSntpTime(int64_t ntpTimeMs_) {
     // the device abrupt noise makes a bad effect on it or the context thread
     // will make the time difference by running other tasks.
     if (curRefTime != C::UNSET) {
-        diff = ntpTimeMs_ - curRefTime;
+        diff = originSntpTime - curRefTime;
 
         if (std::abs(diff) > 35) {
             return;
         }
 
         // filter the diff and update
-        ntpTimeMs_ = static_cast<int64_t>(ntpTimeMs_ - (0.5 * diff));
+        originSntpTime = static_cast<int64_t>(originSntpTime - (0.5 * diff));
     }
 
     std::lock_guard<std::mutex> guard(lock);
-    ntpTimeMs.store(ntpTimeMs_);
-    elapsedTimeNs.store(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch()
-        ).count()
-    );
+    ntpTimeMs.store(originSntpTime);
+    elapsedTimeNs.store(Util::getElapsedTimeNanoSec());
 }
