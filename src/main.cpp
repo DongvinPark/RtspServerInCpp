@@ -115,7 +115,7 @@ int main() {
                 shutdownPromise.set_value();
             }
         } catch (const std::exception& e) {
-            std::cerr << "Exception during signal handling: " << e.what() << std::endl;
+            std::cerr << "Exception during signal handling: " << e.what() << "\n";
             shutdownPromise.set_exception(std::make_exception_ptr(e));
         }
     });

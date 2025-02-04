@@ -74,7 +74,7 @@ void FileReader::shutdown() {
     audioFile.close();
   } catch (const std::exception &e) {
     logger->severe("Dongvin, exception while shutting down FileReader!");
-    std::cerr << e.what() << std::endl;
+    std::cerr << e.what() << "\n";
   }
 }
 

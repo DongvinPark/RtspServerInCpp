@@ -1,6 +1,7 @@
 #include "../include/Server.h"
 
 #include <sstream>
+#include <iostream>
 
 #include "../constants/Util.h"
 #include "../constants/C.h"
@@ -25,6 +26,7 @@ Server::Server(
     projectRootPath(inputProjectRoot){}
 
 Server::~Server() {
+  std::cout << "!!! Server Desctructor called !!!\n";
   shutdownServer();
 }
 
@@ -95,17 +97,19 @@ void Server::shutdownServer() {
 
     // then, shuts down sessions
     for (auto& kvPair : sessions) {
+      std::cout << "!!! 1\n";
       kvPair.second->shutdownSession();
     }
   } catch (const std::exception& e){
     logger->severe("Dongvin, exception while shutting down Server!");
-    std::cerr << e.what() << std::endl;
+    std::cerr << e.what() << "\n";
   }
   sessions.clear();
   contentsStorage.shutdown();
 }
 
 void Server::afterTerminatingSession(std::string sessionId) {
+  std::cout << "!!! after termi enter\n";
   if (sessions.find(sessionId) != sessions.end()) {
     sessions.erase(sessionId);
     logger->warning(

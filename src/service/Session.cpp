@@ -28,7 +28,6 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    strand(boost::asio::make_strand(io_context)),
     rtspTask(inputIoContext, inputIntervalMs),
     videoSampleReadingTask(inputIoContext, inputIntervalMs),
     audioSampleReadingTask(inputIoContext, inputIntervalMs),
@@ -41,6 +40,7 @@ Session::Session(
 }
 
 Session::~Session() {
+  std::cout << "!!! Session Destructor called !!!\n";
 }
 
 void Session::start() {
@@ -48,6 +48,7 @@ void Session::start() {
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
   auto rxTask = [&](){
+    std::cout << "!!! rxTask enter !!!\n";
     try {
       std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
       if (bufferPtr != nullptr && !isShutdown) {
@@ -61,8 +62,6 @@ void Session::start() {
         }
         std::cout << "\n";
         transmit(std::move(bufferPtr));
-      } else {
-        shutdownSession();
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
@@ -227,31 +226,37 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 
 void Session::shutdownSession() {
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
-  closeHandlersAndSocket();
-  stopAllTimerTasks();
-  recordBitrateTestResult();
   isShutdown = true;
+  std::cout << "!!! time pass\n";
+  stopAllTimerTasks();
+  std::cout << "!!! timer pass\n";
+  closeHandlersAndSocket();
+  std::cout << "!!! close pass\n";
+  recordBitrateTestResult();
+  std::cout << "!!! save pass\n";
   parentServer.afterTerminatingSession(sessionId);
 }
 
 void Session::handleRtspRequest(Buffer& buf) {
   if (buf.buf.empty()) {
-    std::cerr << "Empty or invalid buffer received!" << std::endl;
+    std::cerr << "Empty or invalid buffer received!\n";
     return;
   }
 
   if (!rtspHandlerPtr) {
-    std::cerr << "rtspHandlerPtr is null!" << std::endl;
+    std::cerr << "rtspHandlerPtr is null!\n";
     return;
   }
 
   try {
     rtspHandlerPtr->run(buf);
   } catch (const std::exception& ex) {
-    std::cerr << "Exception in handleRtspRequest: " << ex.what() << std::endl;
+    std::cerr << "Exception in handleRtspRequest: " << ex.what() << "\n";
+    std::cout << "!!! 4\n";
     shutdownSession();
   } catch (...) {
-    std::cerr << "Unknown error in handleRtspRequest!" << std::endl;
+    std::cerr << "Unknown error in handleRtspRequest!" << "\n";
+    std::cout << "!!! 5\n";
     shutdownSession();
   }
 }
@@ -301,6 +306,7 @@ void Session::onPlayStart() {
 
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
+  std::cout << "!!! 6\n";
   shutdownSession();
 }
 
@@ -403,7 +409,7 @@ void Session::recordBitrateTestResult() {
   } catch (const std::exception& e){
     outFile.close();
     logger->severe("Dongvin, exception was thrown in saving bitrate record. session id : " + sessionId);
-    std::cerr << e.what() << std::endl;
+    std::cerr << e.what() << "\n";
   }
 }
 
@@ -421,8 +427,12 @@ void Session::stopAllTimerTasks() {
 
 void Session::closeHandlersAndSocket() {
   socketPtr->close();
+  socketPtr.reset();
   acsHandlerPtr->shutdown();
-  logger->info("Dongvin, closed socket and acs handler. session id : " + sessionId);
+  rtspHandlerPtr.reset();
+  acsHandlerPtr.reset();
+  rtpHandlerPtr.reset();
+  logger->info("Dongvin, closed socket and all handlers. session id : " + sessionId);
 }
 
 bool Session::isPlayDone(int streamId) {
@@ -448,11 +458,11 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);
   if (error == boost::asio::error::eof) {
     // Connection closed cleanly by peer
-    std::cerr << "Connection closed by peer. session id : " << sessionId << std::endl;
+    std::cerr << "Connection closed by peer. session id : " << sessionId << "\n";
     return nullptr;
   }
   if (error) {
-    std::cerr << error.message() << std::endl;
+    std::cerr << error.message() << "\n";
     throw boost::system::system_error(error); // Other errors
   }
 

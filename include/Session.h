@@ -169,8 +169,6 @@ private:
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
 
-  boost::asio::strand<boost::asio::io_context::executor_type> strand;
-
   PeriodicTask rtspTask;
   PeriodicTask videoSampleReadingTask;
   PeriodicTask audioSampleReadingTask;

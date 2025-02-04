@@ -71,7 +71,12 @@ void RtspHandler::handleRtspRequest(
             "Dongvin, illegal requests with invalid session id are given "
             + std::to_string(C::WRONG_SESSION_ID_TOLERANCE_CNT)+" times in total. "
             +"We believe there is something wrong. We shut down this connection.");
-          sessionPtr->shutdownSession();
+
+          // throw runtime exception
+          throw std::runtime_error(
+            "Dongvin, shutting down malicious session! remote addr : "
+                + sessionPtr->getClientRemoteAddress()
+          );
           return;
         }
         logger->severe("Dongvin, failed to find session id!");
@@ -297,10 +302,9 @@ void RtspHandler::handleRtspRequest(
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);
-        sessionPtr->recordBitrateTestResult();
         sessionPtr->onTeardown();
-        inSession = false;
-        wrongSessionIdRequestCnt = 0;
+        //inSession = false;
+        //wrongSessionIdRequestCnt = 0;
         return;
       } else if (method == "SET_PARAMETER") {
         // last string is the switching info.
@@ -644,7 +648,6 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
       if (line == C::EMPTY_STRING) {
         continue;
       }
-      //std::cout << "apended!!!" << line << std::endl;
       result += (line + C::CRLF);
     }
 
