@@ -50,14 +50,14 @@ void Session::start() {
   auto rxTask = [&](){
     try {
       std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
-      if (bufferPtr != nullptr) {
+      if (bufferPtr != nullptr && !isShutdown) {
         Buffer& buf = *bufferPtr;
         handleRtspRequest(buf);
 
         std::string res = buf.getString();
         logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
-        for (auto& reqLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
-          logger->info(reqLine);
+        for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
+          logger->info(resLine);
         }
         std::cout << "\n";
         transmit(std::move(bufferPtr));
@@ -230,6 +230,8 @@ void Session::shutdownSession() {
   closeHandlersAndSocket();
   stopAllTimerTasks();
   recordBitrateTestResult();
+  isShutdown = true;
+  parentServer.afterTerminatingSession(sessionId);
 }
 
 void Session::handleRtspRequest(Buffer& buf) {
@@ -312,6 +314,11 @@ void Session::onPlayDone(int streamId) {
 }
 
 void Session::recordBitrateTestResult() {
+  if (isRecordSaved){
+    logger->info("Dongvin, bitrate test result already saved. session id : " + sessionId);
+    return;
+  }
+
   std::string utcTime = Util::getCurrentUtcTimeString();
 
   std::string resultFileName = contentTitle + "_"
@@ -387,6 +394,7 @@ void Session::recordBitrateTestResult() {
     if (outFile.is_open()) {
       outFile << finalRecord;  // Write content to file
       outFile.close();      // Close the file
+      isRecordSaved = true;
       logger->warning("Dongvin, bitrate record successfully saved. session id : " + sessionId);
     } else {
       logger->severe("Dongvin, bitrate record failed. session id : " + sessionId);
@@ -396,6 +404,10 @@ void Session::recordBitrateTestResult() {
     logger->severe("Dongvin, exception was thrown in saving bitrate record. session id : " + sessionId);
     std::cerr << e.what() << std::endl;
   }
+}
+
+bool Session::getShutdownStatus(){
+  return isShutdown;
 }
 
 void Session::stopAllTimerTasks() {
@@ -416,13 +428,16 @@ bool Session::isPlayDone(int streamId) {
 }
 
 void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
-  std::lock_guard<std::mutex> guard(lock);
   sentBitsSize += (bufPtr->len * 8);
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
+  if (isShutdown){
+    logger->severe("Dongvin, receive:: session already shutdown.");
+    return nullptr;
+  }
   if (!socket.is_open()) {
     throw std::runtime_error("socket is not open. session id : " + sessionId);
   }

@@ -95,16 +95,13 @@ void Server::shutdownServer() {
 }
 
 void Server::afterTerminatingSession(std::string sessionId) {
-  std::shared_ptr<Session> sessionPtr = sessions.at(sessionId);
-
-  // TODO : implement test record saving logic
-
-  logger->info("test result successfully saved. session : " + sessionId);
-  sessions.erase(sessionId);
-  logger->info(
-      "Dongvin, " + sessionId + " shuts down. Remaining session cnt : "
-          + std::to_string(sessions.size())
+  if (sessions.find(sessionId) != sessions.end()) {
+    sessions.erase(sessionId);
+    logger->warning(
+        "Dongvin, " + sessionId + " shuts down. Remaining session cnt : "
+            + std::to_string(sessions.size())
     );
+  }
 }
 
 std::string Server::getSessionId() {

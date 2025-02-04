@@ -123,6 +123,8 @@ public:
 
   void recordBitrateTestResult();
 
+  bool getShutdownStatus();
+
 private:
   void stopAllTimerTasks();
   void closeHandlersAndSocket();
@@ -130,13 +132,9 @@ private:
   bool isPlayDone(int streamId);
   void transmit(std::unique_ptr<Buffer> bufPtr);
 
-  void asyncRead();
-  void asyncWrite();
-
   std::unique_ptr<Buffer> receive(boost::asio::ip::tcp::socket& socket);
 
   std::shared_ptr<Logger> logger;
-  std::mutex lock;
   boost::asio::io_context& io_context;
   std::shared_ptr<boost::asio::ip::tcp::socket> socketPtr;
   std::string sessionId;
@@ -177,6 +175,9 @@ private:
   PeriodicTask videoSampleReadingTask;
   PeriodicTask audioSampleReadingTask;
   PeriodicTask bitrateRecodeTask;
+
+  bool isShutdown = false;
+  bool isRecordSaved = false;
 };
 
 #endif //SESSION_H
