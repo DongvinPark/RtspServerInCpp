@@ -112,7 +112,6 @@ int main() {
                     io_context.stop();
                     std::cout << "\t>>> io_context stopped.\n";
                 }
-
                 shutdownPromise.set_value();
             }
         } catch (const std::exception& e) {
@@ -138,8 +137,9 @@ int main() {
     // Wait for shutdown to complete
     shutdownFuture.wait();
 
-    // do cleaning before shutting down. shutdonw all sessions and close boost asio io_context worker thread pool.
-    server.shutdownServer();
+    // do cleaning before shutting down. shutdown all sessions and close boost asio io_context worker thread pool.
+    // do not need to call server.shutdownServer();
+    // destructor in Server class is called here automatically.
 
     for (auto& thread : threadVec) {
         if (thread.joinable()) {

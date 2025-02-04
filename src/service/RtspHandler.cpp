@@ -297,6 +297,7 @@ void RtspHandler::handleRtspRequest(
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);
+        sessionPtr->recordBitrateTestResult();
         sessionPtr->onTeardown();
         inSession = false;
         wrongSessionIdRequestCnt = 0;
@@ -881,6 +882,6 @@ Map : hybridMeta<camId, val>
         }
 
       }//for
-    } //else logger->severe("RtspHandler: AcsHandlerPtr is null");
-  } //else logger->severe("RtspHandler: SessionPtr is null");
+    } else logger->severe("Dongvin, RtspHandler: failed to get weak AcsHandlerPtr!");
+  } else logger->severe("Dongvin, RtspHandler: failed to get weak SessionPtr!");
 }

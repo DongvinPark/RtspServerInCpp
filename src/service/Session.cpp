@@ -66,7 +66,7 @@ void Session::start() {
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
-      recordBitrateTestResult();
+      //recordBitrateTestResult();
     }
   };
 
@@ -315,7 +315,7 @@ void Session::onPlayDone(int streamId) {
 
 void Session::recordBitrateTestResult() {
   if (isRecordSaved){
-    logger->info("Dongvin, bitrate test result already saved. session id : " + sessionId);
+    logger->warning("Dongvin, bitrate test result already saved. session id : " + sessionId);
     return;
   }
 
@@ -395,6 +395,7 @@ void Session::recordBitrateTestResult() {
       outFile << finalRecord;  // Write content to file
       outFile.close();      // Close the file
       isRecordSaved = true;
+      isShutdown = true;
       logger->warning("Dongvin, bitrate record successfully saved. session id : " + sessionId);
     } else {
       logger->severe("Dongvin, bitrate record failed. session id : " + sessionId);

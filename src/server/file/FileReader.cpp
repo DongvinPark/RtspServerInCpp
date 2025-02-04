@@ -62,16 +62,20 @@ void FileReader::init() {
 
 void FileReader::shutdown() {
   // close all access
-  for (auto& kvPair : videoFiles) {
-    for (std::ifstream& videoAccess : kvPair.second.getAccessList()) {
-      if (videoAccess.is_open()) {
-        videoAccess.close();
+  try {
+    for (auto& kvPair : videoFiles) {
+      for (std::ifstream& videoAccess : kvPair.second.getAccessList()) {
+        if (videoAccess.is_open()) {
+          videoAccess.close();
+        }
       }
     }
+    videoFiles.clear();
+    audioFile.close();
+  } catch (const std::exception &e) {
+    logger->severe("Dongvin, exception while shutting down FileReader!");
+    std::cerr << e.what() << std::endl;
   }
-  videoFiles.clear();
-
-  audioFile.close();
 }
 
 RtpInfo FileReader::getRtpInfoCopyWithLock() {

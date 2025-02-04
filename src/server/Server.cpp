@@ -87,8 +87,19 @@ std::string Server::getProjectRootPath(){
 
 void Server::shutdownServer() {
   // shutdown all sessions.
-  for (auto& kvPair : sessions) {
-    kvPair.second->shutdownSession();
+  try {
+    // save bitrate test record first.
+    for (auto& kvPair : sessions) {
+      kvPair.second->recordBitrateTestResult();
+    }
+
+    // then, shuts down sessions
+    for (auto& kvPair : sessions) {
+      kvPair.second->shutdownSession();
+    }
+  } catch (const std::exception& e){
+    logger->severe("Dongvin, exception while shutting down Server!");
+    std::cerr << e.what() << std::endl;
   }
   sessions.clear();
   contentsStorage.shutdown();
