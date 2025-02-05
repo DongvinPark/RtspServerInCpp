@@ -41,6 +41,10 @@ Session::Session(
 
 Session::~Session() {
   std::cout << "!!! Session Destructor called !!!\n";
+  if (socketPtr != nullptr && socketPtr->is_open()) {
+    socketPtr->close();
+    std::cout << "!!! Session Destructor closed socket !!!\n";
+  }
 }
 
 void Session::start() {
@@ -299,7 +303,7 @@ void Session::onTeardown() {
   std::cout << "!!! time pass\n";
   stopAllTimerTasks();
   std::cout << "!!! timer pass\n";
-  closeHandlersAndSocket();
+  //closeHandlersAndSocket();
   std::cout << "!!! close pass\n";
   recordBitrateTestResult();
   std::cout << "!!! save pass\n";
@@ -417,7 +421,7 @@ void Session::stopAllTimerTasks() {
 }
 
 void Session::closeHandlersAndSocket() {
-  socketPtr->close();
+  //socketPtr->close();
   //socketPtr.reset();
   rtspHandlerPtr.reset();
   acsHandlerPtr.reset();
