@@ -224,14 +224,6 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 }
 
 void Session::shutdownSession() {
-  sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
-  std::cout << "!!! time pass\n";
-  stopAllTimerTasks();
-  std::cout << "!!! timer pass\n";
-  closeHandlersAndSocket();
-  std::cout << "!!! close pass\n";
-  recordBitrateTestResult();
-  std::cout << "!!! save pass\n";
   parentServer.afterTerminatingSession(sessionId);
 }
 
