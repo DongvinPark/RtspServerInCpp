@@ -41,10 +41,6 @@ Session::Session(
 
 Session::~Session() {
   std::cout << "!!! Session Destructor called !!!\n";
-  /*if (socketPtr != nullptr && socketPtr->is_open()) {
-    socketPtr->close();
-    std::cout << "!!! Session Destructor closed socket !!!\n";
-  }*/
 }
 
 void Session::start() {
@@ -228,6 +224,14 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 }
 
 void Session::shutdownSession() {
+  sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
+  std::cout << "!!! time pass\n";
+  stopAllTimerTasks();
+  std::cout << "!!! timer pass\n";
+  closeHandlersAndSocket();
+  std::cout << "!!! close pass\n";
+  recordBitrateTestResult();
+  std::cout << "!!! save pass\n";
   parentServer.afterTerminatingSession(sessionId);
 }
 
@@ -298,15 +302,15 @@ void Session::onPlayStart() {
 
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
-  /*std::cout << "!!! 6\n";
+  std::cout << "!!! 6\n";
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   std::cout << "!!! time pass\n";
   stopAllTimerTasks();
   std::cout << "!!! timer pass\n";
-  //closeHandlersAndSocket();
+  closeHandlersAndSocket();
   std::cout << "!!! close pass\n";
   recordBitrateTestResult();
-  std::cout << "!!! save pass\n";*/
+  std::cout << "!!! save pass\n";
   shutdownSession();
 }
 
@@ -421,7 +425,7 @@ void Session::stopAllTimerTasks() {
 }
 
 void Session::closeHandlersAndSocket() {
-  //socketPtr->close();
+  socketPtr->close();
   //socketPtr.reset();
   rtspHandlerPtr.reset();
   acsHandlerPtr.reset();

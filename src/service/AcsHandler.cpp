@@ -14,7 +14,6 @@ AcsHandler::AcsHandler(
 
 AcsHandler::~AcsHandler(){
   shutdown();
-  std::cout << "!!! AcsHandler destructor called" << std::endl;
 }
 
 void AcsHandler::updateRtpRemoteCnt(int cnt) {
@@ -57,9 +56,9 @@ void AcsHandler::initUserRequestingPlaytime(std::vector<float> timeS) {
     info.endSampleNo = findSampleNumber(streamId, Util::secToUs(timeS[1]));
     info.curSampleNo = info.startSampleNo;
 
-    /*std::unique_ptr<Buffer> rtpPtr = get1stRtpOfRefSample(streamId, info.startSampleNo);
+    std::unique_ptr<Buffer> rtpPtr = get1stRtpOfRefSample(streamId, info.startSampleNo);
     info.timestamp = Util::findTimestamp(*rtpPtr);
-    info.refSeq0 = Util::findSequenceNumber(*rtpPtr);*/
+    info.refSeq0 = Util::findSequenceNumber(*rtpPtr);
 
     // check --> removable.
     checkTimestamp(streamId, info);
