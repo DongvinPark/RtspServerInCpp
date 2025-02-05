@@ -298,7 +298,7 @@ void Session::onPlayStart() {
 
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
-  std::cout << "!!! 6\n";
+  /*std::cout << "!!! 6\n";
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   std::cout << "!!! time pass\n";
   stopAllTimerTasks();
@@ -306,7 +306,7 @@ void Session::onTeardown() {
   //closeHandlersAndSocket();
   std::cout << "!!! close pass\n";
   recordBitrateTestResult();
-  std::cout << "!!! save pass\n";
+  std::cout << "!!! save pass\n";*/
   shutdownSession();
 }
 
