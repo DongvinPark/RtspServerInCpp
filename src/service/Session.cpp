@@ -41,10 +41,10 @@ Session::Session(
 
 Session::~Session() {
   std::cout << "!!! Session Destructor called !!!\n";
-  if (socketPtr != nullptr && socketPtr->is_open()) {
+  /*if (socketPtr != nullptr && socketPtr->is_open()) {
     socketPtr->close();
     std::cout << "!!! Session Destructor closed socket !!!\n";
-  }
+  }*/
 }
 
 void Session::start() {
