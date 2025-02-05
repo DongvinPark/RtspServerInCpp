@@ -55,13 +55,19 @@ void Session::start() {
         Buffer& buf = *bufferPtr;
         handleRtspRequest(buf);
 
+        bool isTearRes = false;
         std::string res = buf.getString();
         logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
         for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
           logger->info(resLine);
+          if (resLine.find("Teardown:") != std::string::npos) isTearRes = true;
         }
         std::cout << "\n";
         transmit(std::move(bufferPtr));
+        if (isTearRes){
+          std::cout << "!!! teardown res send completed !!!\n";
+          onTeardown();
+        }
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());

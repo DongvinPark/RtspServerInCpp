@@ -302,9 +302,9 @@ void RtspHandler::handleRtspRequest(
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);
-        sessionPtr->onTeardown();
-        //inSession = false;
-        //wrongSessionIdRequestCnt = 0;
+        //sessionPtr->onTeardown();
+        inSession = false;
+        wrongSessionIdRequestCnt = 0;
         return;
       } else if (method == "SET_PARAMETER") {
         // last string is the switching info.
@@ -540,7 +540,8 @@ void RtspHandler::respondCameraChange(Buffer& buffer, int targetCamId) {
 void RtspHandler::respondTeardown(Buffer& buffer) {
   std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
             "CSeq: " + std::to_string(cSeq) + C::CRLF +
-            "Server: "+ C::MY_NAME + C::CRLF2;
+            "Server: "+ C::MY_NAME + C::CRLF +
+            "Teardown: true" + C::CRLF2;
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
