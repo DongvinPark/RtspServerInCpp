@@ -123,8 +123,6 @@ public:
 
   void recordBitrateTestResult();
 
-  bool getShutdownStatus();
-
 private:
   void stopAllTimerTasks();
   void closeHandlersAndSocket();
@@ -174,7 +172,6 @@ private:
   PeriodicTask audioSampleReadingTask;
   PeriodicTask bitrateRecodeTask;
 
-  bool isShutdown = false;
   bool isRecordSaved = false;
 };
 

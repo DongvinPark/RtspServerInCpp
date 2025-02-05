@@ -26,7 +26,7 @@ Server::Server(
     projectRootPath(inputProjectRoot){}
 
 Server::~Server() {
-  std::cout << "!!! Server Desctructor called !!!\n";
+  std::cout << "!!! Server Destructor called !!!\n";
   shutdownServer();
 }
 
@@ -90,15 +90,9 @@ std::string Server::getProjectRootPath(){
 void Server::shutdownServer() {
   // shutdown all sessions.
   try {
-    // save bitrate test record first.
+    // save bitrate test records.
     for (auto& kvPair : sessions) {
       kvPair.second->recordBitrateTestResult();
-    }
-
-    // then, shuts down sessions
-    for (auto& kvPair : sessions) {
-      std::cout << "!!! 1\n";
-      kvPair.second->shutdownSession();
     }
   } catch (const std::exception& e){
     logger->severe("Dongvin, exception while shutting down Server!");

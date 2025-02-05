@@ -51,7 +51,7 @@ void Session::start() {
     std::cout << "!!! rxTask enter !!!\n";
     try {
       std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
-      if (bufferPtr != nullptr && !isShutdown) {
+      if (bufferPtr != nullptr) {
         Buffer& buf = *bufferPtr;
         handleRtspRequest(buf);
 
@@ -65,7 +65,6 @@ void Session::start() {
       }
     } catch (const std::exception & e) {
       logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
-      //recordBitrateTestResult();
     }
   };
 
@@ -225,15 +224,6 @@ HybridMetaMapType & Session::getHybridMetaMap() {
 }
 
 void Session::shutdownSession() {
-  sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
-  isShutdown = true;
-  std::cout << "!!! time pass\n";
-  stopAllTimerTasks();
-  std::cout << "!!! timer pass\n";
-  closeHandlersAndSocket();
-  std::cout << "!!! close pass\n";
-  recordBitrateTestResult();
-  std::cout << "!!! save pass\n";
   parentServer.afterTerminatingSession(sessionId);
 }
 
@@ -253,11 +243,9 @@ void Session::handleRtspRequest(Buffer& buf) {
   } catch (const std::exception& ex) {
     std::cerr << "Exception in handleRtspRequest: " << ex.what() << "\n";
     std::cout << "!!! 4\n";
-    shutdownSession();
   } catch (...) {
     std::cerr << "Unknown error in handleRtspRequest!" << "\n";
     std::cout << "!!! 5\n";
-    shutdownSession();
   }
 }
 
@@ -307,6 +295,14 @@ void Session::onPlayStart() {
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
   std::cout << "!!! 6\n";
+  sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
+  std::cout << "!!! time pass\n";
+  stopAllTimerTasks();
+  std::cout << "!!! timer pass\n";
+  closeHandlersAndSocket();
+  std::cout << "!!! close pass\n";
+  recordBitrateTestResult();
+  std::cout << "!!! save pass\n";
   shutdownSession();
 }
 
@@ -401,7 +397,6 @@ void Session::recordBitrateTestResult() {
       outFile << finalRecord;  // Write content to file
       outFile.close();      // Close the file
       isRecordSaved = true;
-      isShutdown = true;
       logger->warning("Dongvin, bitrate record successfully saved. session id : " + sessionId);
     } else {
       logger->severe("Dongvin, bitrate record failed. session id : " + sessionId);
@@ -411,10 +406,6 @@ void Session::recordBitrateTestResult() {
     logger->severe("Dongvin, exception was thrown in saving bitrate record. session id : " + sessionId);
     std::cerr << e.what() << "\n";
   }
-}
-
-bool Session::getShutdownStatus(){
-  return isShutdown;
 }
 
 void Session::stopAllTimerTasks() {
@@ -427,8 +418,7 @@ void Session::stopAllTimerTasks() {
 
 void Session::closeHandlersAndSocket() {
   socketPtr->close();
-  socketPtr.reset();
-  acsHandlerPtr->shutdown();
+  //socketPtr.reset();
   rtspHandlerPtr.reset();
   acsHandlerPtr.reset();
   rtpHandlerPtr.reset();
@@ -445,7 +435,7 @@ void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
-  if (isShutdown){
+  if (isRecordSaved){
     logger->severe("Dongvin, receive:: session already shutdown.");
     return nullptr;
   }

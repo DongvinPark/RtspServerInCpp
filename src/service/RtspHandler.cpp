@@ -17,7 +17,9 @@ RtspHandler::RtspHandler(
     acsHandlerPtr(inputAcsHandlerPtr),
     sessionId(inputSessionId) {}
 
-RtspHandler::~RtspHandler() = default;
+RtspHandler::~RtspHandler(){
+  std::cout << "!!! RtspHandler destructor called" << std::endl;
+}
 
 void RtspHandler::run(Buffer& inputBuffer) {
   std::string req = inputBuffer.getString();
@@ -283,9 +285,9 @@ void RtspHandler::handleRtspRequest(
             respondPlay(inputBuffer, timestamp0, sessionId);
             //inputBuffer.afterTx = ??; TODO : update this logic later;
             sessionPtr->updatePauseStatus(false);
+            inSession = true;
             return;
           }
-          inSession = true;
         }// end of else for initial play
       } else if (method == "PAUSE") {
         // dongvin, if pause req come at puase state, just return 200 OK response.
@@ -303,8 +305,8 @@ void RtspHandler::handleRtspRequest(
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);
         sessionPtr->onTeardown();
-        //inSession = false;
-        //wrongSessionIdRequestCnt = 0;
+        inSession = false;
+        wrongSessionIdRequestCnt = 0;
         return;
       } else if (method == "SET_PARAMETER") {
         // last string is the switching info.
