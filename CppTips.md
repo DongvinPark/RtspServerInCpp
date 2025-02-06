@@ -1185,6 +1185,7 @@ inline int64_t getElapsedTimeNanoSec(){
 		).count();
 	}
 ```
+<br><br/>
 35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
     <br> Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
     <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 segmentation falt 오류가 뜨며 서버가 죽는다.
@@ -1214,6 +1215,7 @@ inline int64_t getElapsedTimeNanoSec(){
  
  >>> 이렇게 고의적인 delay를 주면서 천천히 세션을 제거해주니까 세션 삭제시 발생한 segmentation fault 오류를 잡아낼 수 있었다.
 ```
+<br><br/>
 36. boost asio steady timer 객체를 초기화 하는 방법
     <br> 해당 타이머는 boost aiso io_context에 주기적으로 task를 공급하는 역할을 하고, non-blocking이다.
     <br> 그렇기 때문에, 전체 프로그램 종료시 해당 타이머를 명시적으로 종료시키지 않을 경우 서버가 SIGEGV 같은 비정상적인 에러 코드로 종료 되거나(MacOS) 아예 종료되지 않는 현상(Ubuntu Linux)이 발생한다.
