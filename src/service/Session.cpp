@@ -423,7 +423,7 @@ void Session::stopAllTimerTasks() {
 }
 
 void Session::closeHandlersAndSocket() {
-  socketPtr->close();
+  //socketPtr->close();
   //socketPtr.reset();
   rtspHandlerPtr.reset();
   acsHandlerPtr.reset();
