@@ -1185,6 +1185,63 @@ inline int64_t getElapsedTimeNanoSec(){
 		).count();
 	}
 ```
+35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
+    <br> Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
+    <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 segmentation falt 오류가 뜨며 서버가 죽는다.
+    <br> 핵심은 모든 자원들을 완전히 회수한 다음, async task 들이 완전히 종료될 때까지 기다려야 한다는 것이다.  
+```c++
+// 자세한 구현은 Session.h, Session.cpp, Server.h, Server.cpp 를 참조한다.
+// 여러가지 방법들과 테스트를 수행해본 결과, 핵심은 Rtsp 트랜잭션을 담당하는 boost asio steady timer의 제거 타이밍이었다.
+// 현재 Session 객체는 다음의 타이머들을 필요로 한다. bitrate 기록, rtsp 트랜잭션 담당, 비디오 샘플 전송, 오디오 샘플 전송 이렇게 4 개다.
+
+// Boost.Asio 라이브러리를 이용해서 네트워킹을 처리하면, 소켓을 이용하는 입출력이 라이브러리에 의해서 대신 처리된다.
+// 아직 이러한 작업이 진행되고 있는 중간에 갑자기 소켓을 닫아버리거나, 세션 객체를 삭제하는 등의 '갑작스러운' 동작을 수행하면 서버가 미처 예외를 던지기도 전에 segmentation fault 등의 예외를 던지며 바로 죽는다.
+
+이번 RTSP 서버의 경우, 다음의 상황에서 서버가 예기치 못한 crash로 죽었다.
+1. 클라이언트가 teardown 요청에 대한 응답을 소켓에 write 하고 있을 때 세션 객체를 삭제한다.
+2. teardown에 대한 응답을 소켓에 wirte 한 직후에 세션 객체를 삭제한다.
+3. 세션 객체 내에 존재하는 4 개의 boost asio steady timer가 완전히 취소되지 않았을 때 세션 객체를 삭제한다.
+
+이러한 현상을 근거로
+>> teardown 요청을 소켓에 write 한 다음,
+>> 세션 내에 존재하는 모든 boost asio steady timer 들을 cancel 시켜주고,
+>> 세션 내에 존재하는 모든 자원들(소켓, 파일 핸들러 등등)을 닫아주고, 
+>> 세션 내에 존재하는 모든 boost asio steady timer 들으 boost asio io_context에서 완전히 사라질 때까지 기다린 다음,
+>> 마지막으로 세션 객체를 삭제하도록 구현 했다.
+
+ Server.cpp 코드를 보면, 세션을 삭제할 때 해당 세션을 바로 삭제하지 않고 다른 맵(shutdownSessions 맵)에다가 옮겨둔 다음,
+ Server.cpp 내에서 30초 간격으로 shutdownSessions 맵을 clear 해주는 별도의 타이머를 정의하였다.
+ 
+ >>> 이렇게 고의적인 delay를 주면서 천천히 세션을 제거해주니까 세션 삭제시 발생한 segmentation fault 오류를 잡아낼 수 있었다.
+```
+36. boost asio steady timer 객체를 초기화 하는 방법
+    <br> 해당 타이머는 boost aiso io_context에 주기적으로 task를 공급하는 역할을 하고, non-blocking이다.
+    <br> 그렇기 때문에, 전체 프로그램 종료시 해당 타이머를 명시적으로 종료시키지 않을 경우 서버가 SIGEGV 같은 비정상적인 에러 코드로 종료 되거나(MacOS) 아예 종료되지 않는 현상(Ubuntu Linux)이 발생한다.
+    <br> 이를 방지하기 위해서는 해당 타이머를 클래스 멤버로 정의하여 클래스의 소멸자에서 타이머를 cancel 시키는 등의 방법으로 타이머의 종료가 보장되도록 해야 한다.
+```c++
+// 좋은예.
+class Server {
+public:
+    // ...
+private:
+    // ...
+    PeriodicTask shutdownSessionRemovalTask; // 이렇게 클래스 멤버로 만들어 놓으면 원하는 때에 타이머를 .cancel() 하기 편하다.
+};
+
+// 안 좋은 예.
+// boost asio steady timer를 이렇게 함수 범위 내에서만 정의하면, 해당 함수를 수행하고 난 다음에는 타이머에
+// 접근하여 .cancel() 시키는 등의 동작을 할 수가 없게 되고, 해당 함수가 한 번 더 호출되기라도 하면
+// 원하지 않는 타이머 태스크가 하나 더 생길 수도 있다.
+void bad(){
+
+    // 함수 바디 안에서 타이머를 시작시킨다.
+    PeriodicTask task(...);
+    task.start();
+    
+    // ... 다른 일들을 처리한다.
+
+}
+```
     
 
 
