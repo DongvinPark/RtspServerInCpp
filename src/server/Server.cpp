@@ -34,6 +34,13 @@ void Server::start() {
   logger->info3("Dongvin C++ AlphaStreamer3.1 starts!!");
   sntpTimeProvider.start();
 
+  std::chrono::milliseconds interval(30000);
+  PeriodicTask removeClosedSessionTask(io_context, interval, [&]()
+  {
+    std::cout << "!!! clear closed sessions !!!\n";
+    shutdownSessions.clear();
+  });
+
   tcp::acceptor acceptor(
     io_context, tcp::endpoint(tcp::v4(), C::RTSP_RTP_TCP_PORT)
   );
