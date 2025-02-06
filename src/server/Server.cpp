@@ -28,19 +28,18 @@ Server::Server(
     removeClosedSessionTask(inputIoContext, inputIntervalMs){}
 
 Server::~Server() {
-  std::cout << "!!! Server Desctructor called !!!\n";
   shutdownServer();
 }
 
 void Server::start() {
-  logger->info3("Dongvin C++ AlphaStreamer3.1 starts!!");
+  logger->info3("Dongvin C++ AlphaStreamer3.1 starts!");
   sntpTimeProvider.start();
 
   removeClosedSessionTask.setTask([&](){
-    std::cout << "!!! clear closed sessions !!!\n";
     shutdownSessions.clear();
   });
   removeClosedSessionTask.start();
+  logger->info3("Dongvin, closed session removal timer starts!");
 
   tcp::acceptor acceptor(
     io_context, tcp::endpoint(tcp::v4(), C::RTSP_RTP_TCP_PORT)
@@ -111,12 +110,11 @@ void Server::shutdownServer() {
   contentsStorage.shutdown();
 }
 
-void Server::afterTerminatingSession(std::string sessionId) {
-  std::cout << "!!! after termi enter\n";
+void Server::afterTerminatingSession(const std::string& sessionId) {
   if (sessions.find(sessionId) != sessions.end()) {
     auto sessionPtr = sessions[sessionId];
-    sessions.erase(sessionId);
 
+    sessions.erase(sessionId);
     shutdownSessions.insert({sessionId, std::move(sessionPtr)});
 
     logger->warning(

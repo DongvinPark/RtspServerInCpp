@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <boost/asio.hpp>
+#include <cstdint>
 
 #include "../include/PeriodicTask.h"
 #include "../include/SntpRefTimeProvider.h"
@@ -34,7 +35,7 @@ public:
   std::string getProjectRootPath();
 
   void shutdownServer();
-  void afterTerminatingSession(std::string sessionId);
+  void afterTerminatingSession(const std::string& sessionId);
 
 private:
   std::string getSessionId();

@@ -24,9 +24,7 @@ PeriodicTask::PeriodicTask(
     isTaskSet(true),
     logger(Logger::getLogger(C::PERIODIC_TASK)) {}
 
-PeriodicTask::~PeriodicTask(){
-    std::cout << "!!! PeriodicTask destructor called !!!\n";
-}
+PeriodicTask::~PeriodicTask(){}
 
 void PeriodicTask::setTask(TaskCallback inputTask) {
     task = std::move(inputTask);

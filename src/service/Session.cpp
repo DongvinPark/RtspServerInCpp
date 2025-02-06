@@ -39,16 +39,13 @@ Session::Session(
   clientRemoteAddress = clientIpAddressEndpoint.address().to_string();
 }
 
-Session::~Session() {
-  std::cout << "!!! Session Destructor called !!!\n";
-}
+Session::~Session() {}
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
   auto rxTask = [&](){
-    std::cout << "!!! rxTask enter !!!\n";
     try {
       std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
       if (bufferPtr != nullptr) {
@@ -65,7 +62,6 @@ void Session::start() {
         std::cout << "\n";
         transmit(std::move(bufferPtr));
         if (isTearRes){
-          std::cout << "!!! teardown res send completed !!!\n";
           onTeardown();
         }
       }
@@ -248,10 +244,8 @@ void Session::handleRtspRequest(Buffer& buf) {
     rtspHandlerPtr->run(buf);
   } catch (const std::exception& ex) {
     std::cerr << "Exception in handleRtspRequest: " << ex.what() << "\n";
-    std::cout << "!!! 4\n";
   } catch (...) {
     std::cerr << "Unknown error in handleRtspRequest!" << "\n";
-    std::cout << "!!! 5\n";
   }
 }
 
@@ -300,15 +294,10 @@ void Session::onPlayStart() {
 
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
-  std::cout << "!!! 6\n";
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
-  std::cout << "!!! time pass\n";
   stopAllTimerTasks();
-  std::cout << "!!! timer pass\n";
   closeHandlersAndSocket();
-  std::cout << "!!! close pass\n";
   recordBitrateTestResult();
-  std::cout << "!!! save pass\n";
   shutdownSession();
 }
 
