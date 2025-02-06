@@ -35,29 +35,31 @@ int FileReader::getRefVideoSampleCnt() const {
   return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
 }
 
-void FileReader::init() {
+bool FileReader::init() {
   if (cidDirectory.empty() || !exists(cidDirectory)) {
     logger->severe("No content files or wrong content root directory!");
-    throw std::logic_error("FileReader failed.");
+    return false;
   }
 
   bool initResult = handleCamDirectories(cidDirectory);
   if (!initResult) {
     logger->severe("Invalid cam directories! Content name : " + contentTitle);
-    throw std::logic_error("Cam directory init failed.");
+    return false;
   }
 
   initResult = handleConfigFile(cidDirectory);
   if (!initResult) {
     logger->severe("Invalid SDP config! Content name : " + contentTitle);
-    throw std::logic_error("SDP config init failed.");
+    return false;
   }
 
   initResult = handleV0Images(cidDirectory);
   if (!initResult) {
     logger->severe("Invalid V0 images! Content name : " + contentTitle);
-    throw std::logic_error("V0 images init failed.");
+    return false;
   }
+
+  return true;
 }
 
 void FileReader::shutdown() {

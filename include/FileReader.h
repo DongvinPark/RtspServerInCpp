@@ -31,7 +31,7 @@ public:
     // utils
     int getNumberOfCamDirectories() const;
     int getRefVideoSampleCnt() const;
-    void init();
+    bool init();
     void shutdown();
     RtpInfo getRtpInfoCopyWithLock();
     std::string getMediaInfoCopyWithLock();
