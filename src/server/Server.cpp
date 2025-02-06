@@ -106,8 +106,8 @@ void Server::afterTerminatingSession(std::string sessionId) {
   std::cout << "!!! after termi enter\n";
   if (sessions.find(sessionId) != sessions.end()) {
     auto sessionPtr = sessions[sessionId];
-    //sessionPtr.reset();
-    //sessions.erase(sessionId);
+    sessionPtr.reset();
+    sessions.erase(sessionId);
     logger->warning(
         "Dongvin, " + sessionId + " shuts down. Remaining session cnt : "
             + std::to_string(sessions.size())

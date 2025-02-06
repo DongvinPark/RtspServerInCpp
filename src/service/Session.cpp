@@ -419,6 +419,12 @@ void Session::stopAllTimerTasks() {
   bitrateRecodeTask.stop();
   videoSampleReadingTask.stop();
   audioSampleReadingTask.stop();
+
+  rtspTask.~PeriodicTask();
+  bitrateRecodeTask.~PeriodicTask();
+  videoSampleReadingTask.~PeriodicTask();
+  audioSampleReadingTask.~PeriodicTask();
+
   logger->info("Dongvin, stopped all timers. session id : " + sessionId);
 }
 
