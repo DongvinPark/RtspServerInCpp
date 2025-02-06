@@ -106,7 +106,6 @@ void Server::shutdownServer() {
     std::cerr << e.what() << "\n";
   }
   sessions.clear();
-  shutdownSessions.clear();
   contentsStorage.shutdown();
 }
 
