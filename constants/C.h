@@ -34,7 +34,7 @@ namespace C {
     constexpr int ONE = 1;
     constexpr int WRONG_SESSION_ID_TOLERANCE_CNT = 5;
     constexpr int URL_SPLIT_BY_SEMI_COLON_LENGTH = 3;
-    constexpr int SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS = 3000;
+    constexpr int SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS = 30000;
     constexpr int SESSION_OBJECT_DELETE_INTERVAL_SEC = 20;
 
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
