@@ -46,6 +46,8 @@ private:
   std::string storage;
   SntpRefTimeProvider& sntpTimeProvider;
   int connectionCnt;
+
+  std::unordered_map<std::string, std::shared_ptr<Session>> shutdownSessions;
 };
 
 #endif // SERVER_H
