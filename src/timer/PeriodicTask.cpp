@@ -1,4 +1,7 @@
 #include "../include/PeriodicTask.h"
+
+#include <iostream>
+
 #include "../constants/C.h"
 
 PeriodicTask::PeriodicTask(
@@ -20,6 +23,10 @@ PeriodicTask::PeriodicTask(
     running(false),
     isTaskSet(true),
     logger(Logger::getLogger(C::PERIODIC_TASK)) {}
+
+PeriodicTask::~PeriodicTask(){
+    std::cout << "!!! PeriodicTask destructor called !!!\n";
+}
 
 void PeriodicTask::setTask(TaskCallback inputTask) {
     task = std::move(inputTask);
