@@ -35,15 +35,9 @@ void Server::start() {
   sntpTimeProvider.start();
 
   std::chrono::milliseconds interval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
-  PeriodicTask removeClosedSessionTask(io_context, interval, [&]()
-  {
-    int64_t curRefTimeUtcSec = sntpTimeProvider.getRefTimeSecForCurrentTask();
-    for (auto& kvPair : shutdownSessions) {
-      if ((curRefTimeUtcSec - kvPair.second->getSessionDestroyTimeSecUtc()) >= C::SESSION_OBJECT_DELETE_INTERVAL_SEC){
-        shutdownSessions.erase(kvPair.first);
-        std::cout << "!!! clear closed sessions !!!\n";
-      }
-    }
+  PeriodicTask removeClosedSessionTask(io_context, interval, [&](){
+    std::cout << "!!! clear closed sessions !!!\n";
+    shutdownSessions.clear();
   });
   removeClosedSessionTask.start();
 
