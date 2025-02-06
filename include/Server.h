@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <boost/asio.hpp>
 
+#include "../include/PeriodicTask.h"
 #include "../include/SntpRefTimeProvider.h"
 #include "../include/ContentsStorage.h"
 #include "../include/Session.h"
@@ -21,7 +22,8 @@ public:
     ContentsStorage& inputContentsStorage,
     const std::string &inputStorage,
     SntpRefTimeProvider& inputSntpRefTimeProvider,
-    std::string projectRoot
+    std::string projectRoot,
+    std::chrono::milliseconds inputIntervalMs
   );
   ~Server();
 
@@ -48,6 +50,7 @@ private:
   int connectionCnt;
 
   std::unordered_map<std::string, std::shared_ptr<Session>> shutdownSessions;
+  PeriodicTask removeClosedSessionTask;
 };
 
 #endif // SERVER_H

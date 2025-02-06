@@ -129,7 +129,15 @@ int main() {
 
     std::string projectRootDirPath = getProjectRoot();
 
-    Server server(io_context, contentsStorage, contentsRootPath, sntpRefTimeProvider, projectRootDirPath);
+    std::chrono::milliseconds inputIntervalMsForSessionRemoval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
+    Server server(
+        io_context,
+        contentsStorage,
+        contentsRootPath,
+        sntpRefTimeProvider,
+        projectRootDirPath,
+        inputIntervalMsForSessionRemoval
+    );
     // server.start(); is blocking function.
     // if server stop with uncaught exception, the following shutting down logic will never work.
     server.start();

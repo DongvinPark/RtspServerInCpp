@@ -16,14 +16,16 @@ Server::Server(
   ContentsStorage& inputContentsStorage,
   const std::string &inputStorage,
   SntpRefTimeProvider& inputSntpRefTimeProvider,
-  std::string inputProjectRoot
+  std::string inputProjectRoot,
+  std::chrono::milliseconds inputIntervalMs
 ) : logger(Logger::getLogger(C::SERVER)),
     io_context(inputIoContext),
     contentsStorage(inputContentsStorage),
     storage(inputStorage),
     sntpTimeProvider(inputSntpRefTimeProvider),
     connectionCnt(0),
-    projectRootPath(inputProjectRoot){}
+    projectRootPath(inputProjectRoot),
+    removeClosedSessionTask(inputIoContext, inputIntervalMs){}
 
 Server::~Server() {
   std::cout << "!!! Server Desctructor called !!!\n";
@@ -34,8 +36,7 @@ void Server::start() {
   logger->info3("Dongvin C++ AlphaStreamer3.1 starts!!");
   sntpTimeProvider.start();
 
-  std::chrono::milliseconds interval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
-  PeriodicTask removeClosedSessionTask(io_context, interval, [&](){
+  removeClosedSessionTask.setTask([&](){
     std::cout << "!!! clear closed sessions !!!\n";
     shutdownSessions.clear();
   });
@@ -96,6 +97,7 @@ std::string Server::getProjectRootPath(){
 
 void Server::shutdownServer() {
   // shutdown all sessions.
+  removeClosedSessionTask.stop();
   try {
     // save bitrate test record first.
     for (auto& kvPair : sessions) {
