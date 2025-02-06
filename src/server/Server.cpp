@@ -101,9 +101,6 @@ void Server::shutdownServer() {
     for (auto& kvPair : sessions) {
       kvPair.second->recordBitrateTestResult();
     }
-    for (auto& kvPair : shutdownSessions) {
-      kvPair.second->recordBitrateTestResult();
-    }
   } catch (const std::exception& e){
     logger->severe("Dongvin, exception while shutting down Server!");
     std::cerr << e.what() << "\n";
