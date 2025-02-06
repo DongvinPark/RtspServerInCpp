@@ -40,6 +40,7 @@ void Server::start() {
     std::cout << "!!! clear closed sessions !!!\n";
     shutdownSessions.clear();
   });
+  removeClosedSessionTask.start();
 
   tcp::acceptor acceptor(
     io_context, tcp::endpoint(tcp::v4(), C::RTSP_RTP_TCP_PORT)
