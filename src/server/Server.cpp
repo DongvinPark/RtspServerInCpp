@@ -34,11 +34,16 @@ void Server::start() {
   logger->info3("Dongvin C++ AlphaStreamer3.1 starts!!");
   sntpTimeProvider.start();
 
-  std::chrono::milliseconds interval(30000);
+  std::chrono::milliseconds interval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
   PeriodicTask removeClosedSessionTask(io_context, interval, [&]()
   {
-    std::cout << "!!! clear closed sessions !!!\n";
-    shutdownSessions.clear();
+    int64_t curRefTimeUtcSec = sntpTimeProvider.getRefTimeSecForCurrentTask();
+    for (auto& kvPair : shutdownSessions) {
+      if ((curRefTimeUtcSec - kvPair.second->getSessionDestroyTimeSecUtc()) >= C::SESSION_OBJECT_DELETE_INTERVAL_SEC){
+        shutdownSessions.erase(kvPair.first);
+        std::cout << "!!! clear closed sessions !!!\n";
+      }
+    }
   });
   removeClosedSessionTask.start();
 
@@ -102,11 +107,15 @@ void Server::shutdownServer() {
     for (auto& kvPair : sessions) {
       kvPair.second->recordBitrateTestResult();
     }
+    for (auto& kvPair : shutdownSessions) {
+      kvPair.second->recordBitrateTestResult();
+    }
   } catch (const std::exception& e){
     logger->severe("Dongvin, exception while shutting down Server!");
     std::cerr << e.what() << "\n";
   }
   sessions.clear();
+  shutdownSessions.clear();
   contentsStorage.shutdown();
 }
 
