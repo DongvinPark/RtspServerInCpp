@@ -43,14 +43,14 @@ public:
     std::unordered_map<std::string, VideoAccess>& getVideoMetaWithLock();
 
     // reading sample
-    AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap);
+    AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap) noexcept;
     std::vector<VideoSample>& readRefVideoSampleWithLock(
         int sampleNo, HybridMetaMapType& hybridMetaMap
-    );
+    ) noexcept;
     std::vector<VideoSample>& readVideoSampleWithLock(
         int camId, int vid, int memberId, int sampleNo,
         HybridMetaMapType& hybridMetaMap
-    );
+    ) noexcept;
 
 private:
     bool handleCamDirectories(const std::filesystem::path& inputCidDirectory);

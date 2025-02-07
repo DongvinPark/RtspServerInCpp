@@ -111,12 +111,12 @@ int FileReader::getAudioSampleSize() const {
 
 int FileReader::getVideoSampleSize() const {
   if (videoFiles.find(C::REF_CAM) != videoFiles.end()) {
-    return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
+    return static_cast<int>(videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size());
   } else {
     // adaptive bitrate supporting case
-    for (std::string possibleRefCam : C::ADAPTIVE_BITRATE_REF_CAM_LIST) {
+    for (const std::string& possibleRefCam : C::ADAPTIVE_BITRATE_REF_CAM_LIST) {
       if (videoFiles.find(possibleRefCam) != videoFiles.end()) {
-        return videoFiles.at(possibleRefCam).getConstVideoSampleInfoList()[0].size();
+        return static_cast<int>(videoFiles.at(possibleRefCam).getConstVideoSampleInfoList()[0].size());
       }
     }
   }
@@ -137,22 +137,23 @@ std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock()
   return videoFiles;
 }
 
-AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) {
+AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
   std::lock_guard<std::mutex> guard(lock);
 }
 
 std::vector<VideoSample> & FileReader::readRefVideoSampleWithLock(
   int sampleNo, HybridMetaMapType &hybridMetaMap
-) {
+) noexcept {
   std::lock_guard<std::mutex> guard(lock);
 }
 
-std::vector<VideoSample> & FileReader::readVideoSampleWithLock(int camId,
+std::vector<VideoSample> & FileReader::readVideoSampleWithLock(
+  int camId,
   int vid,
   int memberId,
   int sampleNo,
   HybridMetaMapType &hybridMetaMap
-) {
+) noexcept {
   std::lock_guard<std::mutex> guard(lock);
 }
 
