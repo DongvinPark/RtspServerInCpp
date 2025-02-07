@@ -283,7 +283,7 @@ RtpInfo FileReader::getRtpInfoCopyWithLock() {
             const std::vector<Buffer>& getAllRtps();
             
         리턴 받은 참조를 Caller 쪽에서 이용해서 수정하는 것을 금지할 뿐만 아니라, const 타입 객체일 경우
-        아래의 시그니처로 선언된 함수만 호출할 수 있게 재한함.
+        아래의 시그니처로 선언된 함수만 호출할 수 있게 제한함.
             const std::vector<Buffer>& getAllRtps() const;
 
     > when return value.
@@ -387,8 +387,8 @@ VideoAccess& VideoAccess::operator=(VideoAccess&& other) noexcept {
 }
 ```
 <br><br/>
-14. 컨테이너에서 내용물을 꺼내서 수정하고 싶으면, '&'타입으로 꺼내라.
-    <br> 그렇지 않으면, 꺼내면서 copy가 돼서 원본 객체 수정도 안 되고, 성능도 나빠질 수 있다.
+14. 컨테이너에서 내용물을 꺼내서 수정하고 싶으면, '&'타입으로 꺼내자.
+    <br> 그렇지 않으면, 꺼낼 때 copy가 돼서 원본 객체 수정도 안 되고, 성능도 나빠질 수 있다.
 ```c++
 void FileReader::loadRtpMemberVideoMetaData(
     int64_t videoFileSize,
@@ -410,7 +410,7 @@ void FileReader::loadRtpMemberVideoMetaData(
       continue;
     }
 
-    // 여기서 & 를 붙이지 않고 그냥 .at(...)으로 꺼내버리면
+    // 여기서 & 를 붙이지 않고 그냥 std::vector<VideoSampleInfo> 타입으로 꺼내버리면
     // 그 많은 요소들이 전부 복사되는 수가 있다!!!
     std::vector<VideoSampleInfo>& sampleInfoList = input2dMetaList.at(input2dMetaList.size() - 1);
     VideoSampleInfo& latestVideoSampleInfo = sampleInfoList.at(sampleInfoList.size() - 1);
@@ -456,7 +456,7 @@ std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) 
 }
 ```
 <br><br/>
-16. std::pmr:: ... 류의 자료구조는 웬만해서는 쓰지 마라.
+16. std::pmr:: ... 류의 자료구조는 웬만해서는 쓰지 말자.
     <br> 이걸 썼을 경우, 쓰지 않았을 때와 비교해서 컴파일 요건이 까다로워지기 때문에 쓸데없이 시간을 낭비하게될 가능성이 크다.
     <br> ... prm 을 쓴 경우와 쓰지 않은 경우의 차이점은 memory allocation이 어떻게 컨트롤 되는가이다.
     <br> 전자의 경우(pmr사용), C++ 17에서 도입된 Polymorphic Memory Resource 라이브러리에 정의 된 std::pmr::polymorphic_allocator를 사용하게 되고, 후자의 경우 default allocator인 std::allocator를 사용한다는 차이점이 있다.
@@ -486,8 +486,8 @@ private:
 };
 ```
 <br><br/>
-17. 함수 내부에서 새롭게 만든 객체를 외부로 반출시키는 방법은 웬만해서는 쓰지 마라.
-    <br> java에서는 이러한 경우가 아주 많지만, C++에서는 그렇지 않다.
+17. 함수 내부에서 새롭게 만든 객체를 외부로 반출시키는 방법은 웬만해서는 쓰지 말자.
+    <br> java에서는 이러한 경우가 일반적이지만, C++에서는 그렇지 않다.
     <br> C++에서는 함수 범위를 벗어난 객체는 자동으로 회수 처리 되기 때문이다.
     <br> 대신 아래와 같은 방법을 사용하라.
 ```c++
@@ -502,7 +502,7 @@ int main() {
     std::cout << value << std::endl; // Output: 42
 }
 
-// Dynamic Memory Allocation : raw 포인터 반환하라.
+// Dynamic Memory Allocation : raw 포인터를 반환하라.
 int* getHeapValue() {
     int* heapVar = new int(42); // Allocate on the heap.
     return heapVar;            // Return a pointer.
@@ -515,7 +515,7 @@ int main() {
 }
 
 
-// 스마트 포인터 반환하라. unique OR shared
+// 스마트 포인터를 반환하라. unique OR shared
 #include <iostream>
 #include <memory> // For std::unique_ptr
 
@@ -575,7 +575,7 @@ int main() {
     <br> 본 프로젝트의 Session 객체가 바로 이러한 특징을 가지고 있는 객체다.
     <br> std::ifstream이 복사는 되지 않는 대신, 참조로서 이동은 가능한 것과 비교 된다.
     <br> 복사 또는 이동 생성자를 정의할 수 없기 때문에, map.emplace(key, val); 이런 것이 통하지 않는다.
-    <br> 이럴 때는 하는 수 없이, 포인터를 저장하는 것 말고는 뾰족한 방법이 없다.
+    <br> 이럴 때는 하는 수 없이, 세션에 대한 포인터를 저장하는 것 말고는 뾰족한 방법이 없다.
 ```c++
 // Session 객체에 대한 포인터를 맵의 value로서 가지고 있는 Server 객체 정의하였다.
 class Server {
@@ -610,7 +610,7 @@ private:
 ```c++
 // 요약하면 아래와 같다.
 //Summary of Behaviors
-//myMap[key] = value	             >> Copies value into the map..
+//myMap[key] = value	             >> Copies value into the map. and updates the value by new one.
 //myMap.insert({key, value})	     >> Copies value into the map.
 //myMap[key] = std::move(value)	     >> Moves value into the map only when move constructor was difined
 //myMap.emplace(key, value)	     >> Constructs value in place (no copies) only when move constructor was defined
@@ -1046,7 +1046,7 @@ int main(){
 }
 ```
 <br><br/>
-28. 웬만하면 auto를 사용하자. Effective Modern C++ 에서 등장한 내용이다.
+28. 웬만하면 auto 또는 auto&를 사용하자. Effective Modern C++ 에서 등장한 내용이다.
     <br> 특히, range for 를 이용해서 map을 순회할 때 비효율적인 copy 동작을 예방할 수 있다.
     <br> auto를 쓰면 타입 불일치로 인해 컴파일러가 맵의 구성 요소들을 하는 수 없이 복사하는 일을 방지할 수 있다.
 ```c++
@@ -1086,12 +1086,15 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
   for (std::ifstream& access : va.getAccessList()) {
     if (access.is_open()) {
     
+    
       // 여기서 auto&가 아니라, 그냥 auto videoSampleMetaList ... 이런 식으로 정의해버리면,
       // 원본 객체인 VideoAccess va{}; 내의 meta 멤버가 아니라, 복사된 meta 에다가
       // VideoSampleInfo를 추가하는 로직 오류가 발생한다.
       // 이렇게 현재 함수 범위 내에서만 존재하는 임시 복사본 객체는 현재 함수의 범위가 끝나면 자동으로 
       // 삭제되고 만다.
       auto& videoSampleMetaList = va.getVideoSampleInfoList();
+      
+      
       int64_t videoFileSize = Util::getFileSize(videos.at(memberVideoId));
       loadRtpMemberVideoMetaData(videoFileSize, access, videoSampleMetaList, memberVideoId);
       memberVideoId++;
@@ -1188,37 +1191,40 @@ inline int64_t getElapsedTimeNanoSec(){
 <br><br/>
 35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
     <br> Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
-    <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 segmentation falt 오류가 뜨며 서버가 죽는다.
-    <br> 핵심은 모든 자원들을 완전히 회수한 다음, async task 들이 완전히 종료될 때까지 기다려야 한다는 것이다.  
+    <br> 예를 들어서, 내가 '지금' boost asio steady timer를 .cancel() 시켰다고 해서 '즉시' 해당 타이머 태스크가 중단되고 바로 소멸되는 것이 아니다.
+    <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 운영체제에 의해서 SIGSEGV 같은 segmentation falt 오류 관련 에러 메시지를 받으면서 서버가 죽는다.
+    <br> boost asio 라이브러리가 OS와 긴밀하게 상호작용하면서 처리하고 있는 async 태스크들이 어떻게 처리되고 있는지를 전허 고려하지 않고 해당 태스크들이 참고하고 있는 세션 객체를 삭제해버렸기 때문이다.
+    <br> 핵심은 먼저 모든 자원들을 완전히 회수한 다음, async task 들이 완전히 종료될 때까지 기다렸다가 세션 객체를 실제로 삭제시켜야 한다는 점이다.  
 ```c++
 // 자세한 구현은 Session.h, Session.cpp, Server.h, Server.cpp 를 참조한다.
 // 여러가지 방법들과 테스트를 수행해본 결과, 핵심은 Rtsp 트랜잭션을 담당하는 boost asio steady timer의 제거 타이밍이었다.
-// 현재 Session 객체는 다음의 타이머들을 필요로 한다. bitrate 기록, rtsp 트랜잭션 담당, 비디오 샘플 전송, 오디오 샘플 전송 이렇게 4 개다.
+// 현재 Session 객체는 다음의 타이머들을 필요로 한다. 
+// bitrate 기록, rtsp 트랜잭션 담당, 비디오 샘플 전송, 오디오 샘플 전송 이렇게 4 개다.
 
 // Boost.Asio 라이브러리를 이용해서 네트워킹을 처리하면, 소켓을 이용하는 입출력이 라이브러리에 의해서 대신 처리된다.
 // 아직 이러한 작업이 진행되고 있는 중간에 갑자기 소켓을 닫아버리거나, 세션 객체를 삭제하는 등의 '갑작스러운' 동작을 수행하면 서버가 미처 예외를 던지기도 전에 segmentation fault 등의 예외를 던지며 바로 죽는다.
 
-이번 RTSP 서버의 경우, 다음의 상황에서 서버가 예기치 못한 crash로 죽었다.
+이번 RTSP 서버의 경우, 다음의 상황에서 서버가 OS로부터 SIGSEGV 신호를 받은 후 죽었다.
 1. 클라이언트가 teardown 요청에 대한 응답을 소켓에 write 하고 있을 때 세션 객체를 삭제한다.
 2. teardown에 대한 응답을 소켓에 wirte 한 직후에 세션 객체를 삭제한다.
-3. 세션 객체 내에 존재하는 4 개의 boost asio steady timer가 완전히 취소되지 않았을 때 세션 객체를 삭제한다.
+3. 세션 객체 내에 존재하는 4 개의 boost asio steady timer를 .cancel() 시키고 일정 시간 기다리지 않고 바로 객체를 삭제한다.
 
 이러한 현상을 근거로
 >> teardown 요청을 소켓에 write 한 다음,
 >> 세션 내에 존재하는 모든 boost asio steady timer 들을 cancel 시켜주고,
 >> 세션 내에 존재하는 모든 자원들(소켓, 파일 핸들러 등등)을 닫아주고, 
->> 세션 내에 존재하는 모든 boost asio steady timer 들으 boost asio io_context에서 완전히 사라질 때까지 기다린 다음,
+>> 세션 내에 존재하는 모든 boost asio steady timer 태스크들이 완전히 .cancel() 될 때까지 기다란 다음,
 >> 마지막으로 세션 객체를 삭제하도록 구현 했다.
 
- Server.cpp 코드를 보면, 세션을 삭제할 때 해당 세션을 바로 삭제하지 않고 다른 맵(shutdownSessions 맵)에다가 옮겨둔 다음,
- Server.cpp 내에서 30초 간격으로 shutdownSessions 맵을 clear 해주는 별도의 타이머를 정의하였다.
+ Server.cpp의 생성자와 start() 함수 코드를 보면, 세션을 삭제할 때 해당 세션을 바로 삭제하지 않고 다른 맵(shutdownSessions 맵)에다가 옮겨둔 다음,
+ Server.cpp 내에서 30초 간격으로 shutdownSessions 맵을 clear 해주는 별도의 PeriodicTask가 정의돼 있는 것을 확인할 수 있다.
  
  >>> 이렇게 고의적인 delay를 주면서 천천히 세션을 제거해주니까 세션 삭제시 발생한 segmentation fault 오류를 잡아낼 수 있었다.
 ```
 <br><br/>
 36. boost asio steady timer 객체를 초기화 하는 방법
     <br> 해당 타이머는 boost aiso io_context에 주기적으로 task를 공급하는 역할을 하고, non-blocking이다.
-    <br> 그렇기 때문에, 전체 프로그램 종료시 해당 타이머를 명시적으로 종료시키지 않을 경우 서버가 SIGEGV 같은 비정상적인 에러 코드로 종료 되거나(MacOS) 아예 종료되지 않는 현상(Ubuntu Linux)이 발생한다.
+    <br> 그렇기 때문에, 전체 프로그램 종료시 해당 타이머를 명시적으로 종료시키지 않을 경우 서버가 SIGSEGV 같은 비정상적인 에러 코드로 종료 되거나(MacOS) 아예 종료되지 않는 현상(Ubuntu & Amazon Linux)이 발생한다.
     <br> 이를 방지하기 위해서는 해당 타이머를 클래스 멤버로 정의하여 클래스의 소멸자에서 타이머를 cancel 시키는 등의 방법으로 타이머의 종료가 보장되도록 해야 한다.
 ```c++
 // 좋은예.
@@ -1237,7 +1243,9 @@ private:
 void bad(){
 
     // 함수 바디 안에서 타이머를 시작시킨다.
-    PeriodicTask task(...);
+    // non-blocking 이기 때문에, 함수의 실행이 여기서 멈추지 않는다.
+    std::chrono::milliseconds interval(1000);
+    PeriodicTask task(io_context, interval, [&](){ /* do some work */ });
     task.start();
     
     // ... 다른 일들을 처리한다.
