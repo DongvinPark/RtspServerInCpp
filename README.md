@@ -2,32 +2,33 @@
 # Alpha Streamer 3.1 - C++ refactored ver of alpha streamer 3.0
 <br>
 
-## C++17 또는 그 이상 버전에서 실행하는 것을 권장합니다.
-<br>
-
-## Jetbrains 사의 CLion IDE를 사용하는 것을 추천합니다.
+### C++17 또는 그 이상 버전을 권장합니다.
+### boost library 1.71.0 또는 그 이상 버전을 권장합니다.
+### Jetbrains 사의 CLion IDE를 추천합니다.
 <br>
 
 ## 개발 정책
-- Windows, Ubuntu Linux, M chip MacOS 의 환경에서 동일한 동작을 하게 만들었습니다.
-  - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 별도의 수정 없이 프로젝트 빌드 및 실행이 가능합니다. 
-  - int64_t 와 int32_t, result_type 등을 사용하여 동일한 동작을 보장합니다.
-- Boost.asio 라이브러리를 사용하여 스레드의 직접적인 생성을 최소화 했습니다.
-- new와 delete를 직접 사용하는 raw memory 연산을 최소화 했습니다.
+- Windows, Linux, M chip MacOS 의 환경에서 동작하게 만들었습니다.
+  - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다. 
+  - int64_t 와 int32_t 등을 사용하여 동일한 동작을 보장합니다.
+- Boost.asio 라이브러리를 사용하여 스레드의 생성을 최소화 했습니다.
+- new와 delete를 직접 사용하는 raw memory 연산을 사용하지 않습니다.
 - std 라이브러리를 최대한 많이 사용하여 직접적인 메모리 관리를 최소화 했습니다.
-  - std::unique_ptr, std::shared_ptr, std::weak_ptr 를 적극 활용합니다.
+  - std::unique_ptr, std::shared_ptr, std::weak_ptr 를 활용합니다.
 - C++ std library에서 지원하지 않는 컨테이너는 최대한 사용하지 않습니다.
 <br><br/>
 
 ## CMakeLists.txt 빌드 및 실행 테스트 결과
 - 다음의 OS 및 boost 라이브러리 버전에 대하여 현재 master 브랜치의 CMakeLists.txt의 빌드와 프로젝트의 실행이 되는 것을 확인했습니다.
 - 다른 운영체제 하에서는 세부적인 수정이 필요할 수 있습니다.
-  - Window 11, C++ 17 or later, boost 1.86.0
+  - Windows
+    - Window 11 : C++ 17 or later, boost 1.86.0
   - Linux
-    - Ubuntu 20.04 LTS, C++ 17 or later, boost 1.71.0
-    - Ubuntu 22.04 LTS, C++ 17 or later, boost 1.74.0
-    - Amazon Linux 2023, C++ 17 or later, boost 1.75.0
-  - MacOS Sequoia 15.2, C++ 17 or later, boost 1.87.0
+    - Ubuntu 20.04 LTS : C++ 17 or later, boost 1.71.0
+    - Ubuntu 22.04 LTS : C++ 17 or later, boost 1.74.0
+    - Amazon Linux 2023 : C++ 17 or later, boost 1.75.0
+  - MacOS
+    - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
 <br><br/>
 
 ## 개발환경 셋팅
