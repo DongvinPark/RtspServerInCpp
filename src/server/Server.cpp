@@ -37,9 +37,10 @@ void Server::start() {
 
   removeClosedSessionTask.setTask([&](){
     shutdownSessions.clear();
+    logger->severe("Dongvin, completely removed sessions.");
   });
   removeClosedSessionTask.start();
-  logger->info3("Dongvin, closed session removal timer starts!");
+  logger->info3("Dongvin, timer for closed session removal starts!");
 
   tcp::acceptor acceptor(
     io_context, tcp::endpoint(tcp::v4(), C::RTSP_RTP_TCP_PORT)

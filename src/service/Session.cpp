@@ -164,17 +164,19 @@ void Session::updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis) 
 void Session::callStopLoaders() {
 }
 
-int Session::get_mbpsCurBitrate() const {
-  return kbpsCurrentBitrate/1000;
+float Session::get_mbpsCurBitrate() const {
+  return static_cast<float>(kbpsCurrentBitrate)/1000.0f;
 }
 
 void Session::set_kbpsBitrate(int input_kbps) {
 }
 
 void Session::add_kbpsBitrateValue(int input_kbps) {
+  kbpsCurrentBitrate += input_kbps;
 }
 
 int Session::get_kbpsCurBitrate() {
+  return kbpsCurrentBitrate;
 }
 
 std::unordered_map<int64_t, int> & Session::getUtiTimeSecBitSizeMap() {
@@ -182,7 +184,7 @@ std::unordered_map<int64_t, int> & Session::getUtiTimeSecBitSizeMap() {
 }
 
 void Session::addRxBitrate(RxBitrate &record) {
-  rxBitrateRecord.push_back(std::move(record));
+  rxBitrateRecord.push_back(record);
 }
 
 std::vector<int> Session::get_mbpsTypeList() {

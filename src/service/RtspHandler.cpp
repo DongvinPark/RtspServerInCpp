@@ -182,7 +182,7 @@ void RtspHandler::handleRtspRequest(
         }
       } else if (method == "PLAY") {
         if (isContainingPlayInfoHeader((strings))) {
-          // dongvin : receiving play req to resume play
+          // dongvin : receiving play req to resume play from pause state
 
           if (sessionPtr->getPauseStatus()) {
             // if session is in pause state

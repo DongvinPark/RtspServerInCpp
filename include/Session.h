@@ -85,7 +85,7 @@ public:
 
   void callStopLoaders();
 
-  int get_mbpsCurBitrate() const;
+  float get_mbpsCurBitrate() const;
   void set_kbpsBitrate(int input_kbps);
   void add_kbpsBitrateValue(int input_kbps);
   int get_kbpsCurBitrate();
@@ -143,7 +143,7 @@ private:
   SntpRefTimeProvider& sntpRefTimeProvider;
   std::string cid = C::EMPTY_STRING;
 
-  // members need to be iupdated after.
+  // TODO : members need to be updated after.
   std::shared_ptr<AcsHandler> acsHandlerPtr = nullptr;
   std::shared_ptr<RtspHandler> rtspHandlerPtr = nullptr;
   std::shared_ptr<RtpHandler> rtpHandlerPtr = nullptr;
