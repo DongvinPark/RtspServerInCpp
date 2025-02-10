@@ -9,7 +9,7 @@
 
 namespace C {
     // version
-    const std::string VER = "2.0.0";
+    constexpr char VER[] = "2.0.0";
 
     // class names
     constexpr char MAIN[] = "main";
@@ -23,13 +23,12 @@ namespace C {
     constexpr char ACS_HANDLER[] = "AcsHandler";
 
     // General constants
-    const std::string VERSION = "1.0.0";
-    const std::string MY_NAME = "alphaStreamer-3.1/" + VERSION;
+    constexpr char MY_NAME[] = "alphaStreamer-3.1/2.0.0";
     constexpr int SESSION_KEY_BIT_SIZE = 64;
     constexpr int SESSION_CLOSE_TIMEOUT_MS = 10*1000;
     constexpr int DELAY_BEFORE_RTP_START = 500;
     constexpr int SOCKET_TIMEOUT_MS = 10*1000;
-    const std::string EMPTY_STRING = "";
+    constexpr char EMPTY_STRING[] = "";
     constexpr int ZERO = 0;
     constexpr int ONE = 1;
     constexpr int WRONG_SESSION_ID_TOLERANCE_CNT = 5;
@@ -52,8 +51,8 @@ namespace C {
     constexpr int RTSP_RTP_TCP_PORT = 8554;
 
     // Strings and MTU size
-    const std::string CRLF = "\r\n";
-    const std::string CRLF2 = "\r\n\r\n";
+    constexpr char CRLF[] = "\r\n";
+    constexpr char CRLF2[] = "\r\n\r\n";
     constexpr int MTU_SIZE = 1472; // UDP max payload size
     constexpr char DEFAULT_MEDIA_TYPE[] = "mp4";
     constexpr int DEFAULT_DIVIDE_NUM = 3;
@@ -171,7 +170,7 @@ namespace C {
     constexpr int VIEW_NUM_FACTOR = 1;
     constexpr char HYBRID_META_PAYLOAD_PREFIX[] = "local:";
     constexpr int HYBRID_META_FACTOR_FOR_AUDIO = -1;
-    const std::string DUMMY_CONTENT_BASE = "rtsp://0.0.0.0:0/test";
+    constexpr char DUMMY_CONTENT_BASE[] = "rtsp://0.0.0.0:0/test";
 
     // Inline methods
     inline uint8_t getAvptSampleQChannel(int vid) {
