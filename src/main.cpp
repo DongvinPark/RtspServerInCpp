@@ -165,7 +165,6 @@ int main() {
 }
 
 /*
-
     test usage of VideoAccess in FileReader.
 
     std::cout <<"!!! FireReader test start !!!" << std::endl;
@@ -178,7 +177,23 @@ int main() {
         throw std::ios_base::failure("Failed to read the file");
     }
     std::cout << "file read result : " << std::string(buffer.begin(), buffer.end()) << "\n";
+*/
 
+/*
+    test usage to get a video sample meta. this can be used when reading video sample from read file.
+
+    FileReader& fileReader = contentsStorage.getReaders().at("enhypen-test-1cam-H");
+    VideoAccess& videoAccess = fileReader.getVideoMetaWithLock().at("cam0");
+
+    const std::vector<std::vector<VideoSampleInfo>>& videoMeta = videoAccess.getConstVideoSampleInfoList();
+    std::cout << "enhypen cam 0 v1 video sample info !!!\n";
+    for (const auto& sampleInfo : videoMeta.at(0)) {
+        std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
+    }
+    std::cout << "enhypen cam 0 v2 video sample info !!!\n";
+    for (const auto& sampleInfo : videoMeta.at(1)) {
+        std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
+    }
 */
 
 /*
