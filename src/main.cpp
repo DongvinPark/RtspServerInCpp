@@ -180,19 +180,28 @@ int main() {
 */
 
 /*
-    test usage to get a video sample meta. this can be used when reading video sample from read file.
+    test usage to get a video and audio sample meta. this can be used when reading video sample from read file.
 
     FileReader& fileReader = contentsStorage.getReaders().at("enhypen-test-1cam-H");
+
     VideoAccess& videoAccess = fileReader.getVideoMetaWithLock().at("cam0");
 
     const std::vector<std::vector<VideoSampleInfo>>& videoMeta = videoAccess.getConstVideoSampleInfoList();
-    std::cout << "enhypen cam 0 v1 video sample info !!!\n";
+    std::cout << "enhypen-test-1cam-H cam 0 v1 video sample info !!!\n";
     for (const auto& sampleInfo : videoMeta.at(0)) {
         std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
     }
-    std::cout << "enhypen cam 0 v2 video sample info !!!\n";
+
+    std::cout << "enhypen-test-1cam-H cam 0 v2 video sample info !!!\n";
     for (const auto& sampleInfo : videoMeta.at(1)) {
         std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
+    }
+
+    AudioAccess& audioAccess = fileReader.getAudioMetaWithLock();
+
+    std::cout << "enhypen-test-1cam-H audio sample info !!!\n";
+    for (const auto& audioSampleInfo : audioAccess.getConstMeta()) {
+        std::cout << "size : " << audioSampleInfo.len << ", offset : " << audioSampleInfo.offset << "\n";
     }
 */
 

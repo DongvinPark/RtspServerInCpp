@@ -39,7 +39,7 @@ public:
     std::vector<std::vector<unsigned char>> getAllV0ImagesCopyWithLock();
     int getAudioSampleSize() const;
     int getVideoSampleSize() const;
-    std::vector<AudioSampleInfo> getAudioMetaCopyWithLock();
+    AudioAccess& getAudioMetaWithLock();
     std::unordered_map<std::string, VideoAccess>& getVideoMetaWithLock();
 
     // reading sample

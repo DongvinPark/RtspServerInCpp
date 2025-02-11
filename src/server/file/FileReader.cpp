@@ -123,12 +123,10 @@ int FileReader::getVideoSampleSize() const {
   return C::INVALID;
 }
 
-std::vector<AudioSampleInfo> FileReader::getAudioMetaCopyWithLock() {
+AudioAccess& FileReader::getAudioMetaWithLock() {
   std::lock_guard<std::mutex> guard(lock);
   // used iterator and constructor to return to copied vector
-  return std::vector<AudioSampleInfo>(
-    audioFile.getConstMeta().begin(), audioFile.getConstMeta().end()
-  );
+  return audioFile;
 }
 
 std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock() {
@@ -321,7 +319,7 @@ void FileReader::loadRtpAudioMetaData(
 
   int64_t offset = 0;
   for (const int16_t size : sizes) {
-    inputAudioFile.getMeta().push_back(AudioSampleInfo(size, offset));
+    inputAudioFile.getMeta().emplace_back(size, offset);
     offset += size;
   }
   showAudioMinMaxSize(inputAudioFile.getConstMeta());
@@ -393,7 +391,7 @@ void FileReader::loadRtpMemberVideoMetaData(
     std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
     int memberId
 ) {
-  input2dMetaList.push_back(std::vector<VideoSampleInfo>{});
+  input2dMetaList.emplace_back();
 
   std::vector<unsigned char> metaData = readMetaData(videoFileSize, inputIfstream);
   std::vector<int16_t> sizes = getSizes(metaData);
@@ -416,7 +414,7 @@ void FileReader::loadRtpMemberVideoMetaData(
     std::vector<VideoSampleInfo>& sampleInfoList = input2dMetaList.at(input2dMetaList.size() - 1);
     VideoSampleInfo& latestVideoSampleInfo = sampleInfoList.at(sampleInfoList.size() - 1);
 
-    latestVideoSampleInfo.getMetaInfoList().push_back(RtpMetaInfo(size, offset));
+    latestVideoSampleInfo.getMetaInfoList().emplace_back(size, offset);
     int prevSize = latestVideoSampleInfo.getSize();
     latestVideoSampleInfo.setSize(prevSize + size);
 
