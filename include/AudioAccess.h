@@ -19,9 +19,8 @@ public:
 
     // const version for read-only access
     const std::ifstream& getConstAccess() const;
-    const std::vector<AudioSampleInfo>& getConstMeta() const;
+    [[nodiscard]] const std::vector<AudioSampleInfo>& getConstMeta() const;
 
-    void openAccessFileReadOnly(const std::string& inputFilePath);
     void setMeta(const std::vector<AudioSampleInfo>& inputMeta);
 
     void close();

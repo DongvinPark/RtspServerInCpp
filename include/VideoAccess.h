@@ -20,11 +20,16 @@ public:
     std::vector<std::vector<VideoSampleInfo>>& getVideoSampleInfoList();
 
     std::vector<std::ifstream>& getConstAccessList();
-    const std::vector<std::vector<VideoSampleInfo>>& getConstVideoSampleInfoList() const;
+    [[nodiscard]] const std::vector<std::vector<VideoSampleInfo>>& getConstVideoSampleInfoList() const;
 
-    void setMeta(const std::vector<std::vector<VideoSampleInfo>>& inputMeta);
+    [[nodiscard]] int getFileNumber() const;
 
-    int getFileNumber() const;
+    void clearAllIFStreams() {
+        for (auto& fstream : accesses) {
+            if (fstream.is_open()) fstream.close();
+        }
+        accesses.clear();
+    }
 
     void close();
 

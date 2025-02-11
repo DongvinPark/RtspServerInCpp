@@ -40,11 +40,6 @@ const std::vector<AudioSampleInfo> & AudioAccess::getConstMeta() const {
   return meta;
 }
 
-void AudioAccess::openAccessFileReadOnly(const std::string &inputFilePath) {
-  // open file stream in read-only mode
-  access = std::ifstream(inputFilePath, std::ios::in | std::ios::binary);
-}
-
 void AudioAccess::setMeta(const std::vector<AudioSampleInfo> &inputMeta) {
   meta = inputMeta;
 }

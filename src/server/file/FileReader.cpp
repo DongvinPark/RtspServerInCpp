@@ -311,7 +311,8 @@ std::vector<int64_t> FileReader::getValues(std::string inputMsg, std::string inp
 }
 
 void FileReader::loadRtpAudioMetaData(
-  const std::filesystem::path &inputAudio, AudioAccess& inputAudioFile) {
+    const std::filesystem::path &inputAudio, AudioAccess& inputAudioFile
+  ) {
   inputAudioFile.getAccess().open(inputAudio, std::ios::in | std::ios::binary);
   int64_t audioFileSize = Util::getFileSize(inputAudio);
   std::vector<unsigned char> metaData = readMetaData(audioFileSize, inputAudioFile.getAccess());
@@ -323,6 +324,8 @@ void FileReader::loadRtpAudioMetaData(
     offset += size;
   }
   showAudioMinMaxSize(inputAudioFile.getConstMeta());
+
+  inputAudioFile.getAccess().close();
 }
 
 void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMetaData) {
@@ -382,6 +385,8 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
     }
   }
 
+  // std::ifstream object in VideoAccess should never be user after initializing video sample meta.
+  va.clearAllIFStreams();
   videoFiles.insert({inputCamDir.filename().string(), std::move(va)});
 }
 

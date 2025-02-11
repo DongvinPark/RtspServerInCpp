@@ -46,10 +46,6 @@ const std::vector<std::vector<VideoSampleInfo>>& VideoAccess::getConstVideoSampl
     return meta;
 }
 
-void VideoAccess::setMeta(const std::vector<std::vector<VideoSampleInfo>>& inputMeta) {
-    meta = inputMeta;
-}
-
 int VideoAccess::getFileNumber() const {
     return static_cast<int>(meta.size());
 }
