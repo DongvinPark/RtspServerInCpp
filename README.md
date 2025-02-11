@@ -35,7 +35,7 @@
 - 각자의 개발 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
   - Windows : Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치해 준 후 둘을 링크 해줍니다.
   - MacOS : GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
-  - Linux ubuntu : GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
+  - Linux : GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
 - 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
 - 셋 중 편한 환경을 선택한 후 각자의 환경에 따라서 아래의 안내대로 실행시키면 됩니다.
 <br><br/>
@@ -115,7 +115,7 @@ vcpkg 깃허브 리포지토리를 정확하게 C 드라이브 최상위 디렉�
 ## Linux & MacOS(M series chip) CLion 실행방법
 1. Linux OS가 설치된 AWS EC2 또는 Ubuntu 가 설치된 실제 컴퓨터를 준비합니다.
 2. 현재 깃허브 리포지토리를 준비된 머신에 클론합니다.
-3. 준비된 머신에 GCC, G++, CMake, Boost.Asio를 설치한다. Mac이라면 homebrew를 사용합니다.
+3. 준비된 머신에 GCC, G++, CMake, Boost.Asio를 설치합니다. Mac이라면 homebrew를 사용합니다.
 4. 리눅스 환경이라면, build_and_run_on_linux로 시작하는 .sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 됩니다.<br>
 5. MacOS 환경이라면, 프로젝트 root 디렉토리 내에 build 디렉토리를 만든 다음, 그 디렉토리로 이동해서 'cmake ..', 'make' 명령어를 순서대로 실행하여 실행파일을 만듭니다. 그 후 실행파일을 './실행파일이름' 명령어로 수동으로 실행하면 됩니다.<br>
 6. Linux 또는 MacOS 환경에서 JetBrains CLion IDE를 사용하고, 3번 단계에서 언급한 툴들이 전부 설치돼 있다면 현재 프로젝트를 IDE로 열고 바로 실행시키면 됩니다.
@@ -128,7 +128,7 @@ vcpkg 깃허브 리포지토리를 정확하게 C 드라이브 최상위 디렉�
 ```text
 sudo chmod +x delete_build_and_run_on_Mchip_MacOS.sh
 ```
-4. 스크립트를 실행한다.
+4. 스크립트를 실행합니다.
 ```text
 ./delete_build_and_run_on_Mchip_MacOS.sh
 ```
