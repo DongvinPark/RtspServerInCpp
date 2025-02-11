@@ -391,8 +391,8 @@ bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
 void RtspHandler::respondOptions(Buffer &buffer) {
   std::string rsp;
 
-  rsp = "RTSP/1.0 200 OK" + C::CRLF;
-  rsp += "CSeq: " + std::to_string(cSeq) + C::CRLF;
+  rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF};
+  rsp += "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF};
 
   std::string rtspMethods = "Public: ";
   const auto loopCnt = C::RTSP_METHOD_VECTOR.size();
@@ -401,20 +401,20 @@ void RtspHandler::respondOptions(Buffer &buffer) {
     if (i < (loopCnt-1)) rtspMethods += ",";
   }
 
-  rsp += rtspMethods + C::CRLF;
-  rsp += "Server: " +C::MY_NAME+ C::CRLF2;
+  rsp += rtspMethods + std::string{C::CRLF};
+  rsp += "Server: " + std::string{C::MY_NAME} + std::string{C::CRLF2};
 
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
 
 void RtspHandler::respondDescribe(Buffer &buffer, std::string mediaInfo) {
-  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
-                "CSeq: " + std::to_string(cSeq) + C::CRLF +
-                "Content-Base: " + C::DUMMY_CONTENT_BASE +"/"+ C::CRLF +
-                "Content-Length: " + std::to_string(mediaInfo.length()) + C::CRLF +
-                "Content-Type: application/sdp" + C::CRLF +
-                "Server: " +C::MY_NAME+ C::CRLF2 +
+  std::string rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Content-Base: " + C::DUMMY_CONTENT_BASE +"/"+ std::string{C::CRLF} +
+                "Content-Length: " + std::to_string(mediaInfo.length()) + std::string{C::CRLF} +
+                "Content-Type: application/sdp" + std::string{C::CRLF} +
+                "Server: " +C::MY_NAME + std::string{C::CRLF2} +
                 mediaInfo; // don't append CRLF according to AVPT 6.1 implementation
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
@@ -431,13 +431,13 @@ void RtspHandler::respondSetup(
   int camDirectoryCnt
 ) {
   logger->info("Dongvin, setup stream id : " + std::to_string(trackId));
-  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
-                "CSeq: " + std::to_string(cSeq) + C::CRLF +
-                "Server: "+ C::MY_NAME + C::CRLF +
-                "Session: "+ sessionId + C::CRLF +
-                "RefVideoSampleCnt: " + std::to_string(refVideoSampleCnt) + C::CRLF +
-                "camDirectoryCnt: " + std::to_string(camDirectoryCnt) + C::CRLF +
-                "Transport: " + transport+";ssrc="+ std::to_string(ssrc) + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF} +
+                "Session: "+ sessionId + std::string{C::CRLF} +
+                "RefVideoSampleCnt: " + std::to_string(refVideoSampleCnt) + std::string{C::CRLF} +
+                "camDirectoryCnt: " + std::to_string(camDirectoryCnt) + std::string{C::CRLF} +
+                "Transport: " + transport+";ssrc="+ std::to_string(ssrc) + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
@@ -447,11 +447,11 @@ void RtspHandler::respondSetupForHybrid(
   std::string sessionId,
   std::string hybridMode
 ) {
-  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
-                "CSeq: " + std::to_string(cSeq) + C::CRLF +
-                "Server: "+ C::MY_NAME + C::CRLF +
-                "Session: "+ sessionId + C::CRLF +
-                "HybridMode: "+ hybridMode + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF} +
+                "Session: "+ sessionId + std::string{C::CRLF} +
+                "HybridMode: "+ hybridMode + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
@@ -481,8 +481,8 @@ void RtspHandler::respondPlay(
 
   std::string rsp;
   if (initResult) {
-    rsp = "RTSP/1.0 200 OK" + C::CRLF +
-      "CSeq: " + std::to_string(cSeq) + C::CRLF +
+    rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
+      "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
       "RTP-Info: " +
 
       "url=" + C::DUMMY_CONTENT_BASE + "/trackID=0" + // front video
@@ -495,12 +495,12 @@ void RtspHandler::respondPlay(
 
       ",url=" + C::DUMMY_CONTENT_BASE + "/trackID=2" + // member videos(ex : rear video)
       ";rtptime=" + std::to_string(rtpTime[0]) +
-      ";lsnum=" + std::to_string(lastVideoSampleNo) + C::CRLF +
+      ";lsnum=" + std::to_string(lastVideoSampleNo) + std::string{C::CRLF} +
 
-      "Server: " + C::MY_NAME + C::CRLF +
-      "Session: " + sessionId + C::CRLF +
-      "SupportingBitrate: " + supportingBitrateType + C::CRLF +
-      "CamDirectoryCnt: " + std::to_string(numberOfCamDirectories) + C::CRLF2;
+      "Server: " + std::string{C::MY_NAME} + std::string{C::CRLF} +
+      "Session: " + sessionId + std::string{C::CRLF} +
+      "SupportingBitrate: " + supportingBitrateType + std::string{C::CRLF} +
+      "CamDirectoryCnt: " + std::to_string(numberOfCamDirectories) + std::string{C::CRLF2};
     const std::vector<unsigned char> response(rsp.begin(), rsp.end());
     buffer.updateBuf(response);
   } else {
@@ -510,46 +510,46 @@ void RtspHandler::respondPlay(
 }
 
 void RtspHandler::respondPlayAfterPause(Buffer& buffer) {
-  std::string rsp = "RTSP/1.0 200 OK"+C::CRLF +
-            "CSeq: " + std::to_string(cSeq) + C::CRLF +
-            "Server: "+ C::MY_NAME + C::CRLF+
-            "Session: "+ sessionId + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK"+std::string{C::CRLF} +
+            "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+            "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF}+
+            "Session: "+ sessionId + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
 
 void RtspHandler::respondSwitching(Buffer& buffer) {
-  std::string rsp = "RTSP/1.0 200 OK"+C::CRLF+
-                "CSeq: " + std::to_string(cSeq) + C::CRLF +
-                "Session: "+ sessionId + C::CRLF +
-                "Server: "+ C::MY_NAME + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK"+std::string{C::CRLF}+
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Session: "+ sessionId + std::string{C::CRLF} +
+                "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
 
 void RtspHandler::respondCameraChange(Buffer& buffer, int targetCamId) {
-  std::string rsp = "RTSP/1.0 200 OK"+C::CRLF+
-                "CSeq: " + std::to_string(cSeq) + C::CRLF +
-                "Session: "+ sessionId + C::CRLF +
-                C::CAM_CHANG_KEY + ": " + std::to_string(targetCamId) + C::CRLF +
-                "Server: "+ C::MY_NAME + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK"+std::string{C::CRLF}+
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Session: "+ sessionId + std::string{C::CRLF} +
+                C::CAM_CHANG_KEY + ": " + std::to_string(targetCamId) + std::string{C::CRLF} +
+                "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
 
 void RtspHandler::respondTeardown(Buffer& buffer) {
-  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
-            "CSeq: " + std::to_string(cSeq) + C::CRLF +
-            "Server: "+ C::MY_NAME + C::CRLF +
-            "Teardown: true" + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
+            "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+            "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF} +
+            "Teardown: true" + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
 
 void RtspHandler::respondError(Buffer& buffer, int error, std::string rtspMethod) {
-  std::string rsp = "RTSP/1.0 " + std::to_string(error) + " " + C::RTSP_STATUS_CODES_MAP.at(error) + C::CRLF +
-                "CSeq: " + std::to_string(cSeq) + C::CRLF +
-                "Server: " + C::MY_NAME + C::CRLF2;
+  std::string rsp = "RTSP/1.0 " + std::to_string(error) + " " + C::RTSP_STATUS_CODES_MAP.at(error) + std::string{C::CRLF} +
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Server: " + std::string{C::MY_NAME} + std::string{C::CRLF2};
   logger->warning(
     "Dongvin, session id:"+ sessionId +
     ", send error (" + std::to_string(error) + ") response for " + rtspMethod
@@ -559,9 +559,9 @@ void RtspHandler::respondError(Buffer& buffer, int error, std::string rtspMethod
 }
 
 void RtspHandler::respondPause(Buffer &buffer) {
-  std::string rsp = "RTSP/1.0 200 OK" + C::CRLF +
-            "CSeq: " + std::to_string(cSeq) + C::CRLF +
-            "Server: "+ C::MY_NAME + C::CRLF2;
+  std::string rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
+            "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+            "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
@@ -616,7 +616,7 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
       } else if (line.rfind("a=control:", 0) == 0){
         int trackId = std::stoi(Util::splitToVecBySingleChar(line, '=')[2]);
         std::string track = "/trackID="+std::to_string(trackId);
-        lines[i] = "a=control:"+C::DUMMY_CONTENT_BASE+track;
+        lines[i] = "a=control:"+std::string{C::DUMMY_CONTENT_BASE}+track;
         if(trackId <= C::AUDIO_ID){
           handlerPtr->setStreamUrl(trackId, fullCid+track);
         }
@@ -649,7 +649,7 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
       if (line == C::EMPTY_STRING) {
         continue;
       }
-      result += (line + C::CRLF);
+      result += (line + std::string{C::CRLF});
     }
 
     return result;

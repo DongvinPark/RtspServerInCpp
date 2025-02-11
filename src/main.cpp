@@ -80,7 +80,7 @@ std::string getContentsRootPath() {
 int main() {
     std::shared_ptr<Logger> logger = Logger::getLogger(C::MAIN);
     logger->warning("=================================================================");
-    logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server STARTS. ver: " + C::VER);
+    logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server STARTS. ver: " + std::string{C::VER});
     logger->warning("=================================================================");
 
     // make worker thread pool for boost.asio io_context
