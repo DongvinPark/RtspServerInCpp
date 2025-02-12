@@ -42,16 +42,6 @@ public:
     const AudioAccess& getConstAudioMeta() const;
     const std::unordered_map<std::string, VideoAccess>& getConstVideoMeta() const;
 
-    // reading sample
-    AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap) noexcept;
-    std::vector<VideoSample>& readRefVideoSampleWithLock(
-        int sampleNo, HybridMetaMapType& hybridMetaMap
-    ) noexcept;
-    std::vector<VideoSample>& readVideoSampleWithLock(
-        int camId, int vid, int memberId, int sampleNo,
-        HybridMetaMapType& hybridMetaMap
-    ) noexcept;
-
 private:
     bool handleCamDirectories(const std::filesystem::path& inputCidDirectory);
     bool handleConfigFile(const std::filesystem::path& inputCidDirectory);
@@ -74,12 +64,6 @@ private:
         int memberId
     );
     void showVideoMinMaxSize(const std::vector<VideoSampleInfo>& videoMetaData, int memberId);
-
-    // reading sample
-    std::vector<VideoSample>& readVideoSampleInternalWithLock(
-        int camId, VideoAccess& va, int sampleNo,
-        HybridMetaMapType& hybridMetaMap
-    );
 
     std::vector<std::vector<VideoSampleInfo>> getVideoMetaInternal(std::string camId);
     std::vector<unsigned char> readMetaData(int64_t fileSize, std::ifstream& inputFileStream);

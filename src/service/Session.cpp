@@ -215,9 +215,11 @@ int Session::getRefVideoSampleCnt() {
 }
 
 std::shared_ptr<RtpHandler> Session::getRtpHandlerPtr() {
+  return rtpHandlerPtr;
 }
 
 std::string Session::getContentRootPath() const {
+  return contentsStorage.getContentRootPath();
 }
 
 int Session::getCamId() const {

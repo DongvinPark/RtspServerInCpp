@@ -8,3 +8,28 @@ RtpHandler::~RtpHandler() {}
 
 void RtpHandler::stopVideo() {}
 void RtpHandler::stopAudio() {}
+
+AudioSample & RtpHandler::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
+}
+
+
+std::vector<VideoSample> & RtpHandler::readRefVideoSampleWithLock(
+  int sampleNo, HybridMetaMapType &hybridMetaMap
+) noexcept {
+}
+
+std::vector<VideoSample> & RtpHandler::readVideoSampleWithLock(
+  int camId,
+  int vid,
+  int memberId,
+  int sampleNo,
+  HybridMetaMapType &hybridMetaMap
+) noexcept {
+}
+
+
+std::vector<VideoSample> & RtpHandler::readVideoSampleInternalWithLock(int camId,
+  VideoAccess &va,
+  int sampleNo,
+  HybridMetaMapType &hybridMetaMap) noexcept {
+}

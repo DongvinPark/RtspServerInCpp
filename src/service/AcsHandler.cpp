@@ -221,21 +221,22 @@ void AcsHandler::findNextSampleForSwitching(int vid, std::vector<int64_t> timeIn
 }
 
 std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampleNo) {
-  ContentFileMeta& fileReader = contentsStorage.getCid(contentTitle);
-
   if (auto sessionPtr = parentSessionPtr.lock()) {
-    if (streamId == C::VIDEO_ID) {
+    std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
+    if (auto rtpHandlerPtr = weakPtr.lock()) {
+      if (streamId == C::VIDEO_ID) {
+        return std::make_unique<Buffer>(
+          rtpHandlerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0].getFirstRtp()
+        );
+      }
+      // audio sample. one audio sample == one rtp packet.
       return std::make_unique<Buffer>(
-        fileReader.readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
-        .getFirstRtp()
+        rtpHandlerPtr->readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
       );
     }
-    // audio sample. one audio sample == one rtp packet.
-    return std::make_unique<Buffer>(
-      fileReader.readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
-    );
+    logger->severe("Dongvin, failed to get RtpHandler Ptr!");
   }
-  logger->severe("Dongvin, fail to get Session Ptr!");
+  logger->severe("Dongvin, failed to get Session Ptr!");
   return nullptr;
 }
 
@@ -322,9 +323,13 @@ int AcsHandler::getSampleTimeIndex(int streamId, int64_t timestamp) {
 int64_t AcsHandler::getTimestamp(int sampleNo) {
   ContentFileMeta& fileReader = contentsStorage.getCid(contentTitle);
   if (auto sessionPtr = parentSessionPtr.lock()) {
-    return Util::findTimestampInVideoSample(
-      fileReader.readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
-    );
+    std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
+    if (auto rtpHandlerPtr = weakPtr.lock()) {
+      return Util::findTimestampInVideoSample(
+        rtpHandlerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
+      );
+    }
+    return C::INVALID_BYTE;
   }
   return C::INVALID_BYTE;
 }

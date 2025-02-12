@@ -32,7 +32,7 @@ int ContentFileMeta::getNumberOfCamDirectories() const {
 
 int ContentFileMeta::getRefVideoSampleCnt() const {
   // return cam 0's V1 video files sample cnt
-  return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
+  return static_cast<int>(videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size());
 }
 
 bool ContentFileMeta::init() {
@@ -129,23 +129,6 @@ const std::unordered_map<std::string, VideoAccess>& ContentFileMeta::getConstVid
   return videoFiles;
 }
 
-AudioSample & ContentFileMeta::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
-}
-
-std::vector<VideoSample> & ContentFileMeta::readRefVideoSampleWithLock(
-  int sampleNo, HybridMetaMapType &hybridMetaMap
-) noexcept {
-}
-
-std::vector<VideoSample> & ContentFileMeta::readVideoSampleWithLock(
-  int camId,
-  int vid,
-  int memberId,
-  int sampleNo,
-  HybridMetaMapType &hybridMetaMap
-) noexcept {
-}
-
 // private
 bool ContentFileMeta::handleCamDirectories(const std::filesystem::path &inputCidDirectory) {
   std::vector<std::filesystem::path> camDirectoryList;
@@ -173,8 +156,6 @@ bool ContentFileMeta::handleCamDirectories(const std::filesystem::path &inputCid
 
 bool ContentFileMeta::handleConfigFile(const std::filesystem::path &inputCidDirectory) {
   for (std::filesystem::path dir : std::filesystem::directory_iterator(inputCidDirectory)) {
-    // dir.filename().string().find(..input str..) != std::string::npos >> this can be used as
-    // java's .contains() method
     if (!is_directory(dir) && dir.filename().string().find("acc") != std::string::npos) {
       // std::filesystem::path type is 'Copyable'!!
       configFile = dir;
@@ -190,7 +171,7 @@ bool ContentFileMeta::handleV0Images(const std::filesystem::path &inputCidDirect
       v0Images.push_back(dir);
     }
   }
-  return v0Images.size() > 0;
+  return !v0Images.empty();
 }
 
 bool ContentFileMeta::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
@@ -452,12 +433,6 @@ void ContentFileMeta::showVideoMinMaxSize(
     "Dongvin, id : " + contentTitle + ", memberId: " + std::to_string(memberId)
     + ", video (min, max)=(" + std::to_string(min) + "," + std::to_string(max) + ")"
   );
-}
-
-std::vector<VideoSample> & ContentFileMeta::readVideoSampleInternalWithLock(int camId,
-  VideoAccess &va,
-  int sampleNo,
-  HybridMetaMapType &hybridMetaMap) {
 }
 
 std::vector<std::vector<VideoSampleInfo>> ContentFileMeta::getVideoMetaInternal(std::string camId) {
