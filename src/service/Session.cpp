@@ -196,8 +196,8 @@ void Session::set_mbpsTypeList(std::vector<int> input_mbpsTypeList) {
 
 int Session::getNumberOfCamDirectories() {
   std::string contentTitle = getContentTitle();
-  if(contentsStorage.getReaders().count(contentTitle)) {
-    return contentsStorage.getReaders().at(contentTitle).getNumberOfCamDirectories();
+  if(contentsStorage.getContentFileMetaMap().count(contentTitle)) {
+    return contentsStorage.getContentFileMetaMap().at(contentTitle).getNumberOfCamDirectories();
   } else {
     logger->severe("Dongvin, faild to find content in ContentsStorage! :: getNumberOfCamDirectories()");
     return C::INVALID;
@@ -206,8 +206,8 @@ int Session::getNumberOfCamDirectories() {
 
 int Session::getRefVideoSampleCnt() {
   std::string contentTitle = getContentTitle();
-  if (contentsStorage.getReaders().find(contentTitle) != contentsStorage.getReaders().end()) {
-    return contentsStorage.getReaders().at(contentTitle).getRefVideoSampleCnt();
+  if (contentsStorage.getContentFileMetaMap().find(contentTitle) != contentsStorage.getContentFileMetaMap().end()) {
+    return contentsStorage.getContentFileMetaMap().at(contentTitle).getRefVideoSampleCnt();
   } else {
     logger->severe("Dongvin, faild to find content in ContentsStorage! :: getRefVideoSampleCnt()");
     return C::INVALID;
@@ -254,7 +254,7 @@ void Session::handleRtspRequest(Buffer& buf) {
 
 bool Session::onCid(std::string inputCid) {
   logger->warning("Dongvin, requested content : " + inputCid + ", session id : " + sessionId);
-  FileReader& fileReader = contentsStorage.getCid(inputCid);
+  ContentFileMeta& fileReader = contentsStorage.getCid(inputCid);
   acsHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
   return true;
 }

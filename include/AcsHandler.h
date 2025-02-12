@@ -1,7 +1,7 @@
 #ifndef ACSHANDLER_H
 #define ACSHANDLER_H
 
-#include "../include/FileReader.h"
+#include "../include/ContentFileMeta.h"
 #include "../include/Session.h"
 #include "../include/RtpInfo.h"
 #include "../include/ReadInfo.h"
@@ -29,7 +29,7 @@ public:
   void setChannel(int streamId, std::vector<int> ch);
   void initUserRequestingPlaytime(std::vector<float> timeS);
   void setRtpInfo(RtpInfo inputRtpInfo);
-  bool setReaderAndContentTitle(FileReader& inputReader, std::string contentTitle);
+  bool setReaderAndContentTitle(ContentFileMeta& inputReader, std::string contentTitle);
   int getLastVideoSampleNumber();
   int getLastAudioSampleNumber();
   std::vector<unsigned char> getAccData();

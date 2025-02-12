@@ -64,8 +64,8 @@ add_executable(AlphaStreamer3.1Cpp
         src/timer/PeriodicTask.cpp
         include/RxBitrate.h
         src/util/RxBitrate.cpp
-        include/FileReader.h
-        src/server/file/FileReader.cpp
+        include/ContentFileMeta.h
+        src/server/file/ContentFileMeta.cpp
         include/AudioSampleInfo.h
         include/VideoSampleInfo.h
         src/server/file/access/AudioSampleInfo.cpp

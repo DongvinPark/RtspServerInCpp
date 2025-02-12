@@ -56,9 +56,9 @@ void AcsHandler::initUserRequestingPlaytime(std::vector<float> timeS) {
     info.endSampleNo = findSampleNumber(streamId, Util::secToUs(timeS[1]));
     info.curSampleNo = info.startSampleNo;
 
-    /*std::unique_ptr<Buffer> rtpPtr = get1stRtpOfRefSample(streamId, info.startSampleNo);
+    std::unique_ptr<Buffer> rtpPtr = get1stRtpOfRefSample(streamId, info.startSampleNo);
     info.timestamp = Util::findTimestamp(*rtpPtr);
-    info.refSeq0 = Util::findSequenceNumber(*rtpPtr);*/
+    info.refSeq0 = Util::findSequenceNumber(*rtpPtr);
 
     // check --> removable.
     checkTimestamp(streamId, info);
@@ -76,7 +76,7 @@ void AcsHandler::setRtpInfo(RtpInfo inputRtpInfo) {
   sInfo.at(C::AUDIO_ID).unitTimeUs = us[C::AUDIO_ID];
 }
 
-bool AcsHandler::setReaderAndContentTitle(FileReader& inputReader, std::string inputContentTitle) {
+bool AcsHandler::setReaderAndContentTitle(ContentFileMeta& inputReader, std::string inputContentTitle) {
   if (inputContentTitle != C::EMPTY_STRING) {
     contentTitle = inputContentTitle;
   }
@@ -150,7 +150,7 @@ std::vector<int64_t> AcsHandler::getSsrc() {
 }
 
 int AcsHandler::getMainVideoNumber() {
-  FileReader& fileReader = contentsStorage.getCid(contentTitle);
+  ContentFileMeta& fileReader = contentsStorage.getCid(contentTitle);
   const auto& videoMeta = fileReader.getConstVideoMeta();
   return videoMeta.at(C::REF_CAM).getFileNumber();
 }
@@ -221,7 +221,7 @@ void AcsHandler::findNextSampleForSwitching(int vid, std::vector<int64_t> timeIn
 }
 
 std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampleNo) {
-  FileReader& fileReader = contentsStorage.getCid(contentTitle);
+  ContentFileMeta& fileReader = contentsStorage.getCid(contentTitle);
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
     if (streamId == C::VIDEO_ID) {
@@ -320,7 +320,7 @@ int AcsHandler::getSampleTimeIndex(int streamId, int64_t timestamp) {
 }
 
 int64_t AcsHandler::getTimestamp(int sampleNo) {
-  FileReader& fileReader = contentsStorage.getCid(contentTitle);
+  ContentFileMeta& fileReader = contentsStorage.getCid(contentTitle);
   if (auto sessionPtr = parentSessionPtr.lock()) {
     return Util::findTimestampInVideoSample(
       fileReader.readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]

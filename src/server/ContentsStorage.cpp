@@ -20,7 +20,7 @@ void ContentsStorage::init() {
 
   for (const std::filesystem::path contentPath : files) {
     std::string contentTitle = contentPath.filename().string();
-    readers.try_emplace(contentTitle, FileReader(contentPath));
+    readers.try_emplace(contentTitle, ContentFileMeta(contentPath));
   }
 
   std::string availableContents = ">> ";
@@ -32,13 +32,13 @@ void ContentsStorage::init() {
   logger->warning("Available contents: " + availableContents);
 }
 
-FileReader & ContentsStorage::getCid(std::string cid) {
+ContentFileMeta & ContentsStorage::getCid(std::string cid) {
   // return reference : FileReader is not allowed to copy
-  FileReader& fileReader = readers.at(cid);
+  ContentFileMeta& fileReader = readers.at(cid);
   return fileReader;
 }
 
-const std::unordered_map<std::string, FileReader> & ContentsStorage::getReaders() const {
+const std::unordered_map<std::string, ContentFileMeta> & ContentsStorage::getContentFileMetaMap() const {
   return readers;
 }
 

@@ -20,7 +20,7 @@
 #include "../include/Logger.h"
 #include "../constants/C.h"
 #include "../include/SntpRefTimeProvider.h"
-#include "../include/FileReader.h"
+#include "../include/ContentFileMeta.h"
 #include "../include/Session.h"
 #include "../include/Server.h"
 
@@ -182,7 +182,7 @@ int main() {
 /*
     test usage to get a video and audio sample meta. this can be used when reading video sample from read file.
 
-    const FileReader& fileReader = contentsStorage.getReaders().at("enhypen-test-1cam-H");
+    const ContentFileMeta& fileReader = contentsStorage.getContentFileMetaMap().at("enhypen-test-1cam-H");
 
     const VideoAccess& videoAccess = fileReader.getConstVideoMeta().at("cam0");
 

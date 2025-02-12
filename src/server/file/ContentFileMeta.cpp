@@ -1,19 +1,19 @@
-#include "../include/FileReader.h"
+#include "../include/ContentFileMeta.h"
 #include "../../../constants/Util.h"
 
 #include <algorithm>
 
 // constructor
-FileReader::FileReader(const std::filesystem::path &path)
+ContentFileMeta::ContentFileMeta(const std::filesystem::path &path)
   : logger(Logger::getLogger(C::FILE_READER)),
     cidDirectory(path),
     contentTitle(path.filename().string()){}
 
-FileReader::~FileReader() {
+ContentFileMeta::~ContentFileMeta() {
   shutdown();
 }
 
-FileReader::FileReader(FileReader && other) noexcept
+ContentFileMeta::ContentFileMeta(ContentFileMeta && other) noexcept
   : logger(std::move(other.logger)),
     cidDirectory(other.cidDirectory),
     configFile(other.configFile),
@@ -26,16 +26,16 @@ FileReader::FileReader(FileReader && other) noexcept
 }
 
 // public
-int FileReader::getNumberOfCamDirectories() const {
+int ContentFileMeta::getNumberOfCamDirectories() const {
   return static_cast<int>(videoFiles.size());
 }
 
-int FileReader::getRefVideoSampleCnt() const {
+int ContentFileMeta::getRefVideoSampleCnt() const {
   // return cam 0's V1 video files sample cnt
   return videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size();
 }
 
-bool FileReader::init() {
+bool ContentFileMeta::init() {
   if (cidDirectory.empty() || !exists(cidDirectory)) {
     logger->severe("No content files or wrong content root directory!");
     return false;
@@ -62,7 +62,7 @@ bool FileReader::init() {
   return true;
 }
 
-void FileReader::shutdown() {
+void ContentFileMeta::shutdown() {
   // close all access
   try {
     for (auto& kvPair : videoFiles) {
@@ -80,20 +80,20 @@ void FileReader::shutdown() {
   }
 }
 
-RtpInfo FileReader::getRtpInfoCopy() {
+RtpInfo ContentFileMeta::getRtpInfoCopy() {
   // call Copy Constructor
   RtpInfo rtpInfoCopy(rtpInfo);
   return rtpInfoCopy;
 }
 
-std::string FileReader::getMediaInfoCopy() {
+std::string ContentFileMeta::getMediaInfoCopy() {
   return rtspSdpMessage;
 }
-std::vector<unsigned char> FileReader::getAccDataCopy() {
+std::vector<unsigned char> ContentFileMeta::getAccDataCopy() {
   return Util::readAllBytesFromFilePath(configFile);
 }
 
-std::vector<std::vector<unsigned char>> FileReader::getAllV0ImagesCopy() {
+std::vector<std::vector<unsigned char>> ContentFileMeta::getAllV0ImagesCopy() {
   std::vector<std::vector<unsigned char>> imageBinaryList;
   for (std::filesystem::path& imageFilePath : v0Images) {
     imageBinaryList.push_back(Util::readAllBytesFromFilePath(imageFilePath));
@@ -101,11 +101,11 @@ std::vector<std::vector<unsigned char>> FileReader::getAllV0ImagesCopy() {
   return imageBinaryList;
 }
 
-int FileReader::getAudioSampleSize() const {
+int ContentFileMeta::getAudioSampleSize() const {
   return static_cast<int>(audioFile.getConstMeta().size());
 }
 
-int FileReader::getVideoSampleSize() const {
+int ContentFileMeta::getVideoSampleSize() const {
   if (videoFiles.find(C::REF_CAM) != videoFiles.end()) {
     return static_cast<int>(videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size());
   } else {
@@ -119,25 +119,25 @@ int FileReader::getVideoSampleSize() const {
   return C::INVALID;
 }
 
-const AudioAccess& FileReader::getConstAudioMeta() const {
+const AudioAccess& ContentFileMeta::getConstAudioMeta() const {
   // do not copy. just return const ref('&')
   return audioFile;
 }
 
-const std::unordered_map<std::string, VideoAccess>& FileReader::getConstVideoMeta() const {
+const std::unordered_map<std::string, VideoAccess>& ContentFileMeta::getConstVideoMeta() const {
   // do not copy. just return const ref('&')
   return videoFiles;
 }
 
-AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
+AudioSample & ContentFileMeta::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
 }
 
-std::vector<VideoSample> & FileReader::readRefVideoSampleWithLock(
+std::vector<VideoSample> & ContentFileMeta::readRefVideoSampleWithLock(
   int sampleNo, HybridMetaMapType &hybridMetaMap
 ) noexcept {
 }
 
-std::vector<VideoSample> & FileReader::readVideoSampleWithLock(
+std::vector<VideoSample> & ContentFileMeta::readVideoSampleWithLock(
   int camId,
   int vid,
   int memberId,
@@ -147,7 +147,7 @@ std::vector<VideoSample> & FileReader::readVideoSampleWithLock(
 }
 
 // private
-bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirectory) {
+bool ContentFileMeta::handleCamDirectories(const std::filesystem::path &inputCidDirectory) {
   std::vector<std::filesystem::path> camDirectoryList;
   for (std::filesystem::path camDirectory : std::filesystem::directory_iterator(inputCidDirectory)) {
     camDirectoryList.push_back(camDirectory);
@@ -171,7 +171,7 @@ bool FileReader::handleCamDirectories(const std::filesystem::path &inputCidDirec
   return true;
 }
 
-bool FileReader::handleConfigFile(const std::filesystem::path &inputCidDirectory) {
+bool ContentFileMeta::handleConfigFile(const std::filesystem::path &inputCidDirectory) {
   for (std::filesystem::path dir : std::filesystem::directory_iterator(inputCidDirectory)) {
     // dir.filename().string().find(..input str..) != std::string::npos >> this can be used as
     // java's .contains() method
@@ -184,7 +184,7 @@ bool FileReader::handleConfigFile(const std::filesystem::path &inputCidDirectory
   return false;
 }
 
-bool FileReader::handleV0Images(const std::filesystem::path &inputCidDirectory) {
+bool ContentFileMeta::handleV0Images(const std::filesystem::path &inputCidDirectory) {
   for (std::filesystem::path dir : std::filesystem::directory_iterator(inputCidDirectory)) {
     if (!is_directory(dir) && dir.filename().string().find("jpg") != std::string::npos) {
       v0Images.push_back(dir);
@@ -193,7 +193,7 @@ bool FileReader::handleV0Images(const std::filesystem::path &inputCidDirectory) 
   return v0Images.size() > 0;
 }
 
-bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
+bool ContentFileMeta::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
   std::string camDirectoryName = inputCidDirectory.filename().string();
   bool isRefCam = (
       camDirectoryName == C::REF_CAM ||
@@ -258,7 +258,7 @@ bool FileReader::loadAcsFilesInCamDirectories(const std::filesystem::path &input
   return true;
 }
 
-void FileReader::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
+void ContentFileMeta::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
   if (rtspConfig.empty()) {
     return;
   }
@@ -288,7 +288,7 @@ void FileReader::loadRtspRtpConfig(const std::filesystem::path &rtspConfig) {
   }//outer
 }
 
-std::vector<int64_t> FileReader::getValues(std::string inputMsg, std::string inputKey) {
+std::vector<int64_t> ContentFileMeta::getValues(std::string inputMsg, std::string inputKey) {
   std::string midVal = Util::splitToVecByString(inputMsg, inputKey)[1];
   std::vector<std::string> v = Util::splitToVecBySingleChar(midVal, ',');
   std::vector<int64_t> values;
@@ -301,7 +301,7 @@ std::vector<int64_t> FileReader::getValues(std::string inputMsg, std::string inp
   return values;
 }
 
-void FileReader::loadRtpAudioMetaData(
+void ContentFileMeta::loadRtpAudioMetaData(
     const std::filesystem::path &inputAudio, AudioAccess& inputAudioFile
   ) {
   inputAudioFile.getAccess().open(inputAudio, std::ios::in | std::ios::binary);
@@ -319,7 +319,7 @@ void FileReader::loadRtpAudioMetaData(
   inputAudioFile.getAccess().close();
 }
 
-void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMetaData) {
+void ContentFileMeta::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMetaData) {
   std::vector<int> lenList;
   for (auto i = 0; i < audioMetaData.size(); ++i) {
     AudioSampleInfo aInfo = audioMetaData[i];
@@ -336,7 +336,7 @@ void FileReader::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &audioMe
   );
 }
 
-void FileReader::loadRtpVideoMetaData(
+void ContentFileMeta::loadRtpVideoMetaData(
 const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& videos
 ) {
   VideoAccess va{};
@@ -381,7 +381,7 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
   videoFiles.insert({inputCamDir.filename().string(), std::move(va)});
 }
 
-void FileReader::loadRtpMemberVideoMetaData(
+void ContentFileMeta::loadRtpMemberVideoMetaData(
     int64_t videoFileSize,
     std::ifstream &inputIfstream,
     std::vector<std::vector<VideoSampleInfo>>& input2dMetaList,
@@ -436,7 +436,7 @@ void FileReader::loadRtpMemberVideoMetaData(
   showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
 }
 
-void FileReader::showVideoMinMaxSize(
+void ContentFileMeta::showVideoMinMaxSize(
   const std::vector<VideoSampleInfo> &videoMetaData, int memberId
 ) {
   std::vector<int> lenList;
@@ -454,13 +454,13 @@ void FileReader::showVideoMinMaxSize(
   );
 }
 
-std::vector<VideoSample> & FileReader::readVideoSampleInternalWithLock(int camId,
+std::vector<VideoSample> & ContentFileMeta::readVideoSampleInternalWithLock(int camId,
   VideoAccess &va,
   int sampleNo,
   HybridMetaMapType &hybridMetaMap) {
 }
 
-std::vector<std::vector<VideoSampleInfo>> FileReader::getVideoMetaInternal(std::string camId) {
+std::vector<std::vector<VideoSampleInfo>> ContentFileMeta::getVideoMetaInternal(std::string camId) {
   std::vector<std::vector<VideoSampleInfo>> vMetaList;
   for (std::vector<VideoSampleInfo> vInfo : vMetaList) {
     vMetaList.push_back(vInfo);
@@ -468,7 +468,7 @@ std::vector<std::vector<VideoSampleInfo>> FileReader::getVideoMetaInternal(std::
   return vMetaList;
 }
 
-std::vector<unsigned char> FileReader::readMetaData(
+std::vector<unsigned char> ContentFileMeta::readMetaData(
   int64_t fileSize, std::ifstream &inputFileStream
 ) {
   if (!inputFileStream.is_open()) {
@@ -498,7 +498,7 @@ std::vector<unsigned char> FileReader::readMetaData(
   return metaBuf;
 }
 
-std::vector<int16_t> FileReader::getSizes(std::vector<unsigned char>& metaData) {
+std::vector<int16_t> ContentFileMeta::getSizes(std::vector<unsigned char>& metaData) {
   std::vector<int16_t> sizes;
   sizes.reserve(metaData.size() / 2); // reserve memory for efficiency
 

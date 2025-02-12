@@ -16,17 +16,17 @@
 using HybridMetaMapType
     = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 
-class FileReader : public std::enable_shared_from_this<FileReader> {
+class ContentFileMeta : public std::enable_shared_from_this<ContentFileMeta> {
 public:
-    explicit FileReader(const std::filesystem::path& path);
-    ~FileReader();
+    explicit ContentFileMeta(const std::filesystem::path& path);
+    ~ContentFileMeta();
 
     // Rule of five. FileReader object is not allowed to copy.
-    FileReader(const FileReader&) = delete;
-    FileReader& operator=(const FileReader&) = delete;
-    FileReader& operator=(FileReader&& other) noexcept = delete;
+    ContentFileMeta(const ContentFileMeta&) = delete;
+    ContentFileMeta& operator=(const ContentFileMeta&) = delete;
+    ContentFileMeta& operator=(ContentFileMeta&& other) noexcept = delete;
     // enable move constructor.
-    FileReader(FileReader&& other) noexcept;
+    ContentFileMeta(ContentFileMeta&& other) noexcept;
 
     // utils
     int getNumberOfCamDirectories() const;

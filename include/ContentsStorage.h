@@ -2,7 +2,7 @@
 #define CONTENTSSTORAGE_H
 #include <unordered_map>
 
-#include "../include/FileReader.h"
+#include "../include/ContentFileMeta.h"
 
 class ContentsStorage {
 public:
@@ -11,15 +11,15 @@ public:
 
   void init();
 
-  FileReader& getCid(std::string cid);
-  const std::unordered_map<std::string, FileReader>& getReaders() const;
+  ContentFileMeta& getCid(std::string cid);
+  const std::unordered_map<std::string, ContentFileMeta>& getContentFileMetaMap() const;
   void shutdown();
   std::string getContentRootPath() const;
 
 private:
   std::shared_ptr<Logger> logger;
   std::filesystem::path parent;
-  std::unordered_map<std::string, FileReader> readers;
+  std::unordered_map<std::string, ContentFileMeta> readers;
   std::string contentRootPath;
 };
 
