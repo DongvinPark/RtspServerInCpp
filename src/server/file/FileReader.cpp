@@ -80,24 +80,20 @@ void FileReader::shutdown() {
   }
 }
 
-RtpInfo FileReader::getRtpInfoCopyWithLock() {
-  std::lock_guard<std::mutex> guard(lock);
+RtpInfo FileReader::getRtpInfoCopy() {
   // call Copy Constructor
   RtpInfo rtpInfoCopy(rtpInfo);
   return rtpInfoCopy;
 }
 
-std::string FileReader::getMediaInfoCopyWithLock() {
-  std::lock_guard<std::mutex> guard(lock);
+std::string FileReader::getMediaInfoCopy() {
   return rtspSdpMessage;
 }
-std::vector<unsigned char> FileReader::getAccDataCopyWithLock() {
-  std::lock_guard<std::mutex> guard(lock);
+std::vector<unsigned char> FileReader::getAccDataCopy() {
   return Util::readAllBytesFromFilePath(configFile);
 }
 
-std::vector<std::vector<unsigned char>> FileReader::getAllV0ImagesCopyWithLock() {
-  std::lock_guard<std::mutex> guard(lock);
+std::vector<std::vector<unsigned char>> FileReader::getAllV0ImagesCopy() {
   std::vector<std::vector<unsigned char>> imageBinaryList;
   for (std::filesystem::path& imageFilePath : v0Images) {
     imageBinaryList.push_back(Util::readAllBytesFromFilePath(imageFilePath));
@@ -123,26 +119,22 @@ int FileReader::getVideoSampleSize() const {
   return C::INVALID;
 }
 
-AudioAccess& FileReader::getAudioMetaWithLock() {
-  std::lock_guard<std::mutex> guard(lock);
-  // used iterator and constructor to return to copied vector
+const AudioAccess& FileReader::getConstAudioMeta() const {
+  // do not copy. just return const ref('&')
   return audioFile;
 }
 
-std::unordered_map<std::string, VideoAccess>& FileReader::getVideoMetaWithLock() {
-  std::lock_guard<std::mutex> guard(lock);
-  // do not copy. just return ref('&')
+const std::unordered_map<std::string, VideoAccess>& FileReader::getConstVideoMeta() const {
+  // do not copy. just return const ref('&')
   return videoFiles;
 }
 
 AudioSample & FileReader::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
-  std::lock_guard<std::mutex> guard(lock);
 }
 
 std::vector<VideoSample> & FileReader::readRefVideoSampleWithLock(
   int sampleNo, HybridMetaMapType &hybridMetaMap
 ) noexcept {
-  std::lock_guard<std::mutex> guard(lock);
 }
 
 std::vector<VideoSample> & FileReader::readVideoSampleWithLock(
@@ -152,7 +144,6 @@ std::vector<VideoSample> & FileReader::readVideoSampleWithLock(
   int sampleNo,
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
-  std::lock_guard<std::mutex> guard(lock);
 }
 
 // private
@@ -426,6 +417,10 @@ void FileReader::loadRtpMemberVideoMetaData(
     offset += size;
   }// for
 
+  for (auto& videoSampleInfo : input2dMetaList.at(input2dMetaList.size() - 1)) {
+    videoSampleInfo.initCompleted();
+  }
+
   /*
   TODO : delete after development
   std::cout << "!!! vMetaData.size() = " << input2dMetaList.at(input2dMetaList.size()-1).size() << std::endl;
@@ -463,7 +458,6 @@ std::vector<VideoSample> & FileReader::readVideoSampleInternalWithLock(int camId
   VideoAccess &va,
   int sampleNo,
   HybridMetaMapType &hybridMetaMap) {
-  std::lock_guard<std::mutex> guard(lock);
 }
 
 std::vector<std::vector<VideoSampleInfo>> FileReader::getVideoMetaInternal(std::string camId) {

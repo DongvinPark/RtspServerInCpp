@@ -7,26 +7,30 @@ std::vector<RtpMetaInfo>& VideoSampleInfo::getMetaInfoList() {
     return rtpMetaInfos;
 }
 
-int VideoSampleInfo::getSize() const {
+[[nodiscard]] int VideoSampleInfo::getSize() const noexcept {
     return size;
 }
 
-int VideoSampleInfo::getOffset() const {
+[[nodiscard]] int64_t VideoSampleInfo::getOffset() const noexcept {
     return offset;
 }
 
-int VideoSampleInfo::getFlag() const {
+[[nodiscard]] int VideoSampleInfo::getFlag() const noexcept {
     return flag;
 }
 
 void VideoSampleInfo::setSize(const int inputSize) {
-    size = inputSize;
+    if (initialized == false) size = inputSize;
 }
 
 void VideoSampleInfo::setOffset(const int64_t inputOffset) {
-    offset = inputOffset;
+    if (initialized == false) offset = inputOffset;
 }
 
 void VideoSampleInfo::setFlag(const int inputFlag) {
-    flag = inputFlag;
+    if (initialized == false) flag = inputFlag;
+}
+
+void VideoSampleInfo::initCompleted() {
+    initialized = true;
 }

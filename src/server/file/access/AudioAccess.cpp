@@ -40,10 +40,6 @@ const std::vector<AudioSampleInfo> & AudioAccess::getConstMeta() const {
   return meta;
 }
 
-void AudioAccess::setMeta(const std::vector<AudioSampleInfo> &inputMeta) {
-  meta = inputMeta;
-}
-
 void AudioAccess::close() {
   if (access.is_open()) {
     access.close();

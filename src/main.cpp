@@ -182,9 +182,9 @@ int main() {
 /*
     test usage to get a video and audio sample meta. this can be used when reading video sample from read file.
 
-    FileReader& fileReader = contentsStorage.getReaders().at("enhypen-test-1cam-H");
+    const FileReader& fileReader = contentsStorage.getReaders().at("enhypen-test-1cam-H");
 
-    VideoAccess& videoAccess = fileReader.getVideoMetaWithLock().at("cam0");
+    const VideoAccess& videoAccess = fileReader.getConstVideoMeta().at("cam0");
 
     const std::vector<std::vector<VideoSampleInfo>>& videoMeta = videoAccess.getConstVideoSampleInfoList();
     std::cout << "enhypen-test-1cam-H cam 0 v1 video sample info !!!\n";
@@ -197,7 +197,7 @@ int main() {
         std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
     }
 
-    AudioAccess& audioAccess = fileReader.getAudioMetaWithLock();
+    const AudioAccess& audioAccess = fileReader.getConstAudioMeta();
 
     std::cout << "enhypen-test-1cam-H audio sample info !!!\n";
     for (const auto& audioSampleInfo : audioAccess.getConstMeta()) {

@@ -21,8 +21,6 @@ public:
     const std::ifstream& getConstAccess() const;
     [[nodiscard]] const std::vector<AudioSampleInfo>& getConstMeta() const;
 
-    void setMeta(const std::vector<AudioSampleInfo>& inputMeta);
-
     void close();
 
 private:

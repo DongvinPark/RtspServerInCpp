@@ -80,7 +80,7 @@ bool AcsHandler::setReaderAndContentTitle(FileReader& inputReader, std::string i
   if (inputContentTitle != C::EMPTY_STRING) {
     contentTitle = inputContentTitle;
   }
-  auto& videoMetaMap = inputReader.getVideoMetaWithLock();
+  auto& videoMetaMap = inputReader.getConstVideoMeta();
   if (videoMetaMap.empty()){
     logger->severe("Dongvin, video meta init wrong!");
     return false;
@@ -96,7 +96,7 @@ bool AcsHandler::setReaderAndContentTitle(FileReader& inputReader, std::string i
     sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize;
     sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize;
 
-    setRtpInfo(inputReader.getRtpInfoCopyWithLock());
+    setRtpInfo(inputReader.getRtpInfoCopy());
     return true;
   }
   logger->severe(
@@ -115,11 +115,11 @@ int AcsHandler::getLastAudioSampleNumber() {
 }
 
 std::vector<unsigned char> AcsHandler::getAccData() {
-  return contentsStorage.getCid(contentTitle).getAccDataCopyWithLock();
+  return contentsStorage.getCid(contentTitle).getAccDataCopy();
 }
 
 std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
-  return contentsStorage.getCid(contentTitle).getAllV0ImagesCopyWithLock();
+  return contentsStorage.getCid(contentTitle).getAllV0ImagesCopy();
 }
 
 std::unique_ptr<AVSampleBuffer> AcsHandler::getNextSample() {
@@ -142,7 +142,7 @@ int64_t AcsHandler::getUnitFrameTimeUs(int streamId) {
 }
 
 std::string AcsHandler::getMediaInfo() {
-  return contentsStorage.getCid(contentTitle).getMediaInfoCopyWithLock();
+  return contentsStorage.getCid(contentTitle).getMediaInfoCopy();
 }
 
 std::vector<int64_t> AcsHandler::getSsrc() {
@@ -151,12 +151,12 @@ std::vector<int64_t> AcsHandler::getSsrc() {
 
 int AcsHandler::getMainVideoNumber() {
   FileReader& fileReader = contentsStorage.getCid(contentTitle);
-  const auto& videoMeta = fileReader.getVideoMetaWithLock();
+  const auto& videoMeta = fileReader.getConstVideoMeta();
   return videoMeta.at(C::REF_CAM).getFileNumber();
 }
 
 int AcsHandler::getMaxCamNumber() {
-  return static_cast<int>(contentsStorage.getCid(contentTitle).getVideoMetaWithLock().size());
+  return static_cast<int>(contentsStorage.getCid(contentTitle).getConstVideoMeta().size());
 }
 
 std::vector<int> AcsHandler::getInitialSeq() {

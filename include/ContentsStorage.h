@@ -12,7 +12,7 @@ public:
   void init();
 
   FileReader& getCid(std::string cid);
-  std::unordered_map<std::string, FileReader>& getReaders();
+  const std::unordered_map<std::string, FileReader>& getReaders() const;
   void shutdown();
   std::string getContentRootPath() const;
 

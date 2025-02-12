@@ -33,14 +33,14 @@ public:
     int getRefVideoSampleCnt() const;
     bool init();
     void shutdown();
-    RtpInfo getRtpInfoCopyWithLock();
-    std::string getMediaInfoCopyWithLock();
-    std::vector<unsigned char> getAccDataCopyWithLock();
-    std::vector<std::vector<unsigned char>> getAllV0ImagesCopyWithLock();
+    RtpInfo getRtpInfoCopy();
+    std::string getMediaInfoCopy();
+    std::vector<unsigned char> getAccDataCopy();
+    std::vector<std::vector<unsigned char>> getAllV0ImagesCopy();
     int getAudioSampleSize() const;
     int getVideoSampleSize() const;
-    AudioAccess& getAudioMetaWithLock();
-    std::unordered_map<std::string, VideoAccess>& getVideoMetaWithLock();
+    const AudioAccess& getConstAudioMeta() const;
+    const std::unordered_map<std::string, VideoAccess>& getConstVideoMeta() const;
 
     // reading sample
     AudioSample& readAudioSampleWithLock(int sampleNo, HybridMetaMapType& hybridMetaMap) noexcept;
@@ -99,7 +99,6 @@ private:
     std::string rtspSdpMessage;
     RtpInfo rtpInfo;
     std::vector<std::filesystem::path> v0Images;
-    std::mutex lock;
 };
 
 #endif //FILEREADER_H

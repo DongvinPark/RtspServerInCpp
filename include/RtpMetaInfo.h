@@ -5,8 +5,8 @@
 
 class RtpMetaInfo {
 public:
-	int len; // rtp length
-	int64_t offset; // offset from file 0 position
+	const int len; // rtp length
+	const int64_t offset; // offset from file 0 position
 
 	explicit RtpMetaInfo(int len, int64_t offset);
 
