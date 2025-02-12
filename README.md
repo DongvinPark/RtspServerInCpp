@@ -87,7 +87,7 @@ vcpkg 공식 깃허브를 깃 클론 완료한 다음, vcpkg라는 디렉토리�
 git clone https://github.com/microsoft/vcpkg.git
 ```
 
-3. 아래의 명령어를 사용해서 vcpkg의 부트스트랩 스트립트를 실행시킵니다.
+3. 아래의 명령어를 사용해서 vcpkg의 부트스트랩 스크립트를 실행시킵니다.
    이 명령어의 맨 앞 글자에 '마침표'가 있을을 기억합니다.
 ```text
 .\bootstrap-vcpkg.bat
