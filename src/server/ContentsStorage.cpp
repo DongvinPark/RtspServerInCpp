@@ -50,6 +50,6 @@ void ContentsStorage::shutdown() {
   readers.clear();
 }
 
-std::string ContentsStorage::getContentRootPath() const {
+std::string ContentsStorage::getContentRootPath() {
   return contentRootPath;
 }

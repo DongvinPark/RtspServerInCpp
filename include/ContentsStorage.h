@@ -14,7 +14,7 @@ public:
   ContentFileMeta& getCid(std::string cid);
   const std::unordered_map<std::string, ContentFileMeta>& getContentFileMetaMap() const;
   void shutdown();
-  std::string getContentRootPath() const;
+  std::string getContentRootPath();
 
 private:
   std::shared_ptr<Logger> logger;
