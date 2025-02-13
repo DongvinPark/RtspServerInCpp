@@ -6,8 +6,6 @@ RtpHandler::RtpHandler(std::string sessionId,
 
 RtpHandler::~RtpHandler() {}
 
-void RtpHandler::stopVideo() {}
-void RtpHandler::stopAudio() {}
 
 AudioSample & RtpHandler::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
 }

@@ -222,9 +222,6 @@ std::string Session::getContentRootPath() const {
   return contentsStorage.getContentRootPath();
 }
 
-int Session::getCamId() const {
-}
-
 HybridMetaMapType & Session::getHybridMetaMap() {
   return hybridMeta;
 }

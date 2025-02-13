@@ -99,7 +99,6 @@ public:
   std::shared_ptr<RtpHandler> getRtpHandlerPtr();
 
   std::string getContentRootPath() const;
-  int getCamId() const;
   HybridMetaMapType& getHybridMetaMap();
 
   void shutdownSession();

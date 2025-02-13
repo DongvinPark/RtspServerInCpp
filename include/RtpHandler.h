@@ -19,9 +19,6 @@ public:
   );
   ~RtpHandler();
 
-  void stopVideo();
-  void stopAudio();
-
   AudioSample& readAudioSampleWithLock(
     int sampleNo, HybridMetaMapType &hybridMetaMap
   ) noexcept;

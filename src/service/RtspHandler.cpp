@@ -297,8 +297,7 @@ void RtspHandler::handleRtspRequest(
         respondPause(inputBuffer);
 
         // stop reading video and audio
-        sessionPtr->getRtpHandlerPtr()->stopVideo();
-        sessionPtr->getRtpHandlerPtr()->stopAudio();
+        // TODO : implement later at Session.cpp
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);
