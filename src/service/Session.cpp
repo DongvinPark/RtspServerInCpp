@@ -29,8 +29,6 @@ Session::Session(
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
     rtspTask(inputIoContext, inputIntervalMs),
-    videoSampleReadingTask(inputIoContext, inputIntervalMs),
-    audioSampleReadingTask(inputIoContext, inputIntervalMs),
     bitrateRecodeTask(inputIoContext, inputIntervalMs){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
@@ -161,7 +159,17 @@ void Session::updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis) 
   playTimeMillis = inputPlayTimeDurationMillis;
 }
 
-void Session::callStopLoaders() {
+void Session::deleteStreamReadingTasks() {
+  if (!streamReadingTaskMap.empty()){
+    for (auto& [streamId, periodicTaskPtr] : streamReadingTaskMap){
+      periodicTaskPtr->stop();
+      stoppedStreamingReadingTaskMap.insert({Util::getCurrentTimeMillis(), std::move(periodicTaskPtr)});
+    }
+    Util::delayedExecutorAsyncByFuture(C::STOPPED_TASK_DELETE_DELAY_MS, [&](){
+      stoppedStreamingReadingTaskMap.clear();
+    });
+    streamReadingTaskMap.clear();
+  }
 }
 
 float Session::get_mbpsCurBitrate() const {
@@ -291,6 +299,24 @@ void Session::onCameraChange(
 }
 
 void Session::onPlayStart() {
+  // TODO : just for test. update later
+  std::chrono::milliseconds vInterval(33);
+  auto videoSampleReadingTask = [](){
+    std::cout << "!!! video reading task called !!!\n";
+  };
+  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
+  streamReadingTaskMap.try_emplace(C::VIDEO_ID, std::move(videoTaskPtr));
+
+  std::chrono::milliseconds aInterval(31);
+  auto audioSampleReadingTask = [](){
+    std::cout << "!!! audio reading task called !!!\n";
+  };
+  auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
+  streamReadingTaskMap.try_emplace(C::AUDIO_ID, std::move(audioTaskPtr));
+
+  for (auto& [streamId, periodicTaskPtr] : streamReadingTaskMap){
+    periodicTaskPtr->start();
+  }
 }
 
 void Session::onTeardown() {
@@ -407,8 +433,11 @@ void Session::recordBitrateTestResult() {
 void Session::stopAllTimerTasks() {
   rtspTask.stop();
   bitrateRecodeTask.stop();
-  videoSampleReadingTask.stop();
-  audioSampleReadingTask.stop();
+  if (!streamReadingTaskMap.empty()) {
+    for (auto& [streamId, periodicTaskPtr] : streamReadingTaskMap) {
+      periodicTaskPtr->stop();
+    }
+  }
   logger->info("Dongvin, stopped all timers. session id : " + sessionId);
 }
 

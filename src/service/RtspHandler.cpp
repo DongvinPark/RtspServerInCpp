@@ -207,12 +207,17 @@ void RtspHandler::handleRtspRequest(
             }
           }
           respondPlayAfterPause(inputBuffer);
-          //inputBuffer.afterTx = ??; TODO : update this logic later;
+
+          Util::delayedExecutorAsyncByFuture(
+              C::DELAY_BEFORE_RTP_START,
+              [&sessionPtr](){sessionPtr->onPlayStart();}
+          );
+
           sessionPtr->updatePauseStatus(false);
           return;
         } else if (isSeekRequest(strings)) {
           // dongvin, play req for Seek operation
-          sessionPtr->callStopLoaders();
+          sessionPtr->deleteStreamReadingTasks();
 
           std::vector<float> npt = findNormalPlayTime(strings);
           if (npt.empty() || !isValidPlayTime(npt)) {
@@ -231,12 +236,17 @@ void RtspHandler::handleRtspRequest(
 
           std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
           respondPlay(inputBuffer, timestamp0, sessionId);
-          //inputBuffer.afterTx = ??; TODO : update this logic later;
+
+          Util::delayedExecutorAsyncByFuture(
+              C::DELAY_BEFORE_RTP_START,
+              [&sessionPtr](){sessionPtr->onPlayStart();}
+          );
+
           if (sessionPtr->getPauseStatus()) {
             sessionPtr->updatePauseStatus(false);
             Util::delayedExecutorAsyncByFuture(
               C::RE_PAUSE_DELAY_TIME_MILLIS,
-              [sessionPtr](){sessionPtr->updatePauseStatus(true);}
+              [&sessionPtr](){sessionPtr->updatePauseStatus(true);}
             );
           } else {
             sessionPtr->updatePauseStatus(true);
@@ -281,7 +291,12 @@ void RtspHandler::handleRtspRequest(
 
             std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
             respondPlay(inputBuffer, timestamp0, sessionId);
-            //inputBuffer.afterTx = ??; TODO : update this logic later;
+
+            Util::delayedExecutorAsyncByFuture(
+              C::DELAY_BEFORE_RTP_START,
+              [&sessionPtr](){sessionPtr->onPlayStart();}
+            );
+
             sessionPtr->updatePauseStatus(false);
             return;
           }
@@ -297,11 +312,10 @@ void RtspHandler::handleRtspRequest(
         respondPause(inputBuffer);
 
         // stop reading video and audio
-        // TODO : implement later at Session.cpp
+        sessionPtr->deleteStreamReadingTasks();
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);
-        //sessionPtr->onTeardown();
         inSession = false;
         wrongSessionIdRequestCnt = 0;
         return;

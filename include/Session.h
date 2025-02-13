@@ -83,7 +83,7 @@ public:
   int64_t getPlayTimeDurationMillis();
   void updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis);
 
-  void callStopLoaders();
+  void deleteStreamReadingTasks();
 
   float get_mbpsCurBitrate() const;
   void set_kbpsBitrate(int input_kbps);
@@ -122,8 +122,6 @@ public:
 
   void recordBitrateTestResult();
 
-  bool getShutdownStatus();
-
 private:
   void stopAllTimerTasks();
   void closeHandlersAndSocket();
@@ -142,7 +140,6 @@ private:
   SntpRefTimeProvider& sntpRefTimeProvider;
   std::string cid = C::EMPTY_STRING;
 
-  // TODO : members need to be updated after.
   std::shared_ptr<AcsHandler> acsHandlerPtr = nullptr;
   std::shared_ptr<RtspHandler> rtspHandlerPtr = nullptr;
   std::shared_ptr<RtpHandler> rtpHandlerPtr = nullptr;
@@ -169,9 +166,9 @@ private:
   HybridMetaMapType hybridMeta;
 
   PeriodicTask rtspTask;
-  PeriodicTask videoSampleReadingTask;
-  PeriodicTask audioSampleReadingTask;
   PeriodicTask bitrateRecodeTask;
+  std::unordered_map<int, std::shared_ptr<PeriodicTask>> streamReadingTaskMap;
+  std::unordered_map<int64_t, std::shared_ptr<PeriodicTask>> stoppedStreamingReadingTaskMap;
 
   bool isShutdown = false;
   bool isRecordSaved = false;
