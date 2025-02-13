@@ -101,6 +101,8 @@ public:
   std::string getContentRootPath() const;
   HybridMetaMapType& getHybridMetaMap();
 
+  const ContentsStorage& getContentsStorage() const;
+
   void shutdownSession();
 
   // for rtsp messages

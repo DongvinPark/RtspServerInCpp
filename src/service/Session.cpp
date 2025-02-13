@@ -234,6 +234,10 @@ HybridMetaMapType & Session::getHybridMetaMap() {
   return hybridMeta;
 }
 
+const ContentsStorage& Session::getContentsStorage() const {
+  return contentsStorage;
+}
+
 void Session::shutdownSession() {
   parentServer.afterTerminatingSession(sessionId);
 }

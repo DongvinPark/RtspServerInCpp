@@ -285,9 +285,23 @@ void RtspHandler::handleRtspRequest(
             }
             nptElem += "]";
             logger->severe("Dongvin, invalid npt in play req for initial play : " + nptElem);
+            respondError(inputBuffer, 400, method);
             return;
           } else {
             sessionPtr->onUserRequestingPlayTime(npt);
+
+            // open all video and audio std::ifstream.
+            std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
+            if (auto rtpHandlePtr = weakPtr.lock()) {
+              bool initResult = rtpHandlePtr->openAllFileStreams();
+              if (!initResult) {
+                logger->severe("Dongvin, faild to open video/audio file stream! session id : " + sessionId);
+                respondError(inputBuffer, 400, method);
+              }
+            } else {
+              logger->severe("Dongvin, faild to get RtpHandler ptr !");
+              respondError(inputBuffer, 400, method);
+            }
 
             std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
             respondPlay(inputBuffer, timestamp0, sessionId);

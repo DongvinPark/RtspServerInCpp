@@ -224,6 +224,7 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
+      // read video sample.
       if (streamId == C::VIDEO_ID) {
         return std::make_unique<Buffer>(
           rtpHandlerPtr->readRefVideoSample(sampleNo, sessionPtr->getHybridMetaMap())[0].getFirstRtp()

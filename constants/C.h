@@ -21,6 +21,7 @@ namespace C {
     constexpr char SESSION[] = "Session";
     constexpr char RTSP_HANDLER[] = "RtspHandler";
     constexpr char ACS_HANDLER[] = "AcsHandler";
+    constexpr char RTP_HANDLER[] = "RtpHandler";
 
     // General constants
     constexpr char MY_NAME[] = "alphaStreamer-3.1/2.0.0";
