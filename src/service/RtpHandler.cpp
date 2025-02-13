@@ -7,16 +7,16 @@ RtpHandler::RtpHandler(std::string sessionId,
 RtpHandler::~RtpHandler() {}
 
 
-AudioSample & RtpHandler::readAudioSampleWithLock(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
+AudioSample & RtpHandler::readAudioSample(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
 }
 
 
-std::vector<VideoSample> & RtpHandler::readRefVideoSampleWithLock(
+std::vector<VideoSample> & RtpHandler::readRefVideoSample(
   int sampleNo, HybridMetaMapType &hybridMetaMap
 ) noexcept {
 }
 
-std::vector<VideoSample> & RtpHandler::readVideoSampleWithLock(
+std::vector<VideoSample> & RtpHandler::readVideoSample(
   int camId,
   int vid,
   int memberId,
@@ -26,7 +26,7 @@ std::vector<VideoSample> & RtpHandler::readVideoSampleWithLock(
 }
 
 
-std::vector<VideoSample> & RtpHandler::readVideoSampleInternalWithLock(int camId,
+std::vector<VideoSample> & RtpHandler::readVideoSampleInternal(int camId,
   VideoAccess &va,
   int sampleNo,
   HybridMetaMapType &hybridMetaMap) noexcept {

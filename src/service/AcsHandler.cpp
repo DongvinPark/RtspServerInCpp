@@ -226,12 +226,12 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
     if (auto rtpHandlerPtr = weakPtr.lock()) {
       if (streamId == C::VIDEO_ID) {
         return std::make_unique<Buffer>(
-          rtpHandlerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0].getFirstRtp()
+          rtpHandlerPtr->readRefVideoSample(sampleNo, sessionPtr->getHybridMetaMap())[0].getFirstRtp()
         );
       }
       // audio sample. one audio sample == one rtp packet.
       return std::make_unique<Buffer>(
-        rtpHandlerPtr->readAudioSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())
+        rtpHandlerPtr->readAudioSample(sampleNo, sessionPtr->getHybridMetaMap())
       );
     }
     logger->severe("Dongvin, failed to get RtpHandler Ptr!");
@@ -326,7 +326,7 @@ int64_t AcsHandler::getTimestamp(int sampleNo) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
       return Util::findTimestampInVideoSample(
-        rtpHandlerPtr->readRefVideoSampleWithLock(sampleNo, sessionPtr->getHybridMetaMap())[0]
+        rtpHandlerPtr->readRefVideoSample(sampleNo, sessionPtr->getHybridMetaMap())[0]
       );
     }
     return C::INVALID_BYTE;

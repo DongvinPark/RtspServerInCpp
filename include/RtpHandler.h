@@ -19,16 +19,16 @@ public:
   );
   ~RtpHandler();
 
-  AudioSample& readAudioSampleWithLock(
+  AudioSample& readAudioSample(
     int sampleNo, HybridMetaMapType &hybridMetaMap
   ) noexcept;
 
 
-  std::vector<VideoSample>& readRefVideoSampleWithLock(
+  std::vector<VideoSample>& readRefVideoSample(
     int sampleNo, HybridMetaMapType &hybridMetaMap
   ) noexcept;
 
-  std::vector<VideoSample>& readVideoSampleWithLock(
+  std::vector<VideoSample>& readVideoSample(
     int camId,
     int vid,
     int memberId,
@@ -37,7 +37,7 @@ public:
   ) noexcept;
 
 
-  std::vector<VideoSample>& readVideoSampleInternalWithLock(
+  std::vector<VideoSample>& readVideoSampleInternal(
     int camId,
     VideoAccess &va,
     int sampleNo,
