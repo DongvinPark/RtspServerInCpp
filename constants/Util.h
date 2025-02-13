@@ -281,7 +281,7 @@ namespace Util {
 		int camId,
 		const std::string& vidAndFrameType,
 		int sampleNo
-	) {
+	) noexcept {
 		// iterator is small object to copy. so, used auto, not auto&
 		auto camIt = hybridMetaMap.find(camId);
 		if (camIt == hybridMetaMap.end()) return std::nullopt;
