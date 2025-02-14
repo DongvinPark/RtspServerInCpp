@@ -295,10 +295,12 @@ void RtspHandler::handleRtspRequest(
               if (bool initResult = rtpHandlePtr->openAllFileStreamsForVideoAndAudio(); !initResult) {
                 logger->severe("Dongvin, faild to open video/audio file stream! session id : " + sessionId);
                 respondError(inputBuffer, 400, method);
+                return;
               }
             } else {
               logger->severe("Dongvin, faild to get RtpHandler ptr !");
               respondError(inputBuffer, 400, method);
+              return;
             }
 
             sessionPtr->onUserRequestingPlayTime(npt);
@@ -533,6 +535,7 @@ void RtspHandler::respondPlay(
   } else {
     logger->severe("Dongvin, Failed to init Rtp-Info header for PLAY request");
     respondError(buffer, 500, "PLAY");
+    return;
   }
 }
 
