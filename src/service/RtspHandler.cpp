@@ -293,12 +293,12 @@ void RtspHandler::handleRtspRequest(
             std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
             if (auto rtpHandlePtr = weakPtr.lock()) {
               if (bool initResult = rtpHandlePtr->openAllFileStreamsForVideoAndAudio(); !initResult) {
-                logger->severe("Dongvin, faild to open video/audio file stream! session id : " + sessionId);
+                logger->severe("Dongvin, failed to open video/audio file stream! session id : " + sessionId);
                 respondError(inputBuffer, 400, method);
                 return;
               }
             } else {
-              logger->severe("Dongvin, faild to get RtpHandler ptr !");
+              logger->severe("Dongvin, failed to get RtpHandler ptr!");
               respondError(inputBuffer, 400, method);
               return;
             }

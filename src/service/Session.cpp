@@ -195,7 +195,7 @@ int Session::getNumberOfCamDirectories() {
   if(contentsStorage.getContentFileMetaMap().count(contentTitle)) {
     return contentsStorage.getContentFileMetaMap().at(contentTitle).getNumberOfCamDirectories();
   } else {
-    logger->severe("Dongvin, faild to find content in ContentsStorage! :: getNumberOfCamDirectories()");
+    logger->severe("Dongvin, failed to find content in ContentsStorage! :: getNumberOfCamDirectories()");
     return C::INVALID;
   }
 }
@@ -205,7 +205,7 @@ int Session::getRefVideoSampleCnt() {
   if (contentsStorage.getContentFileMetaMap().find(contentTitle) != contentsStorage.getContentFileMetaMap().end()) {
     return contentsStorage.getContentFileMetaMap().at(contentTitle).getRefVideoSampleCnt();
   } else {
-    logger->severe("Dongvin, faild to find content in ContentsStorage! :: getRefVideoSampleCnt()");
+    logger->severe("Dongvin, failed to find content in ContentsStorage! :: getRefVideoSampleCnt()");
     return C::INVALID;
   }
 }
