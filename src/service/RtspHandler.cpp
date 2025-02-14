@@ -288,7 +288,6 @@ void RtspHandler::handleRtspRequest(
             respondError(inputBuffer, 400, method);
             return;
           } else {
-            sessionPtr->onUserRequestingPlayTime(npt);
 
             // open all video and audio std::ifstream.
             std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
@@ -301,6 +300,8 @@ void RtspHandler::handleRtspRequest(
               logger->severe("Dongvin, faild to get RtpHandler ptr !");
               respondError(inputBuffer, 400, method);
             }
+
+            sessionPtr->onUserRequestingPlayTime(npt);
 
             std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
             respondPlay(inputBuffer, timestamp0, sessionId);

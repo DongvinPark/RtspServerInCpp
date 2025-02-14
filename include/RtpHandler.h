@@ -30,9 +30,9 @@ public:
     int sampleNo, HybridMetaMapType &hybridMetaMap
   ) noexcept;
 
-  std::vector<VideoSample>& readRefVideoSample(
-    int sampleNo, HybridMetaMapType &hybridMetaMap
-  ) noexcept;
+  std::unique_ptr<Buffer> readFirstRtpOfCurVideoSample(int sampleNo, int64_t offset, int64_t len) noexcept;
+
+  std::unique_ptr<Buffer> readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept;
 
   std::vector<VideoSample>& readVideoSample(
     int camId,

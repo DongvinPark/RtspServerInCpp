@@ -71,9 +71,47 @@ AudioSample & RtpHandler::readAudioSample(int sampleNo, HybridMetaMapType &hybri
 }
 
 
-std::vector<VideoSample> & RtpHandler::readRefVideoSample(
-  int sampleNo, HybridMetaMapType &hybridMetaMap
-) noexcept {
+std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurVideoSample(int sampleNo, int64_t offset, int64_t len) noexcept {
+  std::vector<unsigned char> buf(len);
+  std::ifstream& videoFileReadingStream = camIdVideoFileStreamMap.at(0).at(0);
+
+  if (!videoFileReadingStream.is_open()) {
+    logger->severe("Dongvin, video file stream is not open!");
+    return nullptr;
+  }
+
+  videoFileReadingStream.seekg(offset, std::ios::beg);
+  videoFileReadingStream.read(reinterpret_cast<std::istream::char_type*>(buf.data()), len);
+
+  if (buf.size() != len) {
+    logger->severe("Dongvin, failed to read first rtp of current video sample! sampleNo : " + std::to_string(sampleNo));
+    return nullptr;
+  }
+
+  // discard every byte except first rtp from buf
+  const int rtpLen = Util::getRtpPacketLength(buf[2], buf[3]);
+  buf.resize(4 + rtpLen);
+  auto bufferPtr = std::make_unique<Buffer>(buf, 0, buf.size());
+  return bufferPtr;
+}
+
+std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept {
+  if (!audioFileStream.is_open()) {
+    logger->severe("Dongvin, audio file stream is not open!");
+    return nullptr;
+  }
+
+  std::vector<unsigned char> buf(len);
+  audioFileStream.seekg(offset, std::ios::beg);
+  audioFileStream.read(reinterpret_cast<std::istream::char_type*>(buf.data()), len);
+
+  if (buf.size() != len) {
+    logger->severe("Dongvin, failed to read first rtp of current audio sample! sampleNo : " + std::to_string(sampleNo));
+    return nullptr;
+  }
+
+  auto bufferPtr = std::make_unique<Buffer>(buf, 0, buf.size());
+  return bufferPtr;
 }
 
 std::vector<VideoSample> & RtpHandler::readVideoSample(

@@ -189,6 +189,10 @@ namespace Util {
 		return (b & 0xFF) == '$';
 	}
 
+	inline int getRtpPacketLength(const unsigned char high, const unsigned char low) {
+		return (high & 0xFF) << 8 | low & 0xFF;
+	}
+
 	inline int findSequenceNumber(Buffer rtp) {
 		ParsableByteArray rtpPacket(rtp);
 		rtpPacket.skipBytes(C::TCP_RTP_HEAD_LEN + 2);
@@ -212,8 +216,8 @@ namespace Util {
 		return rtpPacket.readUnsignedInt();
 	}
 
-	inline int64_t findTimestampInVideoSample(VideoSample& sample) {
-		return findTimestamp(sample.getFirstRtp());
+	inline int64_t findTimestampInVideoSample(const Buffer& rtpPacket) {
+		return findTimestamp(rtpPacket);
 	}
 
 	inline std::vector<unsigned char> readAllBytesFromFilePath(

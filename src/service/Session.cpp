@@ -459,7 +459,7 @@ std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
   if (!socket.is_open()) {
     throw std::runtime_error("socket is not open. session id : " + sessionId);
   }
-  std::vector<unsigned char> buf(2*1024);
+  std::vector<unsigned char> buf(10*1024);
   boost::system::error_code error;
 
   std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);

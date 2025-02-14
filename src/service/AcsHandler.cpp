@@ -226,14 +226,21 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
     if (auto rtpHandlerPtr = weakPtr.lock()) {
       // read video sample.
       if (streamId == C::VIDEO_ID) {
-        return std::make_unique<Buffer>(
-          rtpHandlerPtr->readRefVideoSample(sampleNo, sessionPtr->getHybridMetaMap())[0].getFirstRtp()
-        );
+        const VideoSampleInfo& curVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstVideoMeta().at(C::CAM_ID_LIST[0]).getConstVideoSampleInfoList().at(0).at(sampleNo);
+
+        const int64_t offset = curVideoSampleInfo.getOffset();
+        const int64_t len = curVideoSampleInfo.getSize();
+
+        return rtpHandlerPtr->readFirstRtpOfCurVideoSample(sampleNo, offset, len);
       }
       // audio sample. one audio sample == one rtp packet.
-      return std::make_unique<Buffer>(
-        rtpHandlerPtr->readAudioSample(sampleNo, sessionPtr->getHybridMetaMap())
-      );
+      const AudioSampleInfo& curAudioSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+        .getConstAudioMeta().getConstMeta().at(sampleNo);
+      const int64_t offset = curAudioSampleInfo.offset;
+      const int64_t len = curAudioSampleInfo.len;
+
+      return rtpHandlerPtr->readFirstRtpOfCurAudioSample(sampleNo, offset, len);
     }
     logger->severe("Dongvin, failed to get RtpHandler Ptr!");
   }
@@ -326,9 +333,15 @@ int64_t AcsHandler::getTimestamp(int sampleNo) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
-      return Util::findTimestampInVideoSample(
-        rtpHandlerPtr->readRefVideoSample(sampleNo, sessionPtr->getHybridMetaMap())[0]
-      );
+
+      const auto& curVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstVideoMeta().at(C::CAM_ID_LIST[0]).getConstVideoSampleInfoList().at(0).at(sampleNo);
+
+      const int64_t offset = curVideoSampleInfo.getOffset();
+      const int64_t length = curVideoSampleInfo.getSize();
+
+      const std::unique_ptr<Buffer> bufferPtr = rtpHandlerPtr->readFirstRtpOfCurVideoSample(sampleNo, offset, length);
+      return Util::findTimestampInVideoSample(*bufferPtr);
     }
     return C::INVALID_BYTE;
   }
