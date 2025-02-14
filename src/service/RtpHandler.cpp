@@ -75,7 +75,7 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurVideoSample(int sampleNo, i
   videoFileReadingStream.seekg(offset, std::ios::beg);
   videoFileReadingStream.read(reinterpret_cast<std::istream::char_type*>(buf.data()), len);
 
-  if (buf.size() != len) {
+  if (videoFileReadingStream.gcount() != len) {
     logger->severe("Dongvin, failed to read first rtp of current video sample! sampleNo : " + std::to_string(sampleNo));
     return nullptr;
   }
@@ -97,7 +97,7 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, i
   audioFileStream.seekg(offset, std::ios::beg);
   audioFileStream.read(reinterpret_cast<std::istream::char_type*>(buf.data()), len);
 
-  if (buf.size() != len) {
+  if (audioFileStream.gcount() != len) {
     logger->severe("Dongvin, failed to read first rtp of current audio sample! sampleNo : " + std::to_string(sampleNo));
     return nullptr;
   }
