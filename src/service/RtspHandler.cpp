@@ -575,7 +575,8 @@ void RtspHandler::respondTeardown(Buffer& buffer) {
 void RtspHandler::respondError(Buffer& buffer, int error, std::string rtspMethod) {
   std::string rsp = "RTSP/1.0 " + std::to_string(error) + " " + C::RTSP_STATUS_CODES_MAP.at(error) + std::string{C::CRLF} +
                 "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
-                "Server: " + std::string{C::MY_NAME} + std::string{C::CRLF2};
+                "Server: " + std::string{C::MY_NAME} + std::string{C::CRLF} +
+                "Error: " + std::string{C::MY_NAME} + std::string{C::CRLF2};
   logger->warning(
     "Dongvin, session id:"+ sessionId +
     ", send error (" + std::to_string(error) + ") response for " + rtspMethod

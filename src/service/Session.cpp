@@ -45,15 +45,17 @@ void Session::start() {
         handleRtspRequest(buf);
 
         bool isTearRes = false;
+        bool isErrorRes = false;
         std::string res = buf.getString();
         logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
         for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
           logger->info(resLine);
           if (resLine.find("Teardown:") != std::string::npos) isTearRes = true;
+          if (resLine.find("Error:") != std::string::npos) isTearRes = true;
         }
         std::cout << "\n";
         transmit(std::move(bufferPtr));
-        if (isTearRes){
+        if (isTearRes || isErrorRes) {
           onTeardown();
         }
       }
