@@ -1,6 +1,7 @@
 #ifndef SESSION_H
 #define SESSION_H
 #include <boost/asio.hpp>
+#include <boost/pool/object_pool.hpp>
 #include <atomic>
 #include <cstdint> // For int64_t
 #include <unordered_map>
@@ -26,6 +27,16 @@ class SntpRefTimeProvider;
 class AcsHandler;
 class RtspHandler;
 class RtpHandler;
+
+struct VideoSampleRtps {
+  unsigned char data[5 * 1024 * 1024]; // 5MB
+  size_t size;
+};
+
+struct AudioSampleRtp {
+  unsigned char data[1500]; // MTU of rtp packet is 1472 bytes
+  size_t length;
+};
 
 // dongvin : for hybrid streaming
 /*
@@ -148,6 +159,10 @@ private:
 
   std::vector<bool> playDone = {false, false};
   std::atomic<bool> interruptSending = false;
+
+  // memory pool for Video and Audio Sample to prevent head memory fragmentation.
+  boost::object_pool<AudioSampleRtp> audioRtpPool;
+  boost::object_pool<VideoSampleRtps> videoRtpPool;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;
