@@ -330,7 +330,7 @@ const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& vi
     }
   );
   for (const std::filesystem::path& videoPath : videos) {
-    va.getAccessList().emplace_back(std::ifstream(videoPath, std::ios::in | std::ios::binary));
+    va.getAccessList().emplace_back(videoPath, std::ios::in | std::ios::binary);
   }
 
   // check

@@ -83,7 +83,7 @@ public:
   int64_t getPlayTimeDurationMillis();
   void updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis);
 
-  void deleteStreamReadingTasks();
+  void stopCurrentMediaReadingTasks();
 
   float get_mbpsCurBitrate() const;
   void set_kbpsBitrate(int input_kbps);
@@ -169,8 +169,8 @@ private:
 
   PeriodicTask rtspTask;
   PeriodicTask bitrateRecodeTask;
-  std::unordered_map<int, std::shared_ptr<PeriodicTask>> streamReadingTaskMap;
-  std::unordered_map<int64_t, std::shared_ptr<PeriodicTask>> stoppedStreamingReadingTaskMap;
+  std::vector<std::shared_ptr<PeriodicTask>> videoReadingTaskVec;
+  std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;
 
   bool isShutdown = false;
   bool isRecordSaved = false;

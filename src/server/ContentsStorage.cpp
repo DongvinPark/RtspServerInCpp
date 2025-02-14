@@ -12,13 +12,13 @@ ContentsStorage::~ContentsStorage() {
 
 void ContentsStorage::init() {
   std::vector<std::filesystem::path> files;
-  for (const auto entry : std::filesystem::directory_iterator(parent)) {
+  for (const auto& entry : std::filesystem::directory_iterator(parent)) {
     if (entry.is_directory()) {
       files.push_back(entry.path());
     }
   }
 
-  for (const std::filesystem::path contentPath : files) {
+  for (const std::filesystem::path& contentPath : files) {
     std::string contentTitle = contentPath.filename().string();
     readers.try_emplace(contentTitle, ContentFileMeta(contentPath));
   }

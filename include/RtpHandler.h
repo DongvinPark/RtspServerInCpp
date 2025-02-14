@@ -3,6 +3,7 @@
 
 #include <filesystem>
 
+#include "../constants/Util.h"
 #include "../include/Session.h"
 #include "../include/VideoSample.h"
 #include "../include/AudioSample.h"
@@ -23,7 +24,7 @@ public:
   );
   ~RtpHandler();
 
-  [[nodiscard]] bool openAllFileStreams();
+  [[nodiscard]] bool openAllFileStreamsForVideoAndAudio();
 
   AudioSample& readAudioSample(
     int sampleNo, HybridMetaMapType &hybridMetaMap

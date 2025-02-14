@@ -217,7 +217,7 @@ void RtspHandler::handleRtspRequest(
           return;
         } else if (isSeekRequest(strings)) {
           // dongvin, play req for Seek operation
-          sessionPtr->deleteStreamReadingTasks();
+          sessionPtr->stopCurrentMediaReadingTasks();
 
           std::vector<float> npt = findNormalPlayTime(strings);
           if (npt.empty() || !isValidPlayTime(npt)) {
@@ -293,8 +293,7 @@ void RtspHandler::handleRtspRequest(
             // open all video and audio std::ifstream.
             std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
             if (auto rtpHandlePtr = weakPtr.lock()) {
-              bool initResult = rtpHandlePtr->openAllFileStreams();
-              if (!initResult) {
+              if (bool initResult = rtpHandlePtr->openAllFileStreamsForVideoAndAudio(); !initResult) {
                 logger->severe("Dongvin, faild to open video/audio file stream! session id : " + sessionId);
                 respondError(inputBuffer, 400, method);
               }
@@ -326,7 +325,7 @@ void RtspHandler::handleRtspRequest(
         respondPause(inputBuffer);
 
         // stop reading video and audio
-        sessionPtr->deleteStreamReadingTasks();
+        sessionPtr->stopCurrentMediaReadingTasks();
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);

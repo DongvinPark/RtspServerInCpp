@@ -6,12 +6,6 @@
 #include "../../include/PeriodicTask.h"
 #include "../constants/C.h"
 
-#ifdef _WIN32
-    const char DIR_SEPARATOR = '\\';
-#else
-const char DIR_SEPARATOR = '/';
-#endif
-
 Session::Session(
   boost::asio::io_context & inputIoContext,
   std::shared_ptr<boost::asio::ip::tcp::socket> inputSocketPtr,
@@ -159,17 +153,9 @@ void Session::updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis) 
   playTimeMillis = inputPlayTimeDurationMillis;
 }
 
-void Session::deleteStreamReadingTasks() {
-  if (!streamReadingTaskMap.empty()){
-    for (auto& [streamId, periodicTaskPtr] : streamReadingTaskMap){
-      periodicTaskPtr->stop();
-      stoppedStreamingReadingTaskMap.insert({Util::getCurrentTimeMillis(), std::move(periodicTaskPtr)});
-    }
-    Util::delayedExecutorAsyncByFuture(C::STOPPED_TASK_DELETE_DELAY_MS, [&](){
-      stoppedStreamingReadingTaskMap.clear();
-    });
-    streamReadingTaskMap.clear();
-  }
+void Session::stopCurrentMediaReadingTasks() {
+  for (const auto& videoReadingTaskPtr : videoReadingTaskVec) videoReadingTaskPtr->stop();
+  for (const auto& audioReadingTaskPtr : audioReadingTaskVec) audioReadingTaskPtr->stop();
 }
 
 float Session::get_mbpsCurBitrate() const {
@@ -309,17 +295,20 @@ void Session::onPlayStart() {
     std::cout << "!!! video reading task called !!!\n";
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
-  streamReadingTaskMap.try_emplace(C::VIDEO_ID, std::move(videoTaskPtr));
+  videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(31);
   auto audioSampleReadingTask = [](){
     std::cout << "!!! audio reading task called !!!\n";
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
-  streamReadingTaskMap.try_emplace(C::AUDIO_ID, std::move(audioTaskPtr));
+  audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
 
-  for (auto& [streamId, periodicTaskPtr] : streamReadingTaskMap){
-    periodicTaskPtr->start();
+  if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
+    videoReadingTaskVec.back()->start();
+    audioReadingTaskVec.back()->start();
+  } else {
+    throw std::runtime_error("Dongvin, failed to start media reading timer tasks : " + sessionId);
   }
 }
 
@@ -437,11 +426,8 @@ void Session::recordBitrateTestResult() {
 void Session::stopAllTimerTasks() {
   rtspTask.stop();
   bitrateRecodeTask.stop();
-  if (!streamReadingTaskMap.empty()) {
-    for (auto& [streamId, periodicTaskPtr] : streamReadingTaskMap) {
-      periodicTaskPtr->stop();
-    }
-  }
+  for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
+  for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
   logger->info("Dongvin, stopped all timers. session id : " + sessionId);
 }
 

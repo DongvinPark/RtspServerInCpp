@@ -23,6 +23,12 @@
 #include "../include/VideoSample.h"
 #include "../include/HybridSampleMeta.h"
 
+#ifdef _WIN32
+	const char DIR_SEPARATOR = '\\';
+#else
+constexpr char DIR_SEPARATOR = '/';
+#endif
+
 using HybridMetaMapType
 	= std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 

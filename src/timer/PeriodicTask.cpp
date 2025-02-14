@@ -45,6 +45,7 @@ void PeriodicTask::start() {
 }
 
 void PeriodicTask::stop() {
+    if (running == false) return;
     logger->severe("task stop called!");
     running = false;
     timer.cancel();
