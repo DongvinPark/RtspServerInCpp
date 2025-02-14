@@ -21,15 +21,7 @@ RtpHandler::~RtpHandler() {
 
 [[nodiscard]] bool RtpHandler::openAllFileStreamsForVideoAndAudio() {
   if (auto sessionPtr = parentSessionPtr.lock()) {
-
-    /*
-    usage example
-    std::ifstream& cam0FrontVFileStream = map.at(0).at(0);
-    std::unordered_map<int, std::vector<std::ifstream>> camIdVideoFileStreamMap;
-    std::ifstream audioFileStream;
-    */
-
-    // TODO : implement later
+    // video
     int camDirCnt = sessionPtr->getNumberOfCamDirectories();
     const std::string& contentRootDir = sessionPtr->getContentRootPath();
     const std::string& contentTitle = sessionPtr->getContentTitle();

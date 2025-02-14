@@ -109,7 +109,7 @@ public:
   void handleRtspRequest(Buffer& buf);
   bool onCid(std::string inputCid);
   void onChannel(int trackId, std::vector<int> channels);
-  void onUserRequestingPlayTime(std::vector<float> playTimeSec); // TODO: need to test at multi platform.
+  void onUserRequestingPlayTime(std::vector<float> playTimeSec);
 
   void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> switchingRspPtr, bool neetToLimitSample);
   void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& camChangeRspPtr);
