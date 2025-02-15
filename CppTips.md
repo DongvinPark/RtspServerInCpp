@@ -192,7 +192,7 @@ bool FileReader::handleConfigFile(const std::filesystem::path &inputCidDirectory
 }
 ```
 <br><br/>
-7. 상수 또는 유틸리티 아카이브 역할을 하는 클래스는 다음의 사항들에 유의하고, std_shared_ptr<>을 쓰자.
+7. 상수 또는 유틸리티 아카이브 역할을 하는 클래스는 다음의 사항유의 하자.
    <br> 본 프로젝트의 Logger.h & .cpp, C.h, Util.h 클래스가 유틸리티 역할을 한다.
 ```text
 /*
@@ -259,7 +259,7 @@ private:
 ```
 <br><br/>
 9. java의 synchronized 키워드는 std::mutex 락으로 대체할 수 있다.
-   <br>
+   <br> 그러나, lock을 잠그고 해제하는 연산은 상대적으로 비싼 연산이기 때문에, 꼭 필요할 때만 써야한다.
 ```c++
 RtpInfo FileReader::getRtpInfoCopyWithLock() {
   std::lock_guard<std::mutex> guard(lock);
@@ -488,10 +488,10 @@ private:
 <br><br/>
 17. 함수 내부에서 새롭게 만든 객체를 외부로 반출시키는 방법은 웬만해서는 쓰지 말자.
     <br> java에서는 이러한 경우가 일반적이지만, C++에서는 그렇지 않다.
-    <br> C++에서는 함수 범위를 벗어난 객체는 자동으로 회수 처리 되기 때문이다.
+    <br> C++에서는 함수 범위를 벗어난 객체는 자동으로 삭제 되기 되기 때문이다.
     <br> 대신 아래와 같은 방법을 사용하라.
 ```c++
-// 값을 반환하라. 대신 복사는 피할 수 없다.
+// 값을 반환한다. 대신 복사는 피할 수 없다.
 int getLocalValue() {
     int localVar = 42;
     return localVar; // The value is safely copied or moved.
@@ -502,7 +502,7 @@ int main() {
     std::cout << value << std::endl; // Output: 42
 }
 
-// Dynamic Memory Allocation : raw 포인터를 반환하라.
+// Dynamic Memory Allocation : raw 포인터를 반환한다. 대신 메모리 누수에 취약하다.
 int* getHeapValue() {
     int* heapVar = new int(42); // Allocate on the heap.
     return heapVar;            // Return a pointer.
@@ -515,7 +515,7 @@ int main() {
 }
 
 
-// 스마트 포인터를 반환하라. unique OR shared
+// 스마트 포인터를 반환하라. std::make_unique OR std::make_shared
 #include <iostream>
 #include <memory> // For std::unique_ptr
 
@@ -1148,6 +1148,13 @@ Undefined symbols for architecture arm64:
     
 5. 동일한 소켓에 서로 다른 스레드가 동시에 read 또는 write하려고 할 때.
 >> socket은 기본적으로 thread safe하지 않다는 점을 기억해야 한다!!
+
+6. boost asio의 steady timer와 같이 특정 함수 객체를 async하게 수행하는 객체를 .cancel() 한 직후 바로 삭재해버릴 때.
+>> boost.asio와 같이 비동기 논블록킹 I/O를 지원하는 라이브러리를 사용할 때면 꼭 한 번 이상은 마주치게 되는 오류다.
+>> 이때는 boost asio steady timer 객체를 바로 삭제하는 것이 아니라, std::sharad_ptr 같은 걸로 다른 곳에 임시로
+    옮겨놓은 후 일정 시간이 지나고 나서 삭제해야 한다.
+>> io_context 내에서 특정 task를 실행하려고 하는데, 그 task가 속해 있는 부모 객체(본 프로젝의 경우, PeriodicTask)가
+    이미 삭제돼 버려서 invalid memory access가 발생한 경우다.  
 ```
 <br><br/>
 32. unique_ptr를 요소로서 가지고 있는 BlockingQueue를 설계하는 것.
@@ -1159,7 +1166,7 @@ Undefined symbols for architecture arm64:
 ```
 <br><br/>
 33. java의 str.startsWith("..")는 C++17에서는 rfind()를 이용해서 대체할 수 있다.
-    <br> C++20에서는 str.starts_with("...") 이 std library에서 지원되지만, 이전 버전에서는 지원되지 않는다.
+    <br> C++20에서는 str.starts_with("...") 이 std library에서 지원되지만, 그 이전 버전에서는 지원되지 않는다.
 ```c++
 bool startsWith(const std::string& str, const std::string& prefix) {
     // 문자열이 prefix 로 시작하면 true, 아니면 false를 리턴.
