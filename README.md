@@ -1,21 +1,19 @@
 
-# Alpha Streamer 3.1 - C++ refactored ver of alpha streamer 3.0
+# Alpha Streamer 3.1 - C++ Rewrite of Alpha Streamer 3.0 with Boost.Asio
 <br>
 
-### C++17 또는 그 이상 버전을 권장합니다.
+### C++17 또는 그 이상 버전이 필요합니다.
 ### boost library 1.71.0 또는 그 이상 버전을 권장합니다.
-### Jetbrains 사의 CLion IDE를 추천합니다.
 <br>
 
 ## 개발 정책
+- Jetbrains 사의 CLion IDE로 개발되었습니다.
 - Windows, Linux, M chip MacOS 의 환경에서 동작하게 만들었습니다.
-  - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다. 
-  - int64_t 와 int32_t 등을 사용하여 동일한 동작을 보장합니다.
+  - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다.
 - Boost.asio 라이브러리를 사용하여 스레드의 생성을 최소화 했습니다.
-- new와 delete를 직접 사용하는 raw memory 연산을 사용하지 않습니다.
+- new와 delete를 직접 호출하는 메모리 관리 방식은 사용하지 않았습니다.
 - std 라이브러리를 최대한 많이 사용하여 직접적인 메모리 관리를 최소화 했습니다.
   - std::unique_ptr, std::shared_ptr, std::weak_ptr 를 활용합니다.
-- C++ std library에서 지원하지 않는 컨테이너는 최대한 사용하지 않습니다.
 <br><br/>
 
 ## CMakeLists.txt 빌드 및 실행 테스트 결과
@@ -29,11 +27,12 @@
     - Amazon Linux 2023 : C++ 17 or later, boost 1.75.0
   - MacOS
     - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
+    - Sequoia 15.3 : C++ 17 or later, boost 1.87.0
 <br><br/>
 
 ## 개발환경 셋팅
-- 각자의 개발 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
-  - Windows : Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치해 준 후 둘을 링크 해줍니다.
+- 각자의 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
+  - Windows : Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치하고 둘을 링크 해줍니다.
   - MacOS : GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
   - Linux : GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
 - 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
