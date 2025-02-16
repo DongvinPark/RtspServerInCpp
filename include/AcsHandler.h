@@ -11,6 +11,8 @@
 class Session;
 class RtspHandler;
 class RtpHandler;
+struct VideoSampleRtps;
+struct AudioSampleRtp;
 
 class AcsHandler {
 public:
@@ -34,7 +36,8 @@ public:
   int getLastAudioSampleNumber();
   std::vector<unsigned char> getAccData();
   std::vector<std::vector<unsigned char>> getAllV0Images();
-  std::unique_ptr<AVSampleBuffer> getNextSample();
+  void getNextVideoSample(VideoSampleRtps* videoSampleRtpsPtr);
+  void getNextAudioSample(AudioSampleRtp* audioSampleRtp);
   bool isDone(int streamId);
   int64_t getUnitFrameTimeUs(int streamId);
   std::string getMediaInfo();

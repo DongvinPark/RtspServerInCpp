@@ -34,7 +34,7 @@ struct VideoSampleRtps {
 };
 
 struct AudioSampleRtp {
-  unsigned char data[1500]; // MTU of rtp packet is 1472 bytes
+  unsigned char data[1500]; // MTU of rtp packet is 1472 byte
   size_t length;
 };
 

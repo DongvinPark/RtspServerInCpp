@@ -11,6 +11,8 @@
 
 class Session;
 class AcsHandler;
+struct VideoSampleRtps;
+struct AudioSampleRtp;
 
 using HybridMetaMapType
     = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
@@ -26,18 +28,18 @@ public:
 
   [[nodiscard]] bool openAllFileStreamsForVideoAndAudio();
 
-  AudioSample& readAudioSample(
-    int sampleNo, HybridMetaMapType &hybridMetaMap
+  void readAudioSample(
+    AudioSampleRtp* audioSampleRtpPtr, int sampleNo, HybridMetaMapType &hybridMetaMap
   ) noexcept;
 
   std::unique_ptr<Buffer> readFirstRtpOfCurVideoSample(int sampleNo, int64_t offset, int64_t len) noexcept;
 
   std::unique_ptr<Buffer> readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept;
 
-  std::vector<VideoSample>& readVideoSample(
+  void readVideoSample(
+    VideoSampleRtps* videoSampleRtpsPtr,
     int camId,
     int vid,
-    int memberId,
     int sampleNo,
     HybridMetaMapType &hybridMetaMap
   ) noexcept;

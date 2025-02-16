@@ -59,7 +59,8 @@ RtpHandler::~RtpHandler() {
   }
 }
 
-AudioSample & RtpHandler::readAudioSample(int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
+void RtpHandler::readAudioSample(
+  AudioSampleRtp* audioSampleRtpPtr, int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
 }
 
 
@@ -106,10 +107,10 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, i
   return bufferPtr;
 }
 
-std::vector<VideoSample> & RtpHandler::readVideoSample(
+void RtpHandler::readVideoSample(
+  VideoSampleRtps* videoSampleRtpsPtr,
   int camId,
   int vid,
-  int memberId,
   int sampleNo,
   HybridMetaMapType &hybridMetaMap
 ) noexcept {

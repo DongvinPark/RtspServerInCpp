@@ -122,7 +122,32 @@ std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
   return contentsStorage.getCid(contentTitle).getAllV0ImagesCopy();
 }
 
-std::unique_ptr<AVSampleBuffer> AcsHandler::getNextSample() {
+void AcsHandler::getNextVideoSample(VideoSampleRtps* videoSampleRtpsPtr) {
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
+    if (auto rtpHandlerPtr = weakPtr.lock()) {
+      // TODO : need to find right sample meta info
+      rtpHandlerPtr->readVideoSample(videoSampleRtpsPtr, C::INVALID, C::INVALID, C::INVALID, sessionPtr->getHybridMetaMap());
+    } else {
+      logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextVideoSample()");
+    }
+  } else {
+    logger->severe("Dongvin, failed to get parent session ptr! : getNextVideoSample()");
+  }
+}
+
+void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
+    if (auto rtpHandlerPtr = weakPtr.lock()) {
+      // TODO : need to find right sample meta info
+      rtpHandlerPtr->readAudioSample(audioSampleRtpPtr, C::INVALID, sessionPtr->getHybridMetaMap());
+    } else {
+      logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextAudioSample()");
+    }
+  } else {
+    logger->severe("Dongvin, failed to get parent session ptr! : getNextAudioSample()");
+  }
 }
 
 bool AcsHandler::isDone(int streamId) {

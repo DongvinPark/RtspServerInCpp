@@ -291,17 +291,27 @@ void Session::onCameraChange(
 }
 
 void Session::onPlayStart() {
-  // TODO : just for test. update later
+  // TODO : just for test. implement later and add error checks
   std::chrono::milliseconds vInterval(acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000);
-  auto videoSampleReadingTask = [](){
-    std::cout << "!!! video reading task called !!!\n";
+  auto videoSampleReadingTask = [&](){
+    // pass object pool's memory to read video sample
+    VideoSampleRtps* vSamplePtr = videoRtpPool.construct();
+    acsHandlerPtr->getNextVideoSample(vSamplePtr);
+
+    // send to client
+
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000);
-  auto audioSampleReadingTask = [](){
-    std::cout << "!!! audio reading task called !!!\n";
+  auto audioSampleReadingTask = [&](){
+    // pass object pool's memory to read audio sample
+    AudioSampleRtp* audioSamplePtr = audioRtpPool.construct();
+    acsHandlerPtr->getNextAudioSample(audioSamplePtr);
+
+    // send to clint
+
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
@@ -323,7 +333,9 @@ void Session::onTeardown() {
   shutdownSession();
 }
 
-void Session::onPlayDone(int streamId) {
+void Session::onPlayDone(const int streamId) {
+  if (streamId == C::VIDEO_ID) for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
+  if (streamId == C::AUDIO_ID) for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
 }
 
 void Session::recordBitrateTestResult() {
