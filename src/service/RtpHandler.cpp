@@ -114,10 +114,3 @@ std::vector<VideoSample> & RtpHandler::readVideoSample(
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
 }
-
-
-std::vector<VideoSample> & RtpHandler::readVideoSampleInternal(int camId,
-  VideoAccess &va,
-  int sampleNo,
-  HybridMetaMapType &hybridMetaMap) noexcept {
-}

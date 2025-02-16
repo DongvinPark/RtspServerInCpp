@@ -42,14 +42,6 @@ public:
     HybridMetaMapType &hybridMetaMap
   ) noexcept;
 
-
-  std::vector<VideoSample>& readVideoSampleInternal(
-    int camId,
-    VideoAccess &va,
-    int sampleNo,
-    HybridMetaMapType &hybridMetaMap
-  ) noexcept;
-
 private:
   std::shared_ptr<Logger> logger;
   std::string sessionId;

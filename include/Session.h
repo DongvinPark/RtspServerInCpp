@@ -128,9 +128,6 @@ public:
   void onPlayStart();
   void onTeardown();
 
-  void onTransmitVideoSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs);
-  void onTransmitAudioSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs);
-
   void onPlayDone(int streamId);
 
   void recordBitrateTestResult();

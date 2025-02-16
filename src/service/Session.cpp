@@ -292,14 +292,14 @@ void Session::onCameraChange(
 
 void Session::onPlayStart() {
   // TODO : just for test. update later
-  std::chrono::milliseconds vInterval(33);
+  std::chrono::milliseconds vInterval(acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000);
   auto videoSampleReadingTask = [](){
     std::cout << "!!! video reading task called !!!\n";
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
-  std::chrono::milliseconds aInterval(31);
+  std::chrono::milliseconds aInterval(acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000);
   auto audioSampleReadingTask = [](){
     std::cout << "!!! audio reading task called !!!\n";
   };
@@ -321,12 +321,6 @@ void Session::onTeardown() {
   closeHandlersAndSocket();
   recordBitrateTestResult();
   shutdownSession();
-}
-
-void Session::onTransmitVideoSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs) {
-}
-
-void Session::onTransmitAudioSample(std::vector<std::unique_ptr<Buffer>> rtpPtrs) {
 }
 
 void Session::onPlayDone(int streamId) {
