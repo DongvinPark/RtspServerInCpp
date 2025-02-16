@@ -59,11 +59,6 @@ RtpHandler::~RtpHandler() {
   }
 }
 
-void RtpHandler::readAudioSample(
-  AudioSampleRtp* audioSampleRtpPtr, int sampleNo, HybridMetaMapType &hybridMetaMap) noexcept {
-}
-
-
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurVideoSample(int sampleNo, int64_t offset, int64_t len) noexcept {
   std::vector<unsigned char> buf(len);
   std::ifstream& videoFileReadingStream = camIdVideoFileStreamMap.at(0).at(0);
@@ -88,6 +83,18 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurVideoSample(int sampleNo, i
   return bufferPtr;
 }
 
+void RtpHandler::readVideoSample(
+  FrontVideoSampleRtps* videoSampleRtpsPtr,
+  RearVideoSampleRtps* rearVSampleRtpsPtr,
+  const VideoSampleInfo& curFrontVideoSampleInfo,
+  const VideoSampleInfo& curRearVideoSampleInfo,
+  int camId,
+  int vid,
+  int sampleNo,
+  HybridMetaMapType &hybridMetaMap
+) noexcept {
+}
+
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept {
   if (!audioFileStream.is_open()) {
     logger->severe("Dongvin, audio file stream is not open!");
@@ -107,11 +114,6 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, i
   return bufferPtr;
 }
 
-void RtpHandler::readVideoSample(
-  VideoSampleRtps* videoSampleRtpsPtr,
-  int camId,
-  int vid,
-  int sampleNo,
-  HybridMetaMapType &hybridMetaMap
-) noexcept {
+void RtpHandler::readAudioSample(
+  AudioSampleRtp* audioSampleRtpPtr, int sampleNo, int64_t offset, int len, HybridMetaMapType &hybridMetaMap) noexcept {
 }

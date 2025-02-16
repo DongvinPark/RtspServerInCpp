@@ -1,5 +1,6 @@
-#include "../include/AcsHandler.h"
+#include <cstring>
 
+#include "../include/AcsHandler.h"
 #include "../../constants/Util.h"
 
 AcsHandler::AcsHandler(
@@ -122,12 +123,52 @@ std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
   return contentsStorage.getCid(contentTitle).getAllV0ImagesCopy();
 }
 
-void AcsHandler::getNextVideoSample(VideoSampleRtps* videoSampleRtpsPtr) {
+void AcsHandler::getNextVideoSample(
+  FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr
+) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
-      // TODO : need to find right sample meta info
-      rtpHandlerPtr->readVideoSample(videoSampleRtpsPtr, C::INVALID, C::INVALID, C::INVALID, sessionPtr->getHybridMetaMap());
+      ReadInfo& info = sInfo.at(C::VIDEO_ID);
+      if (info.isDone()) {
+        videoSampleRtpsPtr->length = C::INVALID;
+        return;
+      }
+
+      int sampleNo = info.curSampleNo;
+      const VideoSampleInfo& curFrontVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList().at(0).at(sampleNo);
+
+      const VideoSampleInfo& curRearVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList().at(1).at(sampleNo);
+
+      rtpHandlerPtr->readVideoSample(
+        videoSampleRtpsPtr,
+        rearVSampleRtpsPtr,
+        curFrontVideoSampleInfo,
+        curRearVideoSampleInfo,
+        camId,
+        C::INVALID,
+        sampleNo,
+        sessionPtr->getHybridMetaMap()
+      );
+
+      if (videoSampleRtpsPtr->length != C::INVALID) {
+        // TODO : need to be tested with hybrid D & S
+        /*const int rtpLen = Util::getRtpPacketLength(videoSampleRtpsPtr->data[2], videoSampleRtpsPtr->data[3]);
+        const int len = 4 + rtpLen;
+        unsigned char rtp[len];
+        std::memcpy(rtp, videoSampleRtpsPtr->data, len);
+
+        std::vector<unsigned char> buf;
+        for (unsigned char c : rtp) buf.push_back(c);
+
+        const Buffer firstRtp(buf, 0, len);
+
+        info.timestamp = Util::findTimestamp(firstRtp);
+        info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);*/
+        info.curSampleNo++;
+      }
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextVideoSample()");
     }
@@ -140,8 +181,40 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
-      // TODO : need to find right sample meta info
-      rtpHandlerPtr->readAudioSample(audioSampleRtpPtr, C::INVALID, sessionPtr->getHybridMetaMap());
+      ReadInfo& info = sInfo.at(C::AUDIO_ID);
+      if (info.isDone()) {
+        audioSampleRtpPtr->length = C::INVALID;
+        return;
+      }
+
+      const int sampleNo = info.curSampleNo;
+      const AudioSampleInfo& curAudioSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+        .getConstAudioMeta().getConstMeta().at(sampleNo);
+
+      rtpHandlerPtr->readAudioSample(
+        audioSampleRtpPtr,
+        sampleNo,
+        curAudioSampleInfo.offset,
+        curAudioSampleInfo.len,
+        sessionPtr->getHybridMetaMap()
+      );
+
+      if (audioSampleRtpPtr->length != C::INVALID) {
+        // TODO : need to be tested with hybrid D & S
+        /*const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
+        const int len = 4 + rtpLen;
+        unsigned char rtp[len];
+        std::memcpy(rtp, audioSampleRtpPtr->data, len);
+
+        std::vector<unsigned char> buf;
+        for (unsigned char c : rtp) buf.push_back(c);
+
+        const Buffer firstRtp(buf, 0, len);
+
+        info.timestamp = Util::findTimestamp(firstRtp);
+        info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp)*/;
+        info.curSampleNo++;
+      }
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextAudioSample()");
     }
@@ -252,7 +325,7 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
       // read video sample.
       if (streamId == C::VIDEO_ID) {
         const VideoSampleInfo& curVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-          .getConstVideoMeta().at(C::CAM_ID_LIST[0]).getConstVideoSampleInfoList().at(0).at(sampleNo);
+          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList().at(0).at(sampleNo);
 
         const int64_t offset = curVideoSampleInfo.getOffset();
         const int64_t len = curVideoSampleInfo.getSize();

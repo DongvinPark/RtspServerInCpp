@@ -54,7 +54,7 @@ void Session::start() {
           if (resLine.find("Error:") != std::string::npos) isTearRes = true;
         }
         std::cout << "\n";
-        transmit(std::move(bufferPtr));
+        transmitRtspPes(std::move(bufferPtr));
         if (isTearRes || isErrorRes) {
           onTeardown();
         }
@@ -291,15 +291,17 @@ void Session::onCameraChange(
 }
 
 void Session::onPlayStart() {
-  // TODO : just for test. implement later and add error checks
   std::chrono::milliseconds vInterval(acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000);
   auto videoSampleReadingTask = [&](){
     // pass object pool's memory to read video sample
-    VideoSampleRtps* vSamplePtr = videoRtpPool.construct();
-    acsHandlerPtr->getNextVideoSample(vSamplePtr);
+    FrontVideoSampleRtps* frontVSamplePtr = frontVideoRtpPool.construct();
+    RearVideoSampleRtps* rearVSamplePtr = rearVideoRtpPool.construct();
+    acsHandlerPtr->getNextVideoSample(frontVSamplePtr, rearVSamplePtr);
 
     // send to client
-
+    if (frontVSamplePtr->length != C::INVALID && rearVSamplePtr->length != C::INVALID) {
+      transmitVideoRtp(frontVSamplePtr, rearVSamplePtr);
+    }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
@@ -307,11 +309,13 @@ void Session::onPlayStart() {
   std::chrono::milliseconds aInterval(acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000);
   auto audioSampleReadingTask = [&](){
     // pass object pool's memory to read audio sample
-    AudioSampleRtp* audioSamplePtr = audioRtpPool.construct();
-    acsHandlerPtr->getNextAudioSample(audioSamplePtr);
+    AudioSampleRtp* aSamplePtr = audioRtpPool.construct();
+    acsHandlerPtr->getNextAudioSample(aSamplePtr);
 
     // send to clint
-
+    if (aSamplePtr->length != C::INVALID) {
+      transmitAudioRtp(aSamplePtr);
+    }
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
@@ -451,10 +455,18 @@ void Session::closeHandlersAndSocket() {
 bool Session::isPlayDone(int streamId) {
 }
 
-void Session::transmit(std::unique_ptr<Buffer> bufPtr) {
+void Session::transmitRtspPes(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += (bufPtr->len * 8);
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
+}
+
+void Session::transmitVideoRtp(FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr) {
+
+}
+
+void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
+
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {

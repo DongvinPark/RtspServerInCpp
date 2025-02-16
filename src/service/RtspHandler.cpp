@@ -303,6 +303,7 @@ void RtspHandler::handleRtspRequest(
               return;
             }
 
+            ptrForAcsHandler->setCamId(0);
             sessionPtr->onUserRequestingPlayTime(npt);
 
             std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();

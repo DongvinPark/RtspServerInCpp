@@ -28,9 +28,14 @@ class AcsHandler;
 class RtspHandler;
 class RtpHandler;
 
-struct VideoSampleRtps {
-  unsigned char data[5 * 1024 * 1024]; // 5MB
-  size_t size;
+struct FrontVideoSampleRtps {
+  unsigned char data[3 * 1024 * 1024]; // 3MB
+  size_t length;
+};
+
+struct RearVideoSampleRtps {
+  unsigned char data[2 * 1024 * 1024]; // 2MB
+  size_t length;
 };
 
 struct AudioSampleRtp {
@@ -137,7 +142,9 @@ private:
   void closeHandlersAndSocket();
 
   bool isPlayDone(int streamId);
-  void transmit(std::unique_ptr<Buffer> bufPtr);
+  void transmitRtspPes(std::unique_ptr<Buffer> bufPtr);
+  void transmitVideoRtp(FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr);
+  void transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr);
 
   std::unique_ptr<Buffer> receive(boost::asio::ip::tcp::socket& socket);
 
@@ -159,7 +166,8 @@ private:
 
   // memory pool for Video and Audio Sample to prevent head memory fragmentation.
   boost::object_pool<AudioSampleRtp> audioRtpPool;
-  boost::object_pool<VideoSampleRtps> videoRtpPool;
+  boost::object_pool<FrontVideoSampleRtps> frontVideoRtpPool;
+  boost::object_pool<RearVideoSampleRtps> rearVideoRtpPool;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;
