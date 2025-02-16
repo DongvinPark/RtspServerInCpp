@@ -456,17 +456,38 @@ bool Session::isPlayDone(int streamId) {
 }
 
 void Session::transmitRtspPes(std::unique_ptr<Buffer> bufPtr) {
-  sentBitsSize += (bufPtr->len * 8);
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
+  sentBitsSize += (bufPtr->len * 8);
 }
 
-void Session::transmitVideoRtp(FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr) {
-
+void Session::transmitVideoRtp(
+  FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr
+) {
+  boost::system::error_code ignored_error;
+  boost::asio::write(
+    *socketPtr,
+    // target index range to send : [ 0 : videoSampleRtpsPtr->length )
+    boost::asio::buffer(videoSampleRtpsPtr->data, videoSampleRtpsPtr->length),
+    ignored_error
+  );
+  boost::asio::write(
+    *socketPtr,
+    boost::asio::buffer(rearVSampleRtpsPtr->data, rearVSampleRtpsPtr->length),
+    ignored_error
+  );
+  sentBitsSize += static_cast<int>(videoSampleRtpsPtr->length);
+  sentBitsSize += static_cast<int>(rearVSampleRtpsPtr->length);
 }
 
 void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
-
+  boost::system::error_code ignored_error;
+  boost::asio::write(
+    *socketPtr,
+    boost::asio::buffer(audioSampleRtpPtr->data, audioSampleRtpPtr->length),
+    ignored_error
+  );
+  sentBitsSize += static_cast<int>(audioSampleRtpPtr->length);
 }
 
 std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
