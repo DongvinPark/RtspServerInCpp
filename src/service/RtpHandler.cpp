@@ -93,6 +93,34 @@ void RtpHandler::readVideoSample(
   int sampleNo,
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
+  // TODO : need to implement hybrid D & S later.
+  std::ifstream& frontVideoFileReadingStream = camIdVideoFileStreamMap.at(camId).at(0);
+  std::ifstream& rearVideoFileReadingStream = camIdVideoFileStreamMap.at(camId).at(1);
+
+  if (!frontVideoFileReadingStream.is_open() || !rearVideoFileReadingStream.is_open()) {
+    logger->severe("Dongvin, video file stream is not open!");
+  }
+
+  frontVideoFileReadingStream.seekg(curFrontVideoSampleInfo.getOffset(), std::ios::beg);
+  rearVideoFileReadingStream.seekg(curRearVideoSampleInfo.getOffset(), std::ios::beg);
+
+  if (
+      !frontVideoFileReadingStream.read(
+          reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpsPtr->data),
+          curFrontVideoSampleInfo.getSize()
+        ) ||
+      !rearVideoFileReadingStream.read(
+        reinterpret_cast<std::ifstream::char_type *>(rearVSampleRtpsPtr->data),
+        curRearVideoSampleInfo.getSize()
+        )
+    ) {
+    videoSampleRtpsPtr->length = C::INVALID;
+    rearVSampleRtpsPtr->length = C::INVALID;
+    logger->severe("Dongvin, failed to read video sample! sample no : " + std::to_string(sampleNo));
+  } else {
+    videoSampleRtpsPtr->length = curFrontVideoSampleInfo.getSize();
+    rearVSampleRtpsPtr->length = curRearVideoSampleInfo.getSize();
+  }
 }
 
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept {
@@ -115,5 +143,24 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, i
 }
 
 void RtpHandler::readAudioSample(
-  AudioSampleRtp* audioSampleRtpPtr, int sampleNo, int64_t offset, int len, HybridMetaMapType &hybridMetaMap) noexcept {
+  AudioSampleRtp* audioSampleRtpPtr,
+  int sampleNo,
+  int64_t offset,
+  int len,
+  HybridMetaMapType &hybridMetaMap
+) noexcept {
+  // TODO : need to implement hybrid D & S later.
+  if (!audioFileStream.is_open()) {
+    logger->severe("Dongvin, audio file stream is not open!");
+    audioSampleRtpPtr->length = C::INVALID;
+    return;
+  }
+
+  audioFileStream.seekg(offset, std::ios::beg);
+  if (!audioFileStream.read(reinterpret_cast<std::ifstream::char_type *>(audioSampleRtpPtr->data), len)) {
+    audioSampleRtpPtr->length = C::INVALID;
+    logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
+  } else {
+    audioSampleRtpPtr->length = len;
+  }
 }
