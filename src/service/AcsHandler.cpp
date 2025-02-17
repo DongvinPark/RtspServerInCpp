@@ -94,8 +94,8 @@ bool AcsHandler::setReaderAndContentTitle(ContentFileMeta& inputReader, std::str
     sInfo.emplace(C::VIDEO_ID, ReadInfo());
     sInfo.emplace(C::AUDIO_ID, ReadInfo());
 
-    sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize;
-    sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize;
+    sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize-1;
+    sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize-1;
 
     setRtpInfo(inputReader.getRtpInfoCopy());
     return true;
