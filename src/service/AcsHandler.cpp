@@ -155,7 +155,7 @@ void AcsHandler::getNextVideoSample(
 
       if (videoSampleRtpsPtr->length != C::INVALID) {
         // TODO : need to be tested with hybrid D & S
-        /*const int rtpLen = Util::getRtpPacketLength(videoSampleRtpsPtr->data[2], videoSampleRtpsPtr->data[3]);
+        const int rtpLen = Util::getRtpPacketLength(videoSampleRtpsPtr->data[2], videoSampleRtpsPtr->data[3]);
         const int len = 4 + rtpLen;
         unsigned char rtp[len];
         std::memcpy(rtp, videoSampleRtpsPtr->data, len);
@@ -166,7 +166,7 @@ void AcsHandler::getNextVideoSample(
         const Buffer firstRtp(buf, 0, len);
 
         info.timestamp = Util::findTimestamp(firstRtp);
-        info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);*/
+        info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);
         info.curSampleNo++;
       }
     } else {
@@ -201,7 +201,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
 
       if (audioSampleRtpPtr->length != C::INVALID) {
         // TODO : need to be tested with hybrid D & S
-        /*const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
+        const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
         unsigned char rtp[len];
         std::memcpy(rtp, audioSampleRtpPtr->data, len);
@@ -212,7 +212,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
         const Buffer firstRtp(buf, 0, len);
 
         info.timestamp = Util::findTimestamp(firstRtp);
-        info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp)*/;
+        info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp);
         info.curSampleNo++;
       }
     } else {

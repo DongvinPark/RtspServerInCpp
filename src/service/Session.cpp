@@ -22,7 +22,6 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    rtspTask(inputIoContext, inputIntervalMs),
     bitrateRecodeTask(inputIoContext, inputIntervalMs){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
@@ -37,37 +36,7 @@ void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
-  auto rxTask = [&](){
-    try {
-      std::unique_ptr<Buffer> bufferPtr = receive(*socketPtr);
-      if (bufferPtr != nullptr) {
-        Buffer& buf = *bufferPtr;
-        handleRtspRequest(buf);
-
-        bool isTearRes = false;
-        bool isErrorRes = false;
-        std::string res = buf.getString();
-        logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
-        for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
-          logger->info(resLine);
-          if (resLine.find("Teardown:") != std::string::npos) isTearRes = true;
-          if (resLine.find("Error:") != std::string::npos) isTearRes = true;
-        }
-        std::cout << "\n";
-        transmitRtspPes(std::move(bufferPtr));
-        if (isTearRes || isErrorRes) {
-          onTeardown();
-        }
-      }
-    } catch (const std::exception & e) {
-      logger->severe("session " + sessionId + " failed. stop rx. exception : " + e.what());
-    }
-  };
-
-  rtspTask.setTask(rxTask);
-  const std::chrono::milliseconds rtspInterval(C::ONE);
-  rtspTask.setInterval(rtspInterval);
-  rtspTask.start();
+  asyncReceive();
 
   auto txBitrateTask = [&]() {
     int32_t sentBit = sentBitsSize;
@@ -291,7 +260,10 @@ void Session::onCameraChange(
 }
 
 void Session::onPlayStart() {
-  std::chrono::milliseconds vInterval(acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000);
+  int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+  int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
+
+  std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     // pass object pool's memory to read video sample
     FrontVideoSampleRtps* frontVSamplePtr = frontVideoRtpPool.construct();
@@ -306,7 +278,7 @@ void Session::onPlayStart() {
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
-  std::chrono::milliseconds aInterval(acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000);
+  std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     // pass object pool's memory to read audio sample
     AudioSampleRtp* aSamplePtr = audioRtpPool.construct();
@@ -436,7 +408,6 @@ void Session::recordBitrateTestResult() {
 }
 
 void Session::stopAllTimerTasks() {
-  rtspTask.stop();
   bitrateRecodeTask.stop();
   for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
   for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
@@ -455,7 +426,7 @@ void Session::closeHandlersAndSocket() {
 bool Session::isPlayDone(int streamId) {
 }
 
-void Session::transmitRtspPes(std::unique_ptr<Buffer> bufPtr) {
+void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
   boost::system::error_code ignored_error;
   boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
   sentBitsSize += (bufPtr->len * 8);
@@ -490,29 +461,49 @@ void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
   sentBitsSize += static_cast<int>(audioSampleRtpPtr->length);
 }
 
-std::unique_ptr<Buffer> Session::receive(boost::asio::ip::tcp::socket &socket) {
-  if (isRecordSaved){
+void Session::asyncReceive() {
+  if (isRecordSaved) {
     logger->severe("Dongvin, receive:: session already shutdown.");
-    return nullptr;
+    return;
   }
-  if (!socket.is_open()) {
-    throw std::runtime_error("socket is not open. session id : " + sessionId);
-  }
-  std::vector<unsigned char> buf(10*1024);
-  boost::system::error_code error;
-
-  std::size_t bytesRead = socket.read_some(boost::asio::buffer(buf), error);
-  if (error == boost::asio::error::eof) {
-    // Connection closed cleanly by peer
-    std::cerr << "Connection closed by peer. session id : " << sessionId << "\n";
-    return nullptr;
-  }
-  if (error) {
-    std::cerr << error.message() << "\n";
-    throw boost::system::system_error(error); // Other errors
+  if (!socketPtr->is_open()) {
+    logger->severe("Socket is not open. session id : " + sessionId);
+    return;
   }
 
-  buf.resize(bytesRead);
-  auto bufferPtr = std::make_unique<Buffer>(buf, 0, bytesRead);
-  return bufferPtr;
+  auto buf = std::make_shared<std::vector<unsigned char>>(10 * 1024); // Shared buffer
+  socketPtr->async_read_some(boost::asio::buffer(*buf),
+    [this, buf](const boost::system::error_code& error, std::size_t bytesRead) {
+      if (error) {
+        if (error == boost::asio::error::eof) {
+          logger->warning("Connection closed by peer. session id : " + sessionId);
+        } else {
+          logger->severe("Receive failed: " + error.message());
+        }
+        return;
+      }
+
+      buf->resize(bytesRead);
+      auto bufferPtr = std::make_unique<Buffer>(*buf, 0, bytesRead);
+      handleRtspRequest(*bufferPtr);
+
+      bool isTearRes = false;
+        bool isErrorRes = false;
+        std::string res = bufferPtr->getString();
+        logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
+        for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
+          logger->info(resLine);
+          if (resLine.find("Teardown:") != std::string::npos) isTearRes = true;
+          if (resLine.find("Error:") != std::string::npos) isTearRes = true;
+        }
+        std::cout << "\n";
+        transmitRtspRes(std::move(bufferPtr));
+        if (isTearRes || isErrorRes) {
+          onTeardown();
+        }
+
+      // continue receiving
+      asyncReceive();
+    }
+  );
 }

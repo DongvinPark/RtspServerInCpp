@@ -142,11 +142,11 @@ private:
   void closeHandlersAndSocket();
 
   bool isPlayDone(int streamId);
-  void transmitRtspPes(std::unique_ptr<Buffer> bufPtr);
+  void transmitRtspRes(std::unique_ptr<Buffer> bufPtr);
   void transmitVideoRtp(FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr);
   void transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr);
 
-  std::unique_ptr<Buffer> receive(boost::asio::ip::tcp::socket& socket);
+  void asyncReceive();
 
   std::shared_ptr<Logger> logger;
   boost::asio::io_context& io_context;
@@ -187,7 +187,6 @@ private:
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
 
-  PeriodicTask rtspTask;
   PeriodicTask bitrateRecodeTask;
   std::vector<std::shared_ptr<PeriodicTask>> videoReadingTaskVec;
   std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;
