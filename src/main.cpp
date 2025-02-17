@@ -127,6 +127,10 @@ int main() {
     ContentsStorage contentsStorage(contentsRootPath);
     contentsStorage.init();
 
+    const ContentFileMeta& fileReader = contentsStorage.getContentFileMetaMap().at("enhypen-test-1cam-H");
+
+    const VideoAccess& videoAccess = fileReader.getConstVideoMeta().at("cam0");
+
     std::string projectRootDirPath = getProjectRoot();
 
     std::chrono::milliseconds inputIntervalMsForSessionRemoval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
@@ -182,19 +186,28 @@ int main() {
 /*
     test usage to get a video and audio sample meta. this can be used when reading video sample from read file.
 
-    const ContentFileMeta& fileReader = contentsStorage.getContentFileMetaMap().at("enhypen-test-1cam-H");
-
-    const VideoAccess& videoAccess = fileReader.getConstVideoMeta().at("cam0");
-
     const std::vector<std::vector<VideoSampleInfo>>& videoMeta = videoAccess.getConstVideoSampleInfoList();
     std::cout << "enhypen-test-1cam-H cam 0 v1 video sample info !!!\n";
     for (const auto& sampleInfo : videoMeta.at(0)) {
         std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
+        std::cout << "rtp cnt : " << sampleInfo.getConstMetaInfoList().size();
+        for (const auto& rtpMeta : sampleInfo.getConstMetaInfoList()) {
+            std::cout << "," << rtpMeta.offset << "," << rtpMeta.len;
+        }
+        std::cout << std::endl;
     }
 
     std::cout << "enhypen-test-1cam-H cam 0 v2 video sample info !!!\n";
     for (const auto& sampleInfo : videoMeta.at(1)) {
         std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
+    }
+    for (const auto& sampleInfo : videoMeta.at(0)) {
+        std::cout << "size : " << sampleInfo.getSize() << ", offset : " << sampleInfo.getOffset() << ", flag : " << sampleInfo.getFlag() << "\n";
+        std::cout << "rtp cnt : " << sampleInfo.getConstMetaInfoList().size();
+        for (const auto& rtpMeta : sampleInfo.getConstMetaInfoList()) {
+            std::cout << "," << rtpMeta.offset << "," << rtpMeta.len;
+        }
+        std::cout << std::endl;
     }
 
     const AudioAccess& audioAccess = fileReader.getConstAudioMeta();

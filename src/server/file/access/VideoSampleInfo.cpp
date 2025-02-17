@@ -7,6 +7,10 @@ std::vector<RtpMetaInfo>& VideoSampleInfo::getMetaInfoList() {
     return rtpMetaInfos;
 }
 
+[[nodiscard]] const std::vector<RtpMetaInfo>& VideoSampleInfo::getConstMetaInfoList() const {
+    return rtpMetaInfos;
+}
+
 [[nodiscard]] int VideoSampleInfo::getSize() const noexcept {
     return size;
 }

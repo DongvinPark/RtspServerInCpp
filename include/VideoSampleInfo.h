@@ -8,6 +8,7 @@ class VideoSampleInfo {
 public:
     explicit VideoSampleInfo();
     std::vector<RtpMetaInfo>& getMetaInfoList();
+    [[nodiscard]] const std::vector<RtpMetaInfo>& getConstMetaInfoList() const;
 
     [[nodiscard]] int getSize() const noexcept;
     [[nodiscard]] int64_t getOffset() const noexcept;
