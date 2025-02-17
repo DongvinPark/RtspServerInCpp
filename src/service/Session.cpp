@@ -447,8 +447,8 @@ void Session::transmitVideoRtp(
     boost::asio::buffer(rearVSampleRtpsPtr->data, rearVSampleRtpsPtr->length),
     ignored_error
   );
-  sentBitsSize += static_cast<int>(videoSampleRtpsPtr->length);
-  sentBitsSize += static_cast<int>(rearVSampleRtpsPtr->length);
+  sentBitsSize += static_cast<int>(videoSampleRtpsPtr->length * 8);
+  sentBitsSize += static_cast<int>(rearVSampleRtpsPtr->length * 8);
 }
 
 void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
@@ -458,7 +458,7 @@ void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
     boost::asio::buffer(audioSampleRtpPtr->data, audioSampleRtpPtr->length),
     ignored_error
   );
-  sentBitsSize += static_cast<int>(audioSampleRtpPtr->length);
+  sentBitsSize += static_cast<int>(audioSampleRtpPtr->length * 8);
 }
 
 void Session::asyncReceive() {
