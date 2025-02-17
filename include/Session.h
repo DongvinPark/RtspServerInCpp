@@ -5,6 +5,7 @@
 #include <atomic>
 #include <cstdint> // For int64_t
 #include <unordered_map>
+#include <array>
 
 #include "../include/Logger.h"
 #include "../include/Server.h"
@@ -31,11 +32,15 @@ class RtpHandler;
 struct FrontVideoSampleRtps {
   unsigned char data[3 * 1024 * 1024]; // 3MB
   size_t length;
+  // 1st rtp offset in data array, 1st rtp len in data array, 2nd rtp ....
+  std::array<int, 2*C::FRONT_VIDEO_SAMPLE_POOL_RTP_MAX_LEN> rtpMeta;
 };
 
 struct RearVideoSampleRtps {
   unsigned char data[2 * 1024 * 1024]; // 2MB
   size_t length;
+  // 1st rtp offset in data array, 1st rtp len in data array, 2nd rtp ....
+  std::array<int, 2*C::REAR_VIDEO_SAMPLE_POOL_RTP_MAX_LEN> rtpMeta;
 };
 
 struct AudioSampleRtp {

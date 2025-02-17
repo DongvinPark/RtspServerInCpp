@@ -119,7 +119,20 @@ void RtpHandler::readVideoSample(
     logger->severe("Dongvin, failed to read video sample! sample no : " + std::to_string(sampleNo));
   } else {
     videoSampleRtpsPtr->length = curFrontVideoSampleInfo.getSize();
+    const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
+    int offsetForFrontVRtp = 0;
+    for (int i=0; i<frontRtpMetaVec.size(); ++i) {
+      const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
+      // TODO implement later
+    }
+
     rearVSampleRtpsPtr->length = curRearVideoSampleInfo.getSize();
+    const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
+    int offsetForRearVRtp = 0;
+    for (int i=0; i<rearRtpMetaVec.size(); ++i) {
+      const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
+      // TODO implement later
+    }
   }
 }
 

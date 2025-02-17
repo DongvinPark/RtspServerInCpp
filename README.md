@@ -11,7 +11,7 @@
 - Windows, Linux, M chip MacOS 의 환경에서 동작하게 만들었습니다.
   - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다.
 - Boost.asio 라이브러리를 사용하여 스레드의 생성을 최소화 했습니다.
-- new와 delete를 직접 호출하는 메모리 관리 방식은 사용하지 않았습니다.
+- new, delete, raw pointer의 사용을 최소화 했습니다.
 - std 라이브러리를 최대한 많이 사용하여 직접적인 메모리 관리를 최소화 했습니다.
   - std::unique_ptr, std::shared_ptr, std::weak_ptr 를 활용합니다.
 <br><br/>

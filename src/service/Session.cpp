@@ -36,7 +36,7 @@ void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
-  socketPtr->set_option(boost::asio::socket_base::send_buffer_size(5 * 1024 * 1024)); // 5 MB
+  socketPtr->set_option(boost::asio::socket_base::send_buffer_size(1 * 1024 * 1024)); // 1 MB
   socketPtr->set_option(boost::asio::ip::tcp::no_delay(true));
 
   asyncReceive();

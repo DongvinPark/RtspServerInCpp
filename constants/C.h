@@ -47,11 +47,6 @@ namespace C {
     constexpr int H265_CLOCK_RATE = 90000; // by spec, 90kHz must be used.
     constexpr int AAC_CLOCK_RATE = 48000; // Audio has 48kHz when included in video.
 
-    // Network ports
-    constexpr int RTP_RX_PORT = 9000;
-    constexpr int RTCP_RX_PORT = 9001;
-    constexpr int RTSP_RTP_TCP_PORT = 8554;
-
     // Strings and MTU size
     constexpr char CRLF[] = "\r\n";
     constexpr char CRLF2[] = "\r\n\r\n";
@@ -59,6 +54,17 @@ namespace C {
     constexpr char DEFAULT_MEDIA_TYPE[] = "mp4";
     constexpr int DEFAULT_DIVIDE_NUM = 3;
     constexpr char DEFAULT_IP[] = "127.0.0.1";
+
+    // Network settings
+    constexpr int FRONT_VIDEO_MAX_BYTE_SIZE = 3*1024*1024; //3MB
+    constexpr int REAR_VIDEO_MAX_BYTE_SIZE = 2*1024*1024; //2MB
+    constexpr int FRONT_VIDEO_SAMPLE_POOL_RTP_MAX_LEN
+        = FRONT_VIDEO_MAX_BYTE_SIZE/(TCP_RTP_HEAD_LEN + MTU_SIZE) + 1; // 2132
+    constexpr int REAR_VIDEO_SAMPLE_POOL_RTP_MAX_LEN
+        = REAR_VIDEO_MAX_BYTE_SIZE/(TCP_RTP_HEAD_LEN + MTU_SIZE) + 1; // 1421
+    constexpr int RTP_RX_PORT = 9000;
+    constexpr int RTCP_RX_PORT = 9001;
+    constexpr int RTSP_RTP_TCP_PORT = 8554;
 
     // File reading
     constexpr char ASC[] = "asc";
