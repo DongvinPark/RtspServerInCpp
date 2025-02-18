@@ -46,6 +46,7 @@ namespace C {
     // Clock rates
     constexpr int H265_CLOCK_RATE = 90000; // by spec, 90kHz must be used.
     constexpr int AAC_CLOCK_RATE = 48000; // Audio has 48kHz when included in video.
+    constexpr int FAST_TX_FACTOR = 7;
 
     // Strings and MTU size
     constexpr char CRLF[] = "\r\n";
@@ -139,9 +140,6 @@ namespace C {
     constexpr int RE_PAUSE_DELAY_TIME_SEC = 1;
     constexpr int RE_PAUSE_DELAY_TIME_MILLIS = 1000;
     constexpr float START_NPT[] = {0.0f, -1.0f};
-
-    // Pause Switching
-    constexpr int TX_SAMPLE_CNT = 10;
 
     // Filtering content
     constexpr int FILE_NUM_LIMIT = 10;

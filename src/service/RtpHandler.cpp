@@ -120,18 +120,26 @@ void RtpHandler::readVideoSample(
   } else {
     videoSampleRtpsPtr->length = curFrontVideoSampleInfo.getSize();
     const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
+    videoSampleRtpsPtr->rtpLength = frontRtpMetaVec.size();
     int offsetForFrontVRtp = 0;
     for (int i=0; i<frontRtpMetaVec.size(); ++i) {
       const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
-      // TODO implement later
+      int targetIdx = i * 2;
+      videoSampleRtpsPtr->rtpMeta[targetIdx] = offsetForFrontVRtp;
+      videoSampleRtpsPtr->rtpMeta[targetIdx + 1] = rtpMeta.len;
+      offsetForFrontVRtp += rtpMeta.len;
     }
 
     rearVSampleRtpsPtr->length = curRearVideoSampleInfo.getSize();
     const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
+    rearVSampleRtpsPtr->rtpLength = rearRtpMetaVec.size();
     int offsetForRearVRtp = 0;
     for (int i=0; i<rearRtpMetaVec.size(); ++i) {
       const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
-      // TODO implement later
+      int targetIdx = i * 2;
+      rearVSampleRtpsPtr->rtpMeta[targetIdx] = offsetForRearVRtp;
+      rearVSampleRtpsPtr->rtpMeta[targetIdx + 1] = rtpMeta.len;
+      offsetForRearVRtp += rtpMeta.len;
     }
   }
 }

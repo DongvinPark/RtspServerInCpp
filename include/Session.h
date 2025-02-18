@@ -34,6 +34,7 @@ struct FrontVideoSampleRtps {
   size_t length;
   // 1st rtp offset in data array, 1st rtp len in data array, 2nd rtp ....
   std::array<int, 2*C::FRONT_VIDEO_SAMPLE_POOL_RTP_MAX_LEN> rtpMeta;
+  size_t rtpLength;
 };
 
 struct RearVideoSampleRtps {
@@ -41,6 +42,7 @@ struct RearVideoSampleRtps {
   size_t length;
   // 1st rtp offset in data array, 1st rtp len in data array, 2nd rtp ....
   std::array<int, 2*C::REAR_VIDEO_SAMPLE_POOL_RTP_MAX_LEN> rtpMeta;
+  size_t rtpLength;
 };
 
 struct AudioSampleRtp {
@@ -60,7 +62,7 @@ Map : hybridMeta<camId, val>
 using HybridMetaMapType
     = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 
-class Session {
+class Session : public std::enable_shared_from_this<Session> {
 public:
   explicit Session(
     boost::asio::io_context& inputIoContext,

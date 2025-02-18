@@ -39,6 +39,7 @@ void Session::start() {
   socketPtr->set_option(boost::asio::socket_base::send_buffer_size(1 * 1024 * 1024)); // 1 MB
   socketPtr->set_option(boost::asio::ip::tcp::no_delay(true));
 
+  // for rtsp msg rx and tx.
   asyncReceive();
 
   auto txBitrateTask = [&]() {
@@ -263,8 +264,11 @@ void Session::onCameraChange(
 }
 
 void Session::onPlayStart() {
+  // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
   int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+  videoInterval -= C::FAST_TX_FACTOR;
   int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
+  audioInterval -= C::FAST_TX_FACTOR;
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
@@ -438,30 +442,49 @@ void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
 void Session::transmitVideoRtp(
   FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr
 ) {
-  boost::system::error_code ignored_error;
-  boost::asio::write(
-    *socketPtr,
-    // target index range to send : [ 0 : videoSampleRtpsPtr->length )
-    boost::asio::buffer(videoSampleRtpsPtr->data, videoSampleRtpsPtr->length),
-    ignored_error
-  );
-  boost::asio::write(
-    *socketPtr,
-    boost::asio::buffer(rearVSampleRtpsPtr->data, rearVSampleRtpsPtr->length),
-    ignored_error
-  );
-  sentBitsSize += static_cast<int>(videoSampleRtpsPtr->length * 8);
-  sentBitsSize += static_cast<int>(rearVSampleRtpsPtr->length * 8);
+  auto self = shared_from_this();
+
+  for (int i = 0; i < videoSampleRtpsPtr->rtpLength; ++i){
+    boost::asio::async_write(
+      *socketPtr, boost::asio::buffer(videoSampleRtpsPtr->data + videoSampleRtpsPtr->rtpMeta[i*2], videoSampleRtpsPtr->rtpMeta[i*2+1]),
+      [self](const boost::system::error_code& error, std::size_t bytes_transferred){
+            if (error) {
+                std::cerr << "Error sending front video rtp: " << error.message() << std::endl;
+            } else {
+                self->sentBitsSize += static_cast<int>(bytes_transferred * 8);
+            }
+        }
+      );
+  }
+
+  for (int i = 0; i < rearVSampleRtpsPtr->rtpLength; ++i){
+    boost::asio::async_write(
+      *socketPtr,
+      boost::asio::buffer(rearVSampleRtpsPtr->data + rearVSampleRtpsPtr->rtpMeta[i*2], rearVSampleRtpsPtr->rtpMeta[i*2+1]),
+      [self](const boost::system::error_code& error, std::size_t bytes_transferred){
+            if (error) {
+                std::cerr << "Error sending rear video rtp: " << error.message() << std::endl;
+            } else {
+                self->sentBitsSize += static_cast<int>(bytes_transferred * 8);
+            }
+        }
+      );
+  }
 }
 
 void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
-  boost::system::error_code ignored_error;
-  boost::asio::write(
+  auto self = shared_from_this();
+  boost::asio::async_write(
     *socketPtr,
     boost::asio::buffer(audioSampleRtpPtr->data, audioSampleRtpPtr->length),
-    ignored_error
-  );
-  sentBitsSize += static_cast<int>(audioSampleRtpPtr->length * 8);
+    [self](const boost::system::error_code& error, std::size_t bytes_transferred){
+          if (error) {
+              std::cerr << "Error sending audio rtp: " << error.message() << std::endl;
+          } else {
+              self->sentBitsSize += static_cast<int>(bytes_transferred * 8);
+          }
+      }
+    );
 }
 
 void Session::asyncReceive() {
