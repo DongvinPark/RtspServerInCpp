@@ -266,9 +266,7 @@ void Session::onCameraChange(
 void Session::onPlayStart() {
   // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
   int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
-  videoInterval -= C::FAST_TX_FACTOR;
   int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
-  audioInterval -= C::FAST_TX_FACTOR;
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
