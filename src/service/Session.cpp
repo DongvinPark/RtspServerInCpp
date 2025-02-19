@@ -408,6 +408,7 @@ void Session::recordBitrateTestResult() {
 }
 
 void Session::stopAllTimerTasks() {
+  rtpTransportTask.stop();
   bitrateRecodeTask.stop();
   for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
   for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
