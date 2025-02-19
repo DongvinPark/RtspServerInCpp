@@ -56,12 +56,14 @@ namespace C {
     constexpr char DEFAULT_IP[] = "127.0.0.1";
 
     // Network settings
+    constexpr int RTP_TX_QUEUE_SIZE = 5*1024;
     constexpr int FRONT_VIDEO_MAX_BYTE_SIZE = 3*1024*1024; //3MB
     constexpr int REAR_VIDEO_MAX_BYTE_SIZE = 2*1024*1024; //2MB
     constexpr int FRONT_VIDEO_SAMPLE_POOL_RTP_MAX_LEN
         = FRONT_VIDEO_MAX_BYTE_SIZE/(TCP_RTP_HEAD_LEN + MTU_SIZE) + 1; // 2132
     constexpr int REAR_VIDEO_SAMPLE_POOL_RTP_MAX_LEN
         = REAR_VIDEO_MAX_BYTE_SIZE/(TCP_RTP_HEAD_LEN + MTU_SIZE) + 1; // 1421
+    constexpr int AUDIO_MAX_BYTE_SIZE = 1500;
     constexpr int RTP_RX_PORT = 9000;
     constexpr int RTCP_RX_PORT = 9001;
     constexpr int RTSP_RTP_TCP_PORT = 8554;

@@ -6,7 +6,6 @@
 #include <atomic>
 #include <cstdint> // For int64_t
 #include <unordered_map>
-#include <array>
 
 #include "../include/Logger.h"
 #include "../include/Server.h"
@@ -31,13 +30,13 @@ class RtspHandler;
 class RtpHandler;
 
 struct VideoSampleRtp {
-  unsigned char data[5 * 1024 * 1024]; // 5MB
+  unsigned char data[C::FRONT_VIDEO_MAX_BYTE_SIZE + C::REAR_VIDEO_MAX_BYTE_SIZE]; // 5MB
   size_t length;
   std::atomic<int> refCount{0};
 };
 
 struct AudioSampleRtp {
-  unsigned char data[1500]; // MTU of rtp packet is 1472 byte
+  unsigned char data[C::AUDIO_MAX_BYTE_SIZE]; // 1500 byte. MTU of rtp packet is 1472 byte
   size_t length;
   std::atomic<int> refCount{0};
 };

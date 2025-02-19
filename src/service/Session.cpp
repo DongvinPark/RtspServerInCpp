@@ -24,7 +24,7 @@ Session::Session(
     sntpRefTimeProvider(inputSntpRefTimeProvider),
     rtpTransportTask(inputIoContext, inputZeroIntervalMs),
     bitrateRecodeTask(inputIoContext, inputZeroIntervalMs),
-    rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(5*1024)){
+    rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
@@ -277,7 +277,6 @@ void Session::onPlayStart() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
-
     if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
@@ -286,7 +285,6 @@ void Session::onPlayStart() {
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
-
     if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
@@ -441,7 +439,7 @@ void Session::enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr) {
 void Session::clearRtpQueue() {
   // replace the rtp queue with a fresh instance since boost lock free queue does not support .clear() util.
   // it's because, clear() util needs a locking mechanism but boost lock free has no locking mechanism.
-  auto new_queue = std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(5*1024);
+  auto new_queue = std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE);
   rtpQueuePtr.swap(new_queue);  // old queue is discarded
 }
 
