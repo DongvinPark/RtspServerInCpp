@@ -39,6 +39,7 @@ struct VideoSampleRtp {
 struct AudioSampleRtp {
   unsigned char data[1500]; // MTU of rtp packet is 1472 byte
   size_t length;
+  std::atomic<int> refCount{0};
 };
 
 struct RtpPacketInfo {
@@ -70,7 +71,7 @@ public:
     Server& inputServer,
     ContentsStorage& inputContentsStorage,
     SntpRefTimeProvider& inputSntpRefTimeProvider,
-    std::chrono::milliseconds inputIntervalMs
+    std::chrono::milliseconds inputZeroIntervalMs
   );
   ~Session();
 
@@ -177,7 +178,7 @@ private:
 
   // memory pool for Video and Audio Sample to prevent head memory fragmentation.
   boost::object_pool<AudioSampleRtp> audioRtpPool;
-  boost::object_pool<VideoSampleRtp> frontVideoRtpPool;
+  boost::object_pool<VideoSampleRtp> videoRtpPool;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;
@@ -197,6 +198,7 @@ private:
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
 
+  PeriodicTask rtpTransportTask;
   PeriodicTask bitrateRecodeTask;
   std::vector<std::shared_ptr<PeriodicTask>> videoReadingTaskVec;
   std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;

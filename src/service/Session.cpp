@@ -13,7 +13,7 @@ Session::Session(
   Server & inputServer,
   ContentsStorage & inputContentsStorage,
   SntpRefTimeProvider & inputSntpRefTimeProvider,
-  std::chrono::milliseconds inputIntervalMs
+  std::chrono::milliseconds inputZeroIntervalMs
 )
   : logger(Logger::getLogger(C::SESSION)),
     io_context(inputIoContext),
@@ -22,7 +22,8 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    bitrateRecodeTask(inputIoContext, inputIntervalMs),
+    rtpTransportTask(inputIoContext, inputZeroIntervalMs),
+    bitrateRecodeTask(inputIoContext, inputZeroIntervalMs),
     rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(5*1024)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
@@ -37,11 +38,15 @@ void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
-  socketPtr->set_option(boost::asio::socket_base::send_buffer_size(1 * 1024 * 1024)); // 1 MB
-  socketPtr->set_option(boost::asio::ip::tcp::no_delay(true));
-
   // for rtsp msg rx and tx.
   asyncReceive();
+
+  // launch rtp packet transmit periodic task.
+  auto rtpTxTask = [&](){
+    if (!isPaused) transmitRtp();
+  };
+  rtpTransportTask.setTask(rtpTxTask);
+  rtpTransportTask.start();
 
   auto txBitrateTask = [&]() {
     int32_t sentBit = sentBitsSize;
@@ -271,14 +276,18 @@ void Session::onPlayStart() {
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    // TODO : implement later. call getNextVideoSample().
+    VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+
+    if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
-    // TODO : implement later. call getNextAudioSample().
+    AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
+
+    if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
@@ -436,7 +445,38 @@ void Session::clearRtpQueue() {
 }
 
 void Session::transmitRtp() {
-  // TODO : implement later. use PeriodicTask to do this task or define new lambda.
+  RtpPacketInfo* rtpPacketInfoPtr = nullptr;
+  if (rtpQueuePtr->pop(rtpPacketInfoPtr) && rtpPacketInfoPtr) {
+    boost::system::error_code ignored_error;
+    if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
+      // tx video rtp
+      boost::asio::write(
+        *socketPtr,
+        boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
+        ignored_error
+      );
+
+      // free videoSamplePool only when all rtp packets are transported to clint
+      if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
+        videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
+      }
+    } else {
+      // tx audio rtp
+      boost::asio::write(
+        *socketPtr,
+        boost::asio::buffer(rtpPacketInfoPtr->audioSamplePtr->data, rtpPacketInfoPtr->length),
+        ignored_error
+      );
+
+      // free audioSamplePool only when all rtp packets are transported to clint
+      if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
+        audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
+      }
+    }
+    sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
+
+    delete rtpPacketInfoPtr;
+  }
 }
 
 void Session::asyncReceive() {

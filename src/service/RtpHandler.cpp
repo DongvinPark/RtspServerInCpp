@@ -103,45 +103,55 @@ void RtpHandler::readVideoSample(
   frontVideoFileReadingStream.seekg(curFrontVideoSampleInfo.getOffset(), std::ios::beg);
   rearVideoFileReadingStream.seekg(curRearVideoSampleInfo.getOffset(), std::ios::beg);
 
-  // TODO : update this logic later. enqueue RtpPacketInfo ptr at Session's rtpQueue.
-  /*if (
+  if (
       !frontVideoFileReadingStream.read(
-          reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpsPtr->data),
+          reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpPtr->data),
           curFrontVideoSampleInfo.getSize()
         ) ||
       !rearVideoFileReadingStream.read(
-        reinterpret_cast<std::ifstream::char_type *>(rearVSampleRtpsPtr->data),
+        reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpPtr->data + curFrontVideoSampleInfo.getSize()),
         curRearVideoSampleInfo.getSize()
         )
     ) {
-    videoSampleRtpsPtr->length = C::INVALID;
-    rearVSampleRtpsPtr->length = C::INVALID;
     logger->severe("Dongvin, failed to read video sample! sample no : " + std::to_string(sampleNo));
-  } else {
-    videoSampleRtpsPtr->length = curFrontVideoSampleInfo.getSize();
+  } else if (auto sessionPtr = parentSessionPtr.lock()) {
+    // reading successful. need to enqueue all rtp packet's meta.
+    videoSampleRtpPtr->length = curFrontVideoSampleInfo.getSize() + curRearVideoSampleInfo.getSize();
+
     const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
-    videoSampleRtpsPtr->rtpLength = frontRtpMetaVec.size();
+    const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
+    videoSampleRtpPtr->refCount = static_cast<int>(frontRtpMetaVec.size() + rearRtpMetaVec.size());
+
     int offsetForFrontVRtp = 0;
     for (int i=0; i<frontRtpMetaVec.size(); ++i) {
       const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
-      int targetIdx = i * 2;
-      videoSampleRtpsPtr->rtpMeta[targetIdx] = offsetForFrontVRtp;
-      videoSampleRtpsPtr->rtpMeta[targetIdx + 1] = rtpMeta.len;
+      // enqueue front v's all rtp
+      auto* rtpInfo = new RtpPacketInfo();
+      rtpInfo->flag = C::VIDEO_ID;
+      rtpInfo->videoSamplePtr = videoSampleRtpPtr;
+      rtpInfo->audioSamplePtr = nullptr;
+      rtpInfo->offset = offsetForFrontVRtp;
+      rtpInfo->length = rtpMeta.len;
       offsetForFrontVRtp += rtpMeta.len;
+      sessionPtr->enqueueRtpInfo(rtpInfo);
     }
 
-    rearVSampleRtpsPtr->length = curRearVideoSampleInfo.getSize();
-    const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
-    rearVSampleRtpsPtr->rtpLength = rearRtpMetaVec.size();
-    int offsetForRearVRtp = 0;
+    int offsetForRearVRtp = curFrontVideoSampleInfo.getSize();
     for (int i=0; i<rearRtpMetaVec.size(); ++i) {
       const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
-      int targetIdx = i * 2;
-      rearVSampleRtpsPtr->rtpMeta[targetIdx] = offsetForRearVRtp;
-      rearVSampleRtpsPtr->rtpMeta[targetIdx + 1] = rtpMeta.len;
+      // enqueue rear v's all rtp
+      auto* rtpInfo = new RtpPacketInfo();
+      rtpInfo->flag = C::VIDEO_ID;
+      rtpInfo->videoSamplePtr = videoSampleRtpPtr;
+      rtpInfo->audioSamplePtr = nullptr;
+      rtpInfo->offset = offsetForRearVRtp;
+      rtpInfo->length = rtpMeta.len;
       offsetForRearVRtp += rtpMeta.len;
+      sessionPtr->enqueueRtpInfo(rtpInfo);
     }
-  }*/
+  } else {
+    logger->severe("Dongvin, failed to get session ptr! RtpHandler::readVideoSample");
+  }
 }
 
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept {
@@ -165,15 +175,13 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, i
 
 void RtpHandler::readAudioSample(
   AudioSampleRtp* audioSampleRtpPtr,
-  int sampleNo,
-  int64_t offset,
-  int len,
-  HybridMetaMapType &hybridMetaMap
+  const int sampleNo,
+  const int64_t offset,
+  const int len,
+  HybridMetaMapType& hybridMetaMap
 ) noexcept {
   // TODO : need to implement hybrid D & S later.
-
-  // TODO : update this logic later. enqueue RtpPacketInfo ptr at Session's rtpQueue.
-  /*if (!audioFileStream.is_open()) {
+  if (!audioFileStream.is_open()) {
     logger->severe("Dongvin, audio file stream is not open!");
     audioSampleRtpPtr->length = C::INVALID;
     return;
@@ -183,7 +191,16 @@ void RtpHandler::readAudioSample(
   if (!audioFileStream.read(reinterpret_cast<std::ifstream::char_type *>(audioSampleRtpPtr->data), len)) {
     audioSampleRtpPtr->length = C::INVALID;
     logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
-  } else {
+  } else if (auto sessionPtr = parentSessionPtr.lock()) {
     audioSampleRtpPtr->length = len;
-  }*/
+    auto* rtpInfo = new RtpPacketInfo();
+    rtpInfo->flag = C::AUDIO_ID;
+    rtpInfo->videoSamplePtr = nullptr;
+    rtpInfo->audioSamplePtr = audioSampleRtpPtr;
+    rtpInfo->offset = 0;
+    rtpInfo->length = len;
+    sessionPtr->enqueueRtpInfo(rtpInfo);
+  } else {
+    logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
+  }
 }
