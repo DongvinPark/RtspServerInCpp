@@ -11,8 +11,8 @@
 
 class Session;
 class AcsHandler;
-struct FrontVideoSampleRtps;
-struct RearVideoSampleRtps;
+
+struct VideoSampleRtp;
 struct AudioSampleRtp;
 
 using HybridMetaMapType
@@ -32,8 +32,7 @@ public:
   std::unique_ptr<Buffer> readFirstRtpOfCurVideoSample(int sampleNo, int64_t offset, int64_t len) noexcept;
 
   void readVideoSample(
-    FrontVideoSampleRtps* videoSampleRtpsPtr,
-    RearVideoSampleRtps* rearVSampleRtpsPtr,
+    VideoSampleRtp* videoSampleRtpPtr,
     const VideoSampleInfo& curFrontVideoSampleInfo,
     const VideoSampleInfo& curRearVideoSampleInfo,
     int camId,

@@ -84,8 +84,7 @@ std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurVideoSample(int sampleNo, i
 }
 
 void RtpHandler::readVideoSample(
-  FrontVideoSampleRtps* videoSampleRtpsPtr,
-  RearVideoSampleRtps* rearVSampleRtpsPtr,
+  VideoSampleRtp* videoSampleRtpPtr,
   const VideoSampleInfo& curFrontVideoSampleInfo,
   const VideoSampleInfo& curRearVideoSampleInfo,
   int camId,
@@ -104,7 +103,8 @@ void RtpHandler::readVideoSample(
   frontVideoFileReadingStream.seekg(curFrontVideoSampleInfo.getOffset(), std::ios::beg);
   rearVideoFileReadingStream.seekg(curRearVideoSampleInfo.getOffset(), std::ios::beg);
 
-  if (
+  // TODO : update this logic later. enqueue RtpPacketInfo ptr at Session's rtpQueue.
+  /*if (
       !frontVideoFileReadingStream.read(
           reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpsPtr->data),
           curFrontVideoSampleInfo.getSize()
@@ -141,7 +141,7 @@ void RtpHandler::readVideoSample(
       rearVSampleRtpsPtr->rtpMeta[targetIdx + 1] = rtpMeta.len;
       offsetForRearVRtp += rtpMeta.len;
     }
-  }
+  }*/
 }
 
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept {
@@ -171,7 +171,9 @@ void RtpHandler::readAudioSample(
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
   // TODO : need to implement hybrid D & S later.
-  if (!audioFileStream.is_open()) {
+
+  // TODO : update this logic later. enqueue RtpPacketInfo ptr at Session's rtpQueue.
+  /*if (!audioFileStream.is_open()) {
     logger->severe("Dongvin, audio file stream is not open!");
     audioSampleRtpPtr->length = C::INVALID;
     return;
@@ -183,5 +185,5 @@ void RtpHandler::readAudioSample(
     logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
   } else {
     audioSampleRtpPtr->length = len;
-  }
+  }*/
 }

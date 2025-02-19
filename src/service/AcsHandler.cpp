@@ -123,15 +123,13 @@ std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
   return contentsStorage.getCid(contentTitle).getAllV0ImagesCopy();
 }
 
-void AcsHandler::getNextVideoSample(
-  FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr
-) {
+void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
       ReadInfo& info = sInfo.at(C::VIDEO_ID);
       if (info.isDone()) {
-        videoSampleRtpsPtr->length = C::INVALID;
+        videoSampleRtpPtr->length = C::INVALID;
         return;
       }
 
@@ -143,8 +141,7 @@ void AcsHandler::getNextVideoSample(
           .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList().at(1).at(sampleNo);
 
       rtpHandlerPtr->readVideoSample(
-        videoSampleRtpsPtr,
-        rearVSampleRtpsPtr,
+        videoSampleRtpPtr,
         curFrontVideoSampleInfo,
         curRearVideoSampleInfo,
         camId,
@@ -153,12 +150,12 @@ void AcsHandler::getNextVideoSample(
         sessionPtr->getHybridMetaMap()
       );
 
-      if (videoSampleRtpsPtr->length != C::INVALID) {
+      if (videoSampleRtpPtr->length != C::INVALID) {
         // TODO : need to be tested with hybrid D & S
-        const int rtpLen = Util::getRtpPacketLength(videoSampleRtpsPtr->data[2], videoSampleRtpsPtr->data[3]);
+        const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
         unsigned char rtp[len];
-        std::memcpy(rtp, videoSampleRtpsPtr->data, len);
+        std::memcpy(rtp, videoSampleRtpPtr->data, len);
 
         std::vector<unsigned char> buf;
         for (unsigned char c : rtp) buf.push_back(c);

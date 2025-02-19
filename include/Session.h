@@ -2,6 +2,7 @@
 #define SESSION_H
 #include <boost/asio.hpp>
 #include <boost/pool/object_pool.hpp>
+#include <boost/lockfree/queue.hpp>
 #include <atomic>
 #include <cstdint> // For int64_t
 #include <unordered_map>
@@ -29,24 +30,22 @@ class AcsHandler;
 class RtspHandler;
 class RtpHandler;
 
-struct FrontVideoSampleRtps {
-  unsigned char data[3 * 1024 * 1024]; // 3MB
+struct VideoSampleRtp {
+  unsigned char data[5 * 1024 * 1024]; // 5MB
   size_t length;
-  // 1st rtp offset in data array, 1st rtp len in data array, 2nd rtp ....
-  std::array<int, 2*C::FRONT_VIDEO_SAMPLE_POOL_RTP_MAX_LEN> rtpMeta;
-  size_t rtpLength;
-};
-
-struct RearVideoSampleRtps {
-  unsigned char data[2 * 1024 * 1024]; // 2MB
-  size_t length;
-  // 1st rtp offset in data array, 1st rtp len in data array, 2nd rtp ....
-  std::array<int, 2*C::REAR_VIDEO_SAMPLE_POOL_RTP_MAX_LEN> rtpMeta;
-  size_t rtpLength;
+  std::atomic<int> refCount{0};
 };
 
 struct AudioSampleRtp {
   unsigned char data[1500]; // MTU of rtp packet is 1472 byte
+  size_t length;
+};
+
+struct RtpPacketInfo {
+  int flag; // 0 for video, 1 for audio
+  VideoSampleRtp* videoSamplePtr;
+  AudioSampleRtp* audioSamplePtr;
+  size_t offset;
   size_t length;
 };
 
@@ -137,12 +136,15 @@ public:
   void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> switchingRspPtr, bool neetToLimitSample);
   void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& camChangeRspPtr);
 
+  // play and teardown
   void onPlayStart();
   void onTeardown();
-
   void onPlayDone(int streamId);
-
   void recordBitrateTestResult();
+
+  // rtp queue control
+  void enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr);
+  void clearRtpQueue();
 
 private:
   void stopAllTimerTasks();
@@ -150,8 +152,7 @@ private:
 
   bool isPlayDone(int streamId);
   void transmitRtspRes(std::unique_ptr<Buffer> bufPtr);
-  void transmitVideoRtp(FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr);
-  void transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr);
+  void transmitRtp();
 
   void asyncReceive();
 
@@ -171,10 +172,12 @@ private:
   std::vector<bool> playDone = {false, false};
   std::atomic<bool> interruptSending = false;
 
+  // tx queue for rtp.
+  std::unique_ptr<boost::lockfree::queue<RtpPacketInfo*>> rtpQueuePtr;
+
   // memory pool for Video and Audio Sample to prevent head memory fragmentation.
   boost::object_pool<AudioSampleRtp> audioRtpPool;
-  boost::object_pool<FrontVideoSampleRtps> frontVideoRtpPool;
-  boost::object_pool<RearVideoSampleRtps> rearVideoRtpPool;
+  boost::object_pool<VideoSampleRtp> frontVideoRtpPool;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;

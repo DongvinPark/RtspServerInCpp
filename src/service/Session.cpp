@@ -22,7 +22,8 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    bitrateRecodeTask(inputIoContext, inputIntervalMs){
+    bitrateRecodeTask(inputIoContext, inputIntervalMs),
+    rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(5*1024)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
@@ -270,29 +271,14 @@ void Session::onPlayStart() {
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    // pass object pool's memory to read video sample
-    FrontVideoSampleRtps* frontVSamplePtr = frontVideoRtpPool.construct();
-    RearVideoSampleRtps* rearVSamplePtr = rearVideoRtpPool.construct();
-    acsHandlerPtr->getNextVideoSample(frontVSamplePtr, rearVSamplePtr);
-
-    // send to client
-    if (frontVSamplePtr->length != C::INVALID && rearVSamplePtr->length != C::INVALID) {
-      transmitVideoRtp(frontVSamplePtr, rearVSamplePtr);
-    }
+    // TODO : implement later. call getNextVideoSample().
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
-    // pass object pool's memory to read audio sample
-    AudioSampleRtp* aSamplePtr = audioRtpPool.construct();
-    acsHandlerPtr->getNextAudioSample(aSamplePtr);
-
-    // send to clint
-    if (aSamplePtr->length != C::INVALID) {
-      transmitAudioRtp(aSamplePtr);
-    }
+    // TODO : implement later. call getNextAudioSample().
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
@@ -437,52 +423,20 @@ void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += (bufPtr->len * 8);
 }
 
-void Session::transmitVideoRtp(
-  FrontVideoSampleRtps* videoSampleRtpsPtr, RearVideoSampleRtps* rearVSampleRtpsPtr
-) {
-  auto self = shared_from_this();
-
-  for (int i = 0; i < videoSampleRtpsPtr->rtpLength; ++i){
-    boost::asio::async_write(
-      *socketPtr, boost::asio::buffer(videoSampleRtpsPtr->data + videoSampleRtpsPtr->rtpMeta[i*2], videoSampleRtpsPtr->rtpMeta[i*2+1]),
-      [self](const boost::system::error_code& error, std::size_t bytes_transferred){
-            if (error) {
-                std::cerr << "Error sending front video rtp: " << error.message() << std::endl;
-            } else {
-                self->sentBitsSize += static_cast<int>(bytes_transferred * 8);
-            }
-        }
-      );
-  }
-
-  for (int i = 0; i < rearVSampleRtpsPtr->rtpLength; ++i){
-    boost::asio::async_write(
-      *socketPtr,
-      boost::asio::buffer(rearVSampleRtpsPtr->data + rearVSampleRtpsPtr->rtpMeta[i*2], rearVSampleRtpsPtr->rtpMeta[i*2+1]),
-      [self](const boost::system::error_code& error, std::size_t bytes_transferred){
-            if (error) {
-                std::cerr << "Error sending rear video rtp: " << error.message() << std::endl;
-            } else {
-                self->sentBitsSize += static_cast<int>(bytes_transferred * 8);
-            }
-        }
-      );
-  }
+void Session::enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr) {
+  // repeat until success
+  while (!rtpQueuePtr->push(rtpPacketInfoPtr)) {}
 }
 
-void Session::transmitAudioRtp(AudioSampleRtp* audioSampleRtpPtr) {
-  auto self = shared_from_this();
-  boost::asio::async_write(
-    *socketPtr,
-    boost::asio::buffer(audioSampleRtpPtr->data, audioSampleRtpPtr->length),
-    [self](const boost::system::error_code& error, std::size_t bytes_transferred){
-          if (error) {
-              std::cerr << "Error sending audio rtp: " << error.message() << std::endl;
-          } else {
-              self->sentBitsSize += static_cast<int>(bytes_transferred * 8);
-          }
-      }
-    );
+void Session::clearRtpQueue() {
+  // replace the rtp queue with a fresh instance since boost lock free queue does not support .clear() util.
+  // it's because, clear() util needs a locking mechanism but boost lock free has no locking mechanism.
+  auto new_queue = std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(5*1024);
+  rtpQueuePtr.swap(new_queue);  // old queue is discarded
+}
+
+void Session::transmitRtp() {
+  // TODO : implement later. use PeriodicTask to do this task or define new lambda.
 }
 
 void Session::asyncReceive() {
