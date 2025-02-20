@@ -209,7 +209,7 @@ void RtspHandler::handleRtspRequest(
 
           Util::delayedExecutorAsyncByFuture(
               C::DELAY_BEFORE_RTP_START,
-              [&sessionPtr](){sessionPtr->onPlayStart();}
+              [&sessionPtr](){sessionPtr->updatePauseStatus(false);}
           );
 
           sessionPtr->updatePauseStatus(false);
@@ -327,9 +327,6 @@ void RtspHandler::handleRtspRequest(
         }
         sessionPtr->updatePauseStatus(true);
         respondPause(inputBuffer);
-
-        // stop reading video and audio
-        sessionPtr->stopCurrentMediaReadingTasks();
         return;
       } else if (method == "TEARDOWN") {
         respondTeardown(inputBuffer);

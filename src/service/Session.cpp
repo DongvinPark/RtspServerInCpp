@@ -235,6 +235,7 @@ bool Session::onCid(std::string inputCid) {
   return acsHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
 }
 
+
 void Session::onChannel(int trackId, std::vector<int> channels) {
   if (acsHandlerPtr) {
     acsHandlerPtr->setChannel(trackId, channels);
@@ -282,16 +283,20 @@ void Session::onPlayStart() {
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
-    if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+    if (!isPaused){
+      VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+      if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+    }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
-    AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
-    if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
+    if (!isPaused){
+      AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
+      if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
+    }
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
