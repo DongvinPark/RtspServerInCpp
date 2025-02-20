@@ -528,7 +528,21 @@ void Session::asyncReceive() {
           std::vector<unsigned char>(request.begin(), request.end()), 0, request.size()
         );
         handleRtspRequest(*bufferPtr);
+
+        bool isTearRes = false;
+        bool isErrorRes = false;
+        std::string res = bufferPtr->getString();
+        logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
+        for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
+          logger->info(resLine);
+          if (resLine.find("Teardown:") != std::string::npos) isTearRes = true;
+          if (resLine.find("Error:") != std::string::npos) isErrorRes = true;
+        }
+        std::cout << "\n";
         transmitRtspRes(std::move(bufferPtr));
+        if (isTearRes || isErrorRes) {
+          onTeardown();
+        }
       }
 
       // continue receiving reculsively
