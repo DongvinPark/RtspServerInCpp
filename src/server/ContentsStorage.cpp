@@ -33,6 +33,10 @@ void ContentsStorage::init() {
 }
 
 ContentFileMeta & ContentsStorage::getCid(std::string cid) {
+  if (readers.find(cid) == readers.end()) {
+    throw std::runtime_error("Dongvin, invalid cid! : " + cid);
+  }
+
   // return reference : FileReader is not allowed to copy
   ContentFileMeta& fileReader = readers.at(cid);
   return fileReader;

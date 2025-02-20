@@ -486,7 +486,6 @@ int AcsHandler::getSampleTimeIndex(int streamId, int64_t timestamp) {
 }
 
 int64_t AcsHandler::getTimestamp(int sampleNo) {
-  ContentFileMeta& fileReader = contentsStorage.getCid(contentTitle);
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
