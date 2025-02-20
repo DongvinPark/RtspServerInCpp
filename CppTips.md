@@ -1269,18 +1269,19 @@ void bad(){
     <br> 원래 t2.medium EC2의 socket read/write buffer의 사이즈는 둘 다 212992 byte(약 213 KB) 밖에 되지 않는다.
     <br> 그런데 여기에다가 MB 단위의 비디오 샘플들을 33 밀리초마다 한 번씩 전부 socket buffer에 copy 시키니 당연하게도 순간적인 송신 bitrate가 엄청난 spike를 기록하면서 서버가 down 될 수밖에 없었던 것이다.
     <br> 그리고 이러한 행위는 EC2의 credit balance를 짧은 시간 안에 급격하게 떨어뜨리기 때문에, 방치할 경우 요금 폭탄을 맞을 수도 있다.
-```shell
+```c++
 // 현재의 구현은 다음과 같은 사항을 고려하여 설계되었다.
 
 1. 미리 할당된 메모리 공간만을 비디오 및 오디오 TX에 활용함으로써 heap fragmentation 문제를 방지한다.
     >> 여기에는 boost object pool이 사용되었다.
+    >> 관련 내용이 Session.h 의 데이터 멤버 필드에 구현돼 있다.
     
 2. 샘플을 파일 스트림에서 읽어들인 후 바로 전송하는 것이 아니라, rtp 단위로 쪼개서 txQueue에 저장해 놓는다.
-    >> 관련 내용이 Session.cpp와 RtpHandler.cpp 에 구현 돼 있다.
+    >> 관련 내용이 Session.cpp, AcsHandler.cpp, RtpHandler.cpp 에 구현 돼 있다.
     
 3. txQueue에 저장된 RTP 패킷들을 전송하는 일만을 담당하는 전용 PeriodicTask를 정의하여 송신 bitrate가 급등하는 것을 막는다.
-    >> 즉, 샘플을 한 번에 전부 전송하는 것이 아니라, rtp 단위로 쪼개서 rtp를 하나씩 전송하는 것이다.
-    >> CPU 의 클럭수가 충분히 큰 반면 socket buffer라는 물리적 공간의 사이즈는 한정돼 있기 때문에 이렇게 전송하는게 오히려 성능과 효율성의 측면에서 모두 탁월하다.
+    >> 즉, 샘플을 한 번에 전부 전송하는 것이 아니라, rtp 단위로 쪼개서 송신 큐에 답고, 송신 큐에서 rtp를 하나씩 꺼내서 전송하는 것이다.
+    >> CPU 의 클럭수는 GHz 단위로 충분히 큰 반면 socket buffer라는 물리적 공간의 사이즈 기껏해야 수백 KB 단위로 한정돼 있기 때문에 이렇게 전송하는게 오히려 성능과 효율성의 측면에서 모두 탁월하다.
     >> txQueue로는 mutex lock & unlock이 필요없는 thread safe 큐인 boost lock free 큐를 사용하여 불필요한 locking/unlocking 연산을 없앴다.
 
 
@@ -1293,7 +1294,36 @@ sysctl net.core.rmem_max
 // Amazon Linux가 설치된 머신에서 socket buffer size를 특정 값으로 변경할 때 사용하는 명령어이다.
 sudo sysctl -w net.core.wmem_max=5242880
 sudo sysctl -w net.core.rmem_max=5242880
+```
+<br><br/>
+38. Map을 탐색할 때는 바로 .at(key) 또는 map[key] 으로 객체를 꺼내지 말고, find()를 호출해서 iterator로 꺼내자.
+    <br> .at(key) 또는 map[key]로 바로 꺼내면, 해당 key가 맵에 존재하지 않을 때 out of range 예외가 뜨면서 앱이 바로 죽는다.
+    <br> 이 방법은 map 뿐만 아니라, std::vector<T> 등의 다른 컨텐이너에서도 활용할 수 있다.
+```c++
+// RtpHandler 내의 readVideoSample() 가 성능을 위해서 noexcept로 선언 돼 있고,
+// out of range exception을 막가 위해서 iterator 기반 find로 맵을 탐색하고 있다. 
+void RtpHandler::readVideoSample(
+  VideoSampleRtp* videoSampleRtpPtr,
+  const VideoSampleInfo& curFrontVideoSampleInfo,
+  const VideoSampleInfo& curRearVideoSampleInfo,
+  int camId,
+  int vid,
+  int sampleNo,
+  HybridMetaMapType &hybridMetaMap
+) noexcept {
+  // camIt 가 바로 map.find(key)의 결과로서 반환 되는 iterator 다.
+  const auto camIt = camIdVideoFileStreamMap.find(camId);
+  if (camIt == camIdVideoFileStreamMap.end() || camIt->second.size() < 2) {
+    logger->severe("Dongvin, invalid camId or insufficient video file streams! camId: " + std::to_string(camId));
+    return;
+  }
 
+  // iterator를 이용해서 필요한 객체의 참조를 얻는다.
+  std::ifstream& frontVideoFileReadingStream = camIt->second[0];
+  std::ifstream& rearVideoFileReadingStream = camIt->second[1];
+
+  // ... std::ifstream 들을 이용해서 비디오 샘플들을 읽는다 ...
+}
 ```
     
 
