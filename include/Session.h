@@ -172,6 +172,9 @@ private:
   std::vector<bool> playDone = {false, false};
   std::atomic<bool> interruptSending = false;
 
+  // for rtsp msg rx/tx
+  std::string rtspBuffer;
+
   // tx queue for rtp.
   std::unique_ptr<boost::lockfree::queue<RtpPacketInfo*>> rtpQueuePtr;
 

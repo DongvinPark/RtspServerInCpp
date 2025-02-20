@@ -85,6 +85,7 @@ namespace C {
     constexpr char PLAY_TIME_KEY[] = "playtime=";
 
     // RTSP
+    constexpr int RTSP_MSG_BUFFER_SIZE = 10*1024; // 10 KB
     const std::vector<std::string> RTSP_METHOD_VECTOR = {
         "DESCRIBE","SETUP","PLAY","PAUSE","TEARDOWN","SET_PARAMETER","OPTIONS" // !! "OPTIONS" must be the last.
     };

@@ -499,38 +499,34 @@ void Session::asyncReceive() {
     return;
   }
 
-  auto buf = std::make_shared<std::vector<unsigned char>>(10 * 1024); // Shared buffer
+  auto buf = std::make_shared<std::vector<unsigned char>>(C::RTSP_MSG_BUFFER_SIZE);  // shared buffer
   socketPtr->async_read_some(boost::asio::buffer(*buf),
     [this, buf](const boost::system::error_code& error, std::size_t bytesRead) {
       if (error) {
         if (error == boost::asio::error::eof) {
-          logger->warning("Connection closed by peer. session id : " + sessionId);
+          logger->warning("Dongvin, connection closed by peer. session id : " + sessionId);
+          onTeardown();
         } else {
-          logger->severe("Receive failed: " + error.message());
+          logger->severe("Dongvin, receiving request failed: " + error.message());
         }
         return;
       }
-
-      buf->resize(bytesRead);
-      auto bufferPtr = std::make_unique<Buffer>(*buf, 0, bytesRead);
-      handleRtspRequest(*bufferPtr);
-
-      bool isTearRes = false;
-        bool isErrorRes = false;
-        std::string res = bufferPtr->getString();
-        logger->warning("Dongvin, " + sessionId + ", rtsp response: ");
-        for (auto& resLine : Util::splitToVecByStringForRtspMsg(res, C::CRLF)) {
-          logger->info(resLine);
-          if (resLine.find("Teardown:") != std::string::npos) isTearRes = true;
-          if (resLine.find("Error:") != std::string::npos) isTearRes = true;
-        }
-        std::cout << "\n";
+      // append new data to the RTSP buffer. rtspBuffer is initialized at Session.h as a member of Session class.
+      rtspBuffer.append(reinterpret_cast<char*>(buf->data()), bytesRead);
+      // extract complete one requests and process it
+      while (true) {
+        size_t pos = rtspBuffer.find(C::CRLF2);  // look for full RTSP request
+        if (pos == std::string::npos) break;  // no complete request yet
+        std::string request = rtspBuffer.substr(0, pos + 4);
+        rtspBuffer.erase(0, pos + 4);  // Remove processed request
+        auto bufferPtr = std::make_unique<Buffer>(
+          std::vector<unsigned char>(request.begin(), request.end()), 0, request.size()
+        );
+        handleRtspRequest(*bufferPtr);
         transmitRtspRes(std::move(bufferPtr));
-        if (isTearRes || isErrorRes) {
-          onTeardown();
-        }
+      }
 
-      // continue receiving
+      // continue receiving reculsively
       asyncReceive();
     }
   );

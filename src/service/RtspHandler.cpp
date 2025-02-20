@@ -51,7 +51,7 @@ void RtspHandler::handleRtspRequest(
   }
   int next = cSeq + 1;
   if (next != _cSeq) {
-    logger->severe("Dongvin, bad sequence number!");
+    logger->severe("Dongvin, bad sequence number! server side/client side : " + std::to_string(next) + "/" + std::to_string(_cSeq));
     respondError(inputBuffer, 400, method);
     return;
   }
@@ -216,6 +216,7 @@ void RtspHandler::handleRtspRequest(
           return;
         } else if (isSeekRequest(strings)) {
           // dongvin, play req for Seek operation
+          sessionPtr->clearRtpQueue();
           sessionPtr->stopCurrentMediaReadingTasks();
 
           std::vector<float> npt = findNormalPlayTime(strings);
@@ -248,7 +249,7 @@ void RtspHandler::handleRtspRequest(
               [&sessionPtr](){sessionPtr->updatePauseStatus(true);}
             );
           } else {
-            sessionPtr->updatePauseStatus(true);
+            sessionPtr->updatePauseStatus(false);
           }
           return;
         } else {
