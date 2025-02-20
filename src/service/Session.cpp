@@ -324,6 +324,11 @@ void Session::recordBitrateTestResult() {
     return;
   }
 
+  if (utcTimeSecBitSizeMap.size() < 1) {
+    logger->severe("Dongvin, no data to save!");
+    return;
+  }
+
   std::string utcTime = Util::getCurrentUtcTimeString();
 
   std::string resultFileName = contentTitle + "_"
