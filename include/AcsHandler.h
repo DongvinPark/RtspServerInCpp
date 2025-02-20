@@ -31,7 +31,7 @@ public:
 
   void setChannel(int streamId, std::vector<int> ch);
   void initUserRequestingPlaytime(std::vector<float> timeS);
-  void setRtpInfo(RtpInfo inputRtpInfo);
+  [[nodiscard]] bool setRtpInfo(RtpInfo inputRtpInfo);
   bool setReaderAndContentTitle(ContentFileMeta& inputReader, std::string contentTitle);
   int getLastVideoSampleNumber();
   int getLastAudioSampleNumber();

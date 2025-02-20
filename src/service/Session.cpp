@@ -173,10 +173,9 @@ int Session::getNumberOfCamDirectories() {
   std::string contentTitle = getContentTitle();
   if(contentsStorage.getContentFileMetaMap().count(contentTitle)) {
     return contentsStorage.getContentFileMetaMap().at(contentTitle).getNumberOfCamDirectories();
-  } else {
-    logger->severe("Dongvin, failed to find content in ContentsStorage! :: getNumberOfCamDirectories()");
-    return C::INVALID;
   }
+  logger->severe("Dongvin, failed to find content in ContentsStorage! :: getNumberOfCamDirectories()");
+  return C::INVALID;
 }
 
 int Session::getRefVideoSampleCnt() {
@@ -233,8 +232,7 @@ void Session::handleRtspRequest(Buffer& buf) {
 bool Session::onCid(std::string inputCid) {
   logger->warning("Dongvin, requested content : " + inputCid + ", session id : " + sessionId);
   ContentFileMeta& fileReader = contentsStorage.getCid(inputCid);
-  acsHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
-  return true;
+  return acsHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
 }
 
 void Session::onChannel(int trackId, std::vector<int> channels) {
@@ -273,6 +271,14 @@ void Session::onPlayStart() {
   // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
   int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
   int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
+
+  if (videoInterval == C::INVALID || audioInterval == C::INVALID) {
+    logger->severe(
+      "Dongvin, failed to get unit frame time! video, audio >> " +
+      std::to_string(videoInterval) + "," + std::to_string(audioInterval)
+    );
+    return;
+  }
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){

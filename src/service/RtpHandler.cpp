@@ -61,7 +61,14 @@ RtpHandler::~RtpHandler() {
 
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurVideoSample(int sampleNo, int64_t offset, int64_t len) noexcept {
   std::vector<unsigned char> buf(len);
-  std::ifstream& videoFileReadingStream = camIdVideoFileStreamMap.at(0).at(0);
+
+  const auto camIt = camIdVideoFileStreamMap.find(0);
+  if (camIt == camIdVideoFileStreamMap.end() || camIt->second.empty()) {
+    logger->severe("Dongvin, video file stream map is empty or invalid!");
+    return nullptr;
+  }
+
+  std::ifstream& videoFileReadingStream = camIt->second[0]; // Ensure there is at least one element
 
   if (!videoFileReadingStream.is_open()) {
     logger->severe("Dongvin, video file stream is not open!");
@@ -93,8 +100,15 @@ void RtpHandler::readVideoSample(
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
   // TODO : need to implement hybrid D & S later.
-  std::ifstream& frontVideoFileReadingStream = camIdVideoFileStreamMap.at(camId).at(0);
-  std::ifstream& rearVideoFileReadingStream = camIdVideoFileStreamMap.at(camId).at(1);
+
+  const auto camIt = camIdVideoFileStreamMap.find(camId);
+  if (camIt == camIdVideoFileStreamMap.end() || camIt->second.size() < 2) {
+    logger->severe("Dongvin, invalid camId or insufficient video file streams! camId: " + std::to_string(camId));
+    return;
+  }
+
+  std::ifstream& frontVideoFileReadingStream = camIt->second[0];
+  std::ifstream& rearVideoFileReadingStream = camIt->second[1];
 
   if (!frontVideoFileReadingStream.is_open() || !rearVideoFileReadingStream.is_open()) {
     logger->severe("Dongvin, video file stream is not open!");

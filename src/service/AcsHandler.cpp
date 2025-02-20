@@ -69,12 +69,16 @@ void AcsHandler::initUserRequestingPlaytime(std::vector<float> timeS) {
   }
 }
 
-void AcsHandler::setRtpInfo(RtpInfo inputRtpInfo) {
+[[nodiscard]] bool AcsHandler::setRtpInfo(RtpInfo inputRtpInfo) {
   this->rtpInfo = inputRtpInfo;
 
   std::vector<int64_t> us = getUnitFrameTimeUs();
-  sInfo.at(C::VIDEO_ID).unitTimeUs = us[C::VIDEO_ID];
-  sInfo.at(C::AUDIO_ID).unitTimeUs = us[C::AUDIO_ID];
+  if (sInfo.find(C::VIDEO_ID) != sInfo.end() && sInfo.find(C::AUDIO_ID) != sInfo.end()) {
+    sInfo.at(C::VIDEO_ID).unitTimeUs = us[C::VIDEO_ID];
+    sInfo.at(C::AUDIO_ID).unitTimeUs = us[C::AUDIO_ID];
+    return true;
+  }
+  return false;
 }
 
 bool AcsHandler::setReaderAndContentTitle(ContentFileMeta& inputReader, std::string inputContentTitle) {
@@ -97,8 +101,7 @@ bool AcsHandler::setReaderAndContentTitle(ContentFileMeta& inputReader, std::str
     sInfo.at(C::VIDEO_ID).maxSampleNo = refVideoSampleSize-1;
     sInfo.at(C::AUDIO_ID).maxSampleNo = audioSampleSize-1;
 
-    setRtpInfo(inputReader.getRtpInfoCopy());
-    return true;
+    return setRtpInfo(inputReader.getRtpInfoCopy());
   }
   logger->severe(
     "Dongvin, video meta init wrong! refVideoSampleCnt : audioSampleCnt "
@@ -108,11 +111,17 @@ bool AcsHandler::setReaderAndContentTitle(ContentFileMeta& inputReader, std::str
 }
 
 int AcsHandler::getLastVideoSampleNumber() {
-  return sInfo.at(C::VIDEO_ID).maxSampleNo;
+  if (sInfo.find(C::VIDEO_ID) != sInfo.end()) {
+    return sInfo.at(C::VIDEO_ID).maxSampleNo;
+  }
+  return C::INVALID;
 }
 
 int AcsHandler::getLastAudioSampleNumber() {
-  return sInfo.at(C::AUDIO_ID).maxSampleNo;
+  if (sInfo.find(C::AUDIO_ID) != sInfo.end()){
+    return sInfo.at(C::AUDIO_ID).maxSampleNo;
+  }
+  return C::INVALID;
 }
 
 std::vector<unsigned char> AcsHandler::getAccData() {
@@ -127,6 +136,10 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
+      if (sInfo.find(C::VIDEO_ID) == sInfo.end()) {
+        logger->severe("Dongvin, cannot find video RtpInfo! : getNextVideoSample.");
+        return;
+      }
       ReadInfo& info = sInfo.at(C::VIDEO_ID);
       if (info.isDone()) {
         videoSampleRtpPtr->length = C::INVALID;
@@ -178,6 +191,10 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
+      if (sInfo.find(C::AUDIO_ID) == sInfo.end()) {
+        logger->severe("Dongvin, cannot find audio RtpInfo! : getNextAudioSample.");
+        return;
+      }
       ReadInfo& info = sInfo.at(C::AUDIO_ID);
       if (info.isDone()) {
         audioSampleRtpPtr->length = C::INVALID;
@@ -233,7 +250,10 @@ int64_t AcsHandler::getUnitFrameTimeUs(int streamId) {
   } else {
     targetStreamId = streamId;
   }
-  return sInfo.at(targetStreamId).unitTimeUs;
+  if (sInfo.find(targetStreamId) != sInfo.end()){
+    return sInfo.at(targetStreamId).unitTimeUs;
+  }
+  return C::INVALID;
 }
 
 std::string AcsHandler::getMediaInfo() {
@@ -241,6 +261,9 @@ std::string AcsHandler::getMediaInfo() {
 }
 
 std::vector<int64_t> AcsHandler::getSsrc() {
+  if (rtpInfo.kv.find(C::SSRC_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get ssrc vector!");
+  }
   return rtpInfo.kv.at(C::SSRC_KEY);
 }
 
@@ -271,14 +294,23 @@ std::vector<int64_t> AcsHandler::getTimestamp() {
 }
 
 int64_t AcsHandler::getTimestamp0(int streamId) {
+  if (rtpInfo.kv.find(C::TIMESTAMP_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get first timestamp! streamId : " + std::to_string(streamId));
+  }
   return rtpInfo.kv.at(C::TIMESTAMP_KEY)[streamId];
 }
 
 int64_t AcsHandler::getUnitFrameCount(int streamId) {
+  if (rtpInfo.kv.find(C::FRAME_COUNT_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get unit frame count! streamId : " + std::to_string(streamId));
+  }
   return rtpInfo.kv.at(C::FRAME_COUNT_KEY)[streamId];
 }
 
 std::vector<int64_t> AcsHandler::getUnitFrameCount() {
+  if (rtpInfo.kv.find(C::FRAME_COUNT_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get unit frame count vector!");
+  }
   return rtpInfo.kv.at(C::FRAME_COUNT_KEY);
 }
 
@@ -295,14 +327,23 @@ void AcsHandler::setStreamUrl(int streamId, std::string url) {
 }
 
 std::vector<int64_t> AcsHandler::getPlayTimeUs() {
+  if (rtpInfo.kv.find(C::PLAY_TIME_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get play time duration vector!");
+  }
   return rtpInfo.kv.at(C::PLAY_TIME_KEY);
 }
 
 int64_t AcsHandler::getPlayTimeUs(int streamId) {
+  if (rtpInfo.kv.find(C::PLAY_TIME_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get play time duration! streamId : " + std::to_string(streamId));
+  }
   return rtpInfo.kv.at(C::PLAY_TIME_KEY)[streamId];
 }
 
 std::vector<int64_t> AcsHandler::getGop() {
+  if (rtpInfo.kv.find(C::GOP_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get gop vector!");
+  }
   return rtpInfo.kv.at(C::GOP_KEY);
 }
 
@@ -354,6 +395,9 @@ int AcsHandler::findKeySampleNumber(int streamId, int64_t timeUs, int way) {
   int gop = static_cast<int>(getGop()[0]);
 
   if(timeUs<0 || timeUs>=getPlayTimeUs(streamId)) {
+    if (sInfo.find(streamId) == sInfo.end()) {
+      throw std::runtime_error("Dongvin, failed to find key sample number!");
+    }
     int max = sInfo.at(streamId).maxSampleNo;
     int residue = max%gop;
     return residue==0?max:max-residue;
@@ -378,12 +422,18 @@ int AcsHandler::findKeySampleNumber(int streamId, int64_t timeUs, int way) {
 
 int AcsHandler::findSampleNumber(int streamId, int64_t timeUs) {
   if (timeUs < 0 || timeUs >= getPlayTimeUs(streamId)){
+    if (sInfo.find(streamId) == sInfo.end()){
+      throw std::runtime_error("Dongvin, failed to find sample number!");
+    }
     return sInfo.at(streamId).maxSampleNo;
   }
   return getSampleNumber(streamId, timeUs);
 }
 
 int AcsHandler::getSampleNumber(int streamId, int64_t timeUs) {
+  if (sInfo.find(streamId) == sInfo.end()){
+    throw std::runtime_error("Dongvin, failed to find sample number!");
+  }
   int64_t t0 = sInfo.at(streamId).unitTimeUs;
   return static_cast<int>(std::round(static_cast<double>(timeUs)/static_cast<double>(t0)));
 }
@@ -395,6 +445,9 @@ void AcsHandler::findNextSampleForSwitchingVideo(int nextVid, std::vector<int64_
 }
 
 std::vector<int64_t> AcsHandler::getUnitFrameTimeUs() {
+  if (rtpInfo.kv.find(C::FRAME_COUNT_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Dongvin, failed to get unit frame count! : getUnitFrameTimeUs()");
+  }
   std::vector<int64_t> frameCount = rtpInfo.kv.at(C::FRAME_COUNT_KEY);
   return {
     (1000000*frameCount[0]/C::H265_CLOCK_RATE), // us
@@ -414,13 +467,22 @@ int64_t AcsHandler::getSamplePresentationTimeUs(int streamId, int64_t timestamp)
 }
 
 int64_t AcsHandler::getSamplePresentationTimeUs(int streamId, int sampleTimeIndex) {
-  int clock = streamId == C::VIDEO_ID ? C::H265_CLOCK_RATE : C::AAC_CLOCK_RATE;
-  int unitFrameCount = sInfo.at(streamId).unitFrameCount;
-  return sampleTimeIndex*unitFrameCount*1000000L/clock;
+  if (sInfo.find(streamId) != sInfo.end()){
+    int clock = streamId == C::VIDEO_ID ? C::H265_CLOCK_RATE : C::AAC_CLOCK_RATE;
+    int unitFrameCount = sInfo.at(streamId).unitFrameCount;
+    return sampleTimeIndex*unitFrameCount*1000000L/clock;
+  } else {
+    logger->severe("Dongvin, failed to get unit frame count! stream id : " + std::to_string(streamId));
+    return C::INVALID;
+  }
 }
 
 int AcsHandler::getSampleTimeIndex(int streamId, int64_t timestamp) {
-  return static_cast<int>( (timestamp-getTimestamp0(streamId))/sInfo.at(streamId).unitFrameCount );
+  if (sInfo.find(streamId) != sInfo.end()) {
+    return static_cast<int>( (timestamp-getTimestamp0(streamId))/sInfo.at(streamId).unitFrameCount );
+  }
+  logger->severe("Dongvin, failed to get unit frame count! stream id : " + std::to_string(streamId));
+  return C::INVALID;
 }
 
 int64_t AcsHandler::getTimestamp(int sampleNo) {

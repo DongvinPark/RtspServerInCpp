@@ -32,6 +32,9 @@ int ContentFileMeta::getNumberOfCamDirectories() const {
 
 int ContentFileMeta::getRefVideoSampleCnt() const {
   // return cam 0's V1 video files sample cnt
+  if (videoFiles.find(C::REF_CAM) == videoFiles.end()) {
+    throw std::runtime_error("ref cam directory not initialized!");
+  }
   return static_cast<int>(videoFiles.at(C::REF_CAM).getConstVideoSampleInfoList()[0].size());
 }
 
@@ -375,6 +378,9 @@ void ContentFileMeta::loadRtpMemberVideoMetaData(
 
   int sampleCount = 0;
   int64_t offset = 0;
+  if (rtpInfo.kv.find(C::GOP_KEY) == rtpInfo.kv.end()) {
+    throw std::runtime_error("Failed to find gop key! : loadRtpMemberVideoMetaData");
+  }
   std::vector<int64_t> gops = rtpInfo.kv[C::GOP_KEY];
   int gop = static_cast<int>(gops[0]);
 

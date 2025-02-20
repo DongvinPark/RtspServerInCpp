@@ -118,8 +118,7 @@ void RtspHandler::handleRtspRequest(
 
         userName = findUserName(strings);
         std::string cid = findContents(strings[0]);
-        bool isContentExists = sessionPtr->onCid(cid);
-        if (isContentExists) {
+        if (sessionPtr->onCid(cid)) {
           respondOptions(inputBuffer);
           return;
         }
@@ -500,13 +499,20 @@ void RtspHandler::respondPlay(
     lastVideoSampleNo = acsHandler->getLastVideoSampleNumber();
     lastAudioSampleNo = acsHandler->getLastAudioSampleNumber();
     if (lastVideoSampleNo > C::ZERO && lastAudioSampleNo > C::ZERO) initResult = true;
-    else initResult = false;
+    else {
+      logger->severe("Dongvin, sample meta init failed!");
+      respondError(buffer, 500, "PLAY");
+      return;
+    }
   }
   if (auto sessionPtr = parentSessionPtr.lock()) {
     supportingBitrateType = getSupportingBitrateTypes(sessionPtr->get_mbpsTypeList());
     numberOfCamDirectories = sessionPtr->getNumberOfCamDirectories();
     if (numberOfCamDirectories > C::ZERO) initResult = true;
-    else initResult = false;
+    else {
+      logger->severe("Dongvin, session meta init failed!");
+      respondError(buffer, 500, "PLAY");
+    }
   }
 
   std::string rsp;
@@ -536,7 +542,6 @@ void RtspHandler::respondPlay(
   } else {
     logger->severe("Dongvin, Failed to init Rtp-Info header for PLAY request");
     respondError(buffer, 500, "PLAY");
-    return;
   }
 }
 
