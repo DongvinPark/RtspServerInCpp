@@ -531,7 +531,7 @@ void Session::transmitRtp() {
 
 void Session::asyncReceive() {
   if (isRecordSaved) {
-    logger->severe("Dongvin, receive:: session already shutdown.");
+    logger->severe("Dongvin, session already shutdown.");
     return;
   }
   if (!socketPtr->is_open()) {
@@ -553,7 +553,7 @@ void Session::asyncReceive() {
       }
       // append new data to the RTSP buffer. rtspBuffer is initialized at Session.h as a member of Session class.
       rtspBuffer.append(reinterpret_cast<char*>(buf->data()), bytesRead);
-      // extract complete one requests and process it
+      // parse and extract one requests and process it
       while (true) {
         size_t pos = rtspBuffer.find(C::CRLF2);  // look for full RTSP request
         if (pos == std::string::npos) break;  // no complete request yet

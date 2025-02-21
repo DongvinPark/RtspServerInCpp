@@ -1325,6 +1325,52 @@ void RtpHandler::readVideoSample(
   // ... std::ifstream 들을 이용해서 비디오 샘플들을 읽는다 ...
 }
 ```
+<br><br/>
+39. boost.asio 의 tcp 소켓에서 async_read_some()을 사용할 때 주의할 점
+    <br> 정확히 1 개의 요청을 받이들이는 것이 아니라, 뭔가 요청이 소켓 버퍼에 들어오면 주어진 버퍼 사이즈가 허락하는 한 전부 읽어들이는 것이다.
+    <br> 따라서 다수의 RTSP 요청이 운 나쁘게도 거의 동시에 왔을 경우, 여러 개의 요청을 한 번의 async_read_some()으로 전부 읽어들일 수도 있다.
+    <br> async_read_some() 으로 읽어들인 buffer의 내용을 가지고 별도의 처리 없이 바로 rtsp msg 처리를 하면 2 개의 요청을 하나로 인식하는 바람에 다음 요청 때는 CSeq 번호가 꼬이면서 서버가 클라이언트에게 400 bad request를 리턴하게 된다.
+    <br> 이 문제를 피하기 위해서는 buffer의 내용을 다른 곳으로 옮겨 놓은 후, 여기에서 별도로 rtsp request 를 하나씩 꺼내서 처리해야 한다. 즉, 요청들에 대한 parsing을 해야 한다.
+```c++
+// 그 방법이 Session.cpp 의 최하단에 있는 asyncReceive() 함수에 구현 돼 있다.
+// 세션이 시작될 때, asyncReceive() 함수가 최초로 호출 된다.
+void Session::asyncReceive() {
+  // ... 오류 처리 ...
+  
+  auto buf = std::make_shared<std::vector<unsigned char>>(C::RTSP_MSG_BUFFER_SIZE);
+  socketPtr->async_read_some(
+    boost::asio::buffer(*buf),
+    [this, buf](const boost::system::error_code& error, std::size_t bytesRead) {
+      // ... 오류 처리 ...
+      
+      // 방금 읽어들을 요청 1 개 또는 여러 개를 별도의 버퍼에 담는다.
+      rtspBuffer.append(reinterpret_cast<char*>(buf->data()), bytesRead);
+      
+      // 다음의 while 루프에서 정확하게 딱 1 개의 rtsp 요청을 꺼내서 처리한다.
+      // 모든 RTSP 요청은 반드시 \r\n\r\n(== C::CRLF2 상수) 으로 끝나야 한다는 점을 이용한 것이다.
+      while (true) {
+        size_t pos = rtspBuffer.find(C::CRLF2);
+        if (pos == std::string::npos) break; // 처리할 요청이 없으면 루프를 끝낸다.
+        
+        std::string request = rtspBuffer.substr(0, pos + 4);
+        rtspBuffer.erase(0, pos + 4);
+        
+        auto bufferPtr = std::make_unique<Buffer>(
+          std::vector<unsigned char>(request.begin(), request.end()), 0, request.size()
+        );
+        handleRtspRequest(*bufferPtr);
+        
+        // ... 응답 내용 출력 ...
+        
+        transmitRtspRes(std::move(bufferPtr));
+      }// end of while
+
+      // 다음 요청을 기다리기 위해서 재귀적으로 자기 자신을 호출하여 요청 처리 루프를 만든다.
+      asyncReceive();
+    }// end of lambda
+  );// end of async_read_some()
+}
+```
     
 
 
