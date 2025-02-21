@@ -502,13 +502,11 @@ void Session::transmitRtp() {
     boost::system::error_code ignored_error;
     if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
       // tx video rtp
-      if (doNotSendVideoRtp == false) {
-        boost::asio::write(
+      boost::asio::write(
           *socketPtr,
           boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
           ignored_error
-        );
-      }
+      );
       // free videoSamplePool only when all rtp packets are transported to clint
       if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
         videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);

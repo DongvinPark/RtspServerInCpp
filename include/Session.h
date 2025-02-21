@@ -182,9 +182,6 @@ private:
   boost::object_pool<AudioSampleRtp> audioRtpPool;
   boost::object_pool<VideoSampleRtp> videoRtpPool;
 
-  // for cam switching
-  bool doNotSendVideoRtp = false;
-
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;
   int64_t sessionDestroyTimeSecUtc = C::INVALID_OFFSET;
