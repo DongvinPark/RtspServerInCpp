@@ -105,7 +105,7 @@ public:
   int64_t getPlayTimeDurationMillis();
   void updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis);
 
-  void stopCurrentMediaReadingTasks();
+  void stopCurrentMediaReadingTasks(bool needToStopAudioReadingTask);
 
   float get_mbpsCurBitrate() const;
   void set_kbpsBitrate(int input_kbps);
@@ -133,11 +133,11 @@ public:
   void onChannel(int trackId, std::vector<int> channels);
   void onUserRequestingPlayTime(std::vector<float> playTimeSec);
 
-  void onSwitching(int nextId, std::vector<int64_t> switchingTimeInfo, std::unique_ptr<Buffer> switchingRspPtr, bool neetToLimitSample);
-  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo, Buffer& camChangeRspPtr);
+  void onCameraChange(int nextCam, int nextId, std::vector<int64_t> switchingTimeInfo);
 
   // play and teardown
   void onPlayStart();
+  void startPlayForCamSwitching();
   void onTeardown();
   void onPlayDone(int streamId);
   void recordBitrateTestResult();
@@ -181,6 +181,9 @@ private:
   // memory pool for Video and Audio Sample to prevent head memory fragmentation.
   boost::object_pool<AudioSampleRtp> audioRtpPool;
   boost::object_pool<VideoSampleRtp> videoRtpPool;
+
+  // for cam switching
+  bool doNotSendVideoRtp = false;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;

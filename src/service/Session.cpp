@@ -134,9 +134,11 @@ void Session::updatePlayTimeDurationMillis(int64_t inputPlayTimeDurationMillis) 
   playTimeMillis = inputPlayTimeDurationMillis;
 }
 
-void Session::stopCurrentMediaReadingTasks() {
+void Session::stopCurrentMediaReadingTasks(bool needToStopAudioReadingTask) {
   for (const auto& videoReadingTaskPtr : videoReadingTaskVec) videoReadingTaskPtr->stop();
-  for (const auto& audioReadingTaskPtr : audioReadingTaskVec) audioReadingTaskPtr->stop();
+  if (needToStopAudioReadingTask) {
+    for (const auto& audioReadingTaskPtr : audioReadingTaskVec) audioReadingTaskPtr->stop();
+  }
 }
 
 float Session::get_mbpsCurBitrate() const {
@@ -252,20 +254,23 @@ void Session::onUserRequestingPlayTime(std::vector<float> playTimeSec) {
   acsHandlerPtr->initUserRequestingPlaytime(playTimeSec);
 }
 
-void Session::onSwitching(
-  int nextId,
-  std::vector<int64_t> switchingTimeInfo,
-  std::unique_ptr<Buffer> switchingRspPtr,
-  bool neetToLimitSample
-) {
-}
-
 void Session::onCameraChange(
   int nextCam,
   int nextId,
-  std::vector<int64_t> switchingTimeInfo,
-  Buffer& camChangeRspPtr
+  std::vector<int64_t> switchingTimeInfo // first half :video, last half : audio
 ) {
+  if (switchingTimeInfo.size() != 2){
+    logger->severe("Dongvin, invalid switching time info!");
+    return;
+  }
+  // stop sending rtp and restart with the new position of rtp
+  acsHandlerPtr->setCamId(nextCam);
+  int taIdx = static_cast<int>(switchingTimeInfo[1]);
+  bool needToStopAudio{taIdx != C::INVALID};
+
+  stopCurrentMediaReadingTasks(needToStopAudio);
+  acsHandlerPtr->findNextSampleForSwitching(nextId, switchingTimeInfo);
+  startPlayForCamSwitching();
 }
 
 void Session::onPlayStart() {
@@ -308,6 +313,38 @@ void Session::onPlayStart() {
     throw std::runtime_error("Dongvin, failed to start media reading timer tasks : " + sessionId);
   }
 }
+
+void Session::startPlayForCamSwitching() {
+  logger->info("Dongvin, start cam switching!");
+  int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+
+  // fast transport video frames.
+  for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
+    if (!isPaused){
+      VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+      if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+    }
+  }
+  logger->info2("Dongvin, fast transported video samples. cnt : " + std::to_string(C::FAST_TX_FACTOR_FOR_CAM_SWITCHING));
+
+  // start normal video tx task.
+  std::chrono::milliseconds vInterval(videoInterval);
+  auto videoSampleReadingTask = [&](){
+    if (!isPaused){
+      VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+      if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+    }
+  };
+  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
+  videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
+  logger->info2("Dongvin, video reading task for cam switching started!");
+  if (!videoReadingTaskVec.empty()){
+    videoReadingTaskVec.back()->start();
+  } else {
+    throw std::runtime_error("Dongvin, failed to start video reading timer task for cam switching : " + sessionId);
+  }
+}
+
 
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
@@ -465,12 +502,13 @@ void Session::transmitRtp() {
     boost::system::error_code ignored_error;
     if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
       // tx video rtp
-      boost::asio::write(
-        *socketPtr,
-        boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
-        ignored_error
-      );
-
+      if (doNotSendVideoRtp == false) {
+        boost::asio::write(
+          *socketPtr,
+          boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
+          ignored_error
+        );
+      }
       // free videoSamplePool only when all rtp packets are transported to clint
       if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
         videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
@@ -482,7 +520,6 @@ void Session::transmitRtp() {
         boost::asio::buffer(rtpPacketInfoPtr->audioSamplePtr->data, rtpPacketInfoPtr->length),
         ignored_error
       );
-
       // free audioSamplePool only when all rtp packets are transported to clint
       if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
         audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);

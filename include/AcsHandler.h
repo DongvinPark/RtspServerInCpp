@@ -64,8 +64,8 @@ private:
   int findKeySampleNumber(int streamId, int64_t timeUs, int way);
   int findSampleNumber(int streamId, int64_t timeUs);
   int getSampleNumber(int streamId, int64_t timeUs);
-  int findNextSampleForSwitchingAudio(std::vector<int64_t> timeInfo);
-  void findNextSampleForSwitchingVideo(int nextVid, std::vector<int64_t> timeInfo);
+  void findNextSampleForSwitchingAudio(int64_t targetSampleNo);
+  void findNextSampleForSwitchingVideo(int64_t targetSampleNo);
   std::vector<int64_t> getUnitFrameTimeUs();
   int64_t getSamplePresentationTimeUs(int streamId, int64_t timestamp);
   int64_t getSamplePresentationTimeUs(int streamId, int sampleTimeIndex);

@@ -211,7 +211,7 @@ void RtspHandler::handleRtspRequest(
         } else if (isSeekRequest(strings)) {
           // dongvin, play req for Seek operation
           //sessionPtr->clearRtpQueue();
-          sessionPtr->stopCurrentMediaReadingTasks();
+          sessionPtr->stopCurrentMediaReadingTasks(true);
 
           std::vector<float> npt = findNormalPlayTime(strings);
           if (npt.empty() || !isValidPlayTime(npt)) {
@@ -377,19 +377,20 @@ void RtspHandler::handleRtspRequest(
             respondError(inputBuffer, 400, method);
             return;
           }
-          sessionPtr->onCameraChange(cam, nextVid, switchingInfo, inputBuffer);
-        } else {
-          logger->info("Dongvin, invalid set_parameter header!");
-          respondError(inputBuffer, 400, method);
+          respondCameraChange(inputBuffer, cam);
+          sessionPtr->onCameraChange(cam, nextVid, switchingInfo);
           return;
         }
+        logger->info("Dongvin, invalid set_parameter header!");
+        respondError(inputBuffer, 400, method);
+        return;
       } else {
-        logger->warning("Dongvin, invalid method: " + method);
+        logger->warning("Dongvin, invalid or not implemented method: " + method);
         respondError(inputBuffer, 400, method);
         return;
       }
 
-      if (inputBuffer.getString().size() > 0) {
+      if (!inputBuffer.getString().empty()) {
         logger->info("Dongvin, id : " + sessionId + ", rtsp response: \n" + inputBuffer.getString());
       }
       return;
@@ -400,8 +401,7 @@ void RtspHandler::handleRtspRequest(
   }
   logger->severe("Dongvin, failed to get weak session ptr!");
   respondError(inputBuffer, 500, method);
-  return;
-}
+}// end of handleRtspRequest();
 
 bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
   std::string _sessionId = findSessionId(strings);

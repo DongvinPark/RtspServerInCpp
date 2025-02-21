@@ -366,6 +366,12 @@ void AcsHandler::setCamId(int inputCamId) {
 }
 
 void AcsHandler::findNextSampleForSwitching(int vid, std::vector<int64_t> timeInfo) {
+  if (timeInfo.size() != 2) {
+    logger->severe("Dongvin, invalid switching time info to find next samples!");
+    return;
+  }
+  findNextSampleForSwitchingVideo(timeInfo[0]);
+  findNextSampleForSwitchingAudio(timeInfo[1]);
 }
 
 std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampleNo) {
@@ -453,10 +459,66 @@ int AcsHandler::getSampleNumber(int streamId, int64_t timeUs) {
   return static_cast<int>(std::round(static_cast<double>(timeUs)/static_cast<double>(t0)));
 }
 
-int AcsHandler::findNextSampleForSwitchingAudio(std::vector<int64_t> timeInfo) {
+void AcsHandler::findNextSampleForSwitchingAudio(const int64_t targetSampleNo) {
+  const int targetSampleIdx = static_cast<int>(targetSampleNo);
+  if (targetSampleIdx == C::INVALID) {
+    logger->info3("Dongvin, no switching time for audio was givven. id : " + sessionId);
+    return;
+  }
+  const auto infoIt = sInfo.find(C::AUDIO_ID);
+  if (infoIt == sInfo.end()){
+    logger->severe("Dongvin, cannot find audio ReadInfo!");
+    return;
+  }
+
+  ReadInfo& readInfo = infoIt->second;
+
+  // all calculation to find the next sample number is done in the client side.
+  // Server just transmits the sample corresponding to the sample number.
+  if (targetSampleIdx > readInfo.maxSampleNo) {
+    logger->warning("Dongvin, don't switch on audio. sample number is over the end.");
+    return;
+  }
+
+  // sampleNo is actually the number of sample client codec has.
+  // there are many samples on the network line and the client's sample buffer.
+  const int sampleDiff = readInfo.curSampleNo - targetSampleIdx;
+  readInfo.curSampleNo = targetSampleIdx;
+  logger->info3(
+  "Dongvin, id:"+ sessionId +"," +
+              "\n<switching audio sample>"
+              +"\ncurrent presentation time: "+std::to_string(readInfo.curPresentationTimeUs)+"(us)"
+              +"\nsample diff: "+std::to_string(sampleDiff)
+              +"\nswitching next sample no: "+std::to_string(targetSampleIdx)
+  );
 }
 
-void AcsHandler::findNextSampleForSwitchingVideo(int nextVid, std::vector<int64_t> timeInfo) {
+void AcsHandler::findNextSampleForSwitchingVideo(const int64_t targetSampleNo) {
+  const auto infoIt = sInfo.find(C::VIDEO_ID);
+  if (infoIt == sInfo.end()){
+    logger->severe("Dongvin, cannot find video ReadInfo!");
+    return;
+  }
+
+  // all calculation to find the next sample number is done in the client side.
+  // Server just transmits the sample corresponding to the sample number.
+  int targetSampleIdx = static_cast<int>(targetSampleNo);
+  ReadInfo& readInfo = infoIt->second;
+
+  if (targetSampleIdx > readInfo.maxSampleNo) {
+    logger->warning("Dongvin, don't switch on video. sample no is over the end.");
+    return;
+  }
+
+  int sampleDiff = readInfo.curSampleNo - targetSampleIdx;
+  readInfo.curSampleNo = targetSampleIdx;
+  readInfo.timestamp = getTimestamp(targetSampleIdx);
+  logger->info3("Dongvin, id:"+sessionId
+                +"\n <switching video sample>"
+                +"\nnext member id: "+std::to_string(readInfo.curMemberVid)
+                +"\ncurrent presentation time: "+std::to_string(readInfo.curPresentationTimeUs)+"(us)"
+                +"\nsample diff: "+std::to_string(sampleDiff)
+                +"\nswitching next sample no: "+std::to_string(targetSampleIdx));
 }
 
 std::vector<int64_t> AcsHandler::getUnitFrameTimeUs() {
@@ -501,10 +563,10 @@ int AcsHandler::getSampleTimeIndex(int streamId, int64_t timestamp) {
   return C::INVALID;
 }
 
-int64_t AcsHandler::getTimestamp(int sampleNo) {
+int64_t AcsHandler::getTimestamp(const int sampleNo) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
-    if (auto rtpHandlerPtr = weakPtr.lock()) {
+    if (const auto rtpHandlerPtr = weakPtr.lock()) {
 
       const auto& curVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
           .getConstVideoMeta().at(C::CAM_ID_LIST[0]).getConstVideoSampleInfoList().at(0).at(sampleNo);

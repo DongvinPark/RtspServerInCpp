@@ -147,15 +147,14 @@ namespace C {
     // Filtering content
     constexpr int FILE_NUM_LIMIT = 10;
 
-    // P Frame control
+    // Looking Sample Control
     constexpr int INVALID_SAMPLE_NO = -1;
+    constexpr char USE_P_FRAME_CONTROL[] = "PFrameControl";
     constexpr char SEND_P_FRAMES[] = "send-p";
     constexpr char STOP_P_FRAMES[] = "stop-p";
     constexpr int P_FRAME_GOP_CONTROL_FACTOR_FOR_SEEK = 2;
-    constexpr int DEFAULT_NO_FAST_TX_FACTOR = 0;
-    constexpr int MIN_NUM_OF_FAST_TX_SAMPLES = 2;
-    constexpr int FAST_TX_VIDEO_SAMPLE_CNT = 10;
-    constexpr int FAST_TX_AUDIO_SAMPLE_CNT = 15;
+    constexpr int FAST_TX_FACTOR_FOR_CAM_SWITCHING = 25;
+    constexpr int UPDATE_CAM_SWITCHING_STATUS_DELAY_MILLIS = 2000;
 
     // Hybrid
     constexpr int FIRST_KEY_FRAME_SAMPLE_NO = 0;
