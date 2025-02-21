@@ -408,18 +408,6 @@ void ContentFileMeta::loadRtpMemberVideoMetaData(
     videoSampleInfo.initCompleted();
   }
 
-  /*
-  TODO : delete after development
-  std::cout << "!!! vMetaData.size() = " << input2dMetaList.at(input2dMetaList.size()-1).size() << std::endl;
-  std::vector<VideoSampleInfo>& resultInfoList = input2dMetaList.at(input2dMetaList.size()-1);
-  VideoSampleInfo& first = resultInfoList.at(0);
-  VideoSampleInfo& last = resultInfoList.at(resultInfoList.size()-1);
-  std::cout << "first V : size/offset/flag/cnt : "
-    << first.getSize() << "/" << first.getOffset() << "/" << first.getFlag() << "/" << first.getMetaInfoList().size() << std::endl;
-  std::cout << "last V : size/offset/flag/cnt : "
-    << last.getSize() << "/" << last.getOffset() << "/" << last.getFlag() << "/" << last.getMetaInfoList().size() << std::endl;
-  */
-
   showVideoMinMaxSize(input2dMetaList.at(input2dMetaList.size() - 1), memberId);
 }
 

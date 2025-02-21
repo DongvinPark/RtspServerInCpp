@@ -167,8 +167,22 @@ int main() {
     logger->warning("=================================================================");
     return 0;
 }
+
 /*
-    test usage to get a video and audio sample meta. this can be used when reading video sample from read file.
+  *** use this logging at the end of function : void ContentFileMeta::loadRtpMemberVideoMetaData() in ContentFileMeta.cpp
+
+  std::cout << "!!! vMetaData.size() = " << input2dMetaList.at(input2dMetaList.size()-1).size() << std::endl;
+  std::vector<VideoSampleInfo>& resultInfoList = input2dMetaList.at(input2dMetaList.size()-1);
+  VideoSampleInfo& first = resultInfoList.at(0);
+  VideoSampleInfo& last = resultInfoList.at(resultInfoList.size()-1);
+  std::cout << "first V : size/offset/flag/cnt : "
+    << first.getSize() << "/" << first.getOffset() << "/" << first.getFlag() << "/" << first.getMetaInfoList().size() << std::endl;
+  std::cout << "last V : size/offset/flag/cnt : "
+    << last.getSize() << "/" << last.getOffset() << "/" << last.getFlag() << "/" << last.getMetaInfoList().size() << std::endl;
+*/
+
+/*
+    *** test usage to get a video and audio sample meta. this can be used when reading video sample from read file.
 
     const std::vector<std::vector<VideoSampleInfo>>& videoMeta = videoAccess.getConstVideoSampleInfoList();
     std::cout << "enhypen-test-1cam-H cam 0 v1 video sample info !!!\n";
