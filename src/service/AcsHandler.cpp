@@ -397,7 +397,7 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
 void AcsHandler::checkTimestamp(int streamId, ReadInfo &readInfo) {
   int64_t t = getTimestamp0(streamId) + (readInfo.startSampleNo * getUnitFrameTimeUs(streamId));
   if (t != readInfo.timestamp) {
-    logger->warning("Dongvin, video timestamp calculation is wrong.");
+    logger->warning("Dongvin, timestamp calculation is wrong. stream id : " + std::to_string(streamId));
   }
 }
 
