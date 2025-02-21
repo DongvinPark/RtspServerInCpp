@@ -58,14 +58,16 @@ void AcsHandler::initUserRequestingPlaytime(std::vector<float> timeS) {
     info.curSampleNo = info.startSampleNo;
 
     std::unique_ptr<Buffer> rtpPtr = get1stRtpOfRefSample(streamId, info.startSampleNo);
-    info.timestamp = Util::findTimestamp(*rtpPtr);
-    info.refSeq0 = Util::findSequenceNumber(*rtpPtr);
+    if (rtpPtr != nullptr){
+      info.timestamp = Util::findTimestamp(*rtpPtr);
+      info.refSeq0 = Util::findSequenceNumber(*rtpPtr);
 
-    // check --> removable.
-    checkTimestamp(streamId, info);
+      // check --> removable.
+      checkTimestamp(streamId, info);
 
-    info.unitFrameCount = static_cast<int>(getUnitFrameCount(streamId));
-    logger->info("Dongvin, init read info completed. streamId : " + std::to_string(streamId));
+      info.unitFrameCount = static_cast<int>(getUnitFrameCount(streamId));
+      logger->info("Dongvin, init read info completed. streamId : " + std::to_string(streamId));
+    }
   }
 }
 

@@ -28,6 +28,7 @@ namespace C {
     constexpr int SESSION_KEY_BIT_SIZE = 64;
     constexpr int SESSION_CLOSE_TIMEOUT_MS = 10*1000;
     constexpr int DELAY_BEFORE_RTP_START = 500;
+    constexpr int DELAY_BEFORE_RTP_START_ON_SEEK = 100;
     constexpr int SOCKET_TIMEOUT_MS = 10*1000;
     constexpr char EMPTY_STRING[] = "";
     constexpr int ZERO = 0;

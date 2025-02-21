@@ -206,17 +206,11 @@ void RtspHandler::handleRtspRequest(
             }
           }
           respondPlayAfterPause(inputBuffer);
-
-          Util::delayedExecutorAsyncByFuture(
-              C::DELAY_BEFORE_RTP_START,
-              [&sessionPtr](){sessionPtr->updatePauseStatus(false);}
-          );
-
           sessionPtr->updatePauseStatus(false);
           return;
         } else if (isSeekRequest(strings)) {
           // dongvin, play req for Seek operation
-          sessionPtr->clearRtpQueue();
+          //sessionPtr->clearRtpQueue();
           sessionPtr->stopCurrentMediaReadingTasks();
 
           std::vector<float> npt = findNormalPlayTime(strings);
@@ -238,7 +232,7 @@ void RtspHandler::handleRtspRequest(
           respondPlay(inputBuffer, timestamp0, sessionId);
 
           Util::delayedExecutorAsyncByFuture(
-              C::DELAY_BEFORE_RTP_START,
+              C::DELAY_BEFORE_RTP_START_ON_SEEK,
               [&sessionPtr](){sessionPtr->onPlayStart();}
           );
 
