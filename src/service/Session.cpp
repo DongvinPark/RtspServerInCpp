@@ -582,7 +582,7 @@ void Session::asyncReceive() {
         }
       }
 
-      // continue receiving reculsively
+      // continue receiving recursively
       asyncReceive();
     }
   );
