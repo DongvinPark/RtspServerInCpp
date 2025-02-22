@@ -65,7 +65,7 @@ git clone https://github.com/microsoft/vcpkg.git
 .\vcpkg integrate install
 ```
 
-6. 설치가 전부 끝났다면, 아래의 명령어를 실행해서 본 프로젝트를 깃 클론 한 다음, Visual Studio를 엽니다. 이때 기존의 프로젝트를 오픈하거나, 새로운 프로젝트를 만들거나, 깃 리포지토리에서 복제해 오는 등의 미리 준비된 메뉴를 선택하지 않고 그냥 IDE를 열기만 해야 합니다.
+6. 설치가 전부 끝났다면, 아래의 명령어를 실행해서 본 프로젝트를 깃 클론 한 다음, Visual Studio를 엽니다. 이때 기존의 프로젝트를 오픈하거나, 새로운 프로젝트를 만들거나, 깃 리포지토리에서 복제해 오는 등의 미리 준비된 메뉴를 선택하지 않고 그냥 IDE를 열기만 해야 합니다. Visual Studio가 열렸다면, 화면 우측에 있는 '코드를 사용하지 않고 계속'이라는 항목을 클릭하면 됩니다.
 ```text
 git clone https://github.com/DongvinPark/MyFirstCppBoostAsio
 ```
