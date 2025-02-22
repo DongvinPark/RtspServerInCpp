@@ -171,11 +171,11 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         // TODO : need to be tested with hybrid D & S
         const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
-        unsigned char rtp[len];
-        std::memcpy(rtp, videoSampleRtpPtr->data, len);
 
         std::vector<unsigned char> buf;
-        for (unsigned char c : rtp) buf.push_back(c);
+        for (int i = 0; i < len; ++i) {
+            buf.push_back(videoSampleRtpPtr->data[i]);
+        }
 
         const Buffer firstRtp(buf, 0, len);
 
@@ -221,11 +221,11 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
         // TODO : need to be tested with hybrid D & S
         const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
-        unsigned char rtp[len];
-        std::memcpy(rtp, audioSampleRtpPtr->data, len);
 
         std::vector<unsigned char> buf;
-        for (unsigned char c : rtp) buf.push_back(c);
+        for (int i = 0; i < len; ++i) {
+            buf.push_back(audioSampleRtpPtr->data[i]);
+        }
 
         const Buffer firstRtp(buf, 0, len);
 

@@ -1371,6 +1371,46 @@ void Session::asyncReceive() {
   );// end of async_read_some()
 }
 ```
+<br><br/>
+40. C++ 표준을 준수하자.
+    <br> 어떤 기능들은 특정 컴파일러에서는 컴파일 및 실행이 되지만, 다른 컴파일러로 옮기면 그렇지 않은 경우가 있다.
+    <br> VLA(Variable Length Array)가 대표적으로 이러한 경우다.
+    <br> 다른 사례가 발생하면 여기에 추가로 기록하자.
+```c++
+
+case 1 : VLA
+// 겉으로 보기에는 잘 작동할 것처럼 보이지만, 아래와 같이 런타입에 특정 타입의 배열의 크기를 정하는 것은
+// C++ 17 표준이 아니다. C++ 표준을 엄격하게 준수하는 MSVC에서는 아래의 코드 때문에 컴파일이 되지 않는다.
+// C++ 표준에서는 컴파일 타임에 배열의 길이가 상수로서 결정되어야 한다.
+// VLA는 GCC, G++, Apple CLang에서는 non-standard extension으로 작동하지만, Window MSVC에서는 지원하지 않는다.
+
+        // ...
+        const int rtpLen = Util::getRtpPacketLength(
+            videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]
+        );
+        const int len = 4 + rtpLen;
+
+        // 바로 이 부분 때문에 컴파일 타임 에러가 발생한다. 런타임에 따라서 배열의 크기를 결정했기 때문이다.
+        // 배열 대신 std::vector를 쓰게 바꾸자 컴파일이 되었다.
+        unsigned char rtp[len];
+
+        std::memcpy(rtp, videoSampleRtpPtr->data, len);
+
+        std::vector<unsigned char> buf;
+        for (unsigned char c : rtp) buf.push_back(c);
+        // ...
+
+
+
+case 2 : "falling off the end of a function" or "implicit return undefined behavior"
+
+        // 아래의 함수는 void가 아니지만, 컴파일 및 실행을 하면 실행이 되기는 한다.
+        // GCC, G++, Apple CLang에서는 되지만, Window MSVC에서는 컴파일 타임 에러가 뜬다.
+        bool Session::isPlayDone(int streamId) {
+            // 아무 것도 리턴하지 않는다...
+        }
+
+```
     
 
 

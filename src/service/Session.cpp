@@ -476,6 +476,7 @@ void Session::closeHandlersAndSocket() {
 }
 
 bool Session::isPlayDone(int streamId) {
+    return false; // TODO : update later.
 }
 
 void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
