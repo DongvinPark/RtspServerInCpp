@@ -167,6 +167,7 @@ void RtpHandler::readVideoSample(
         (videoSampleRtpPtr->length) += curFrontVideoSampleInfo.getSize();
         const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
         int offsetForFrontVRtp = 0;
+        (videoSampleRtpPtr->refCount) += static_cast<int>(frontRtpMetaVec.size());
         for (int i=0; i<frontRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue front v's all rtp
@@ -216,6 +217,7 @@ void RtpHandler::readVideoSample(
         const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
         int offsetForRearVRtp = static_cast<int>(videoSampleRtpPtr->length);
         (videoSampleRtpPtr->length) += curRearVideoSampleInfo.getSize();
+        (videoSampleRtpPtr->refCount) += static_cast<int>(rearRtpMetaVec.size());
         for (int i=0; i<rearRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue rear v's all rtp
@@ -275,6 +277,7 @@ void RtpHandler::readAudioSample(
       logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
     } else if (auto sessionPtr = parentSessionPtr.lock()) {
       audioSampleRtpPtr->length = len;
+      (audioSampleRtpPtr->refCount) += 1;
       auto* rtpInfo = new RtpPacketInfo();
       rtpInfo->flag = C::AUDIO_ID;
       rtpInfo->videoSamplePtr = nullptr;
@@ -298,6 +301,7 @@ void RtpHandler::readAudioSample(
       audioSampleRtpPtr->data[i] = metaData[i];
     }
     audioSampleRtpPtr->length = metaData.size();
+    (audioSampleRtpPtr->refCount) += 1;
     if (auto sessionPtr = parentSessionPtr.lock()) {
       auto* rtpInfo = new RtpPacketInfo();
       rtpInfo->flag = C::AUDIO_ID;
