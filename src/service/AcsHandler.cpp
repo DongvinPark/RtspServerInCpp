@@ -168,7 +168,6 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
       );
 
       if (videoSampleRtpPtr->length != C::INVALID) {
-        // TODO : need to be tested with hybrid D & S
         const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
 
@@ -218,7 +217,6 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
       );
 
       if (audioSampleRtpPtr->length != C::INVALID) {
-        // TODO : need to be tested with hybrid D & S
         const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
 
