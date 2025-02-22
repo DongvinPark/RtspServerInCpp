@@ -25,6 +25,8 @@ namespace C {
 
     // General constants
     constexpr char MY_NAME[] = "alphaStreamer-3.1/2.0.0";
+    constexpr int FRONT_VIDEO_VID = 0;
+    constexpr int REAR_VIDEO_VID = 1;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
     constexpr int SESSION_CLOSE_TIMEOUT_MS = 10*1000;
     constexpr int DELAY_BEFORE_RTP_START = 500;

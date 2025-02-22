@@ -99,8 +99,6 @@ void RtpHandler::readVideoSample(
   int sampleNo,
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
-  // TODO : need to implement hybrid D & S later.
-
   const auto camIt = camIdVideoFileStreamMap.find(camId);
   if (camIt == camIdVideoFileStreamMap.end() || camIt->second.size() < 2) {
     logger->severe("Dongvin, invalid camId or insufficient video file streams! camId: " + std::to_string(camId));
@@ -110,61 +108,130 @@ void RtpHandler::readVideoSample(
   std::ifstream& frontVideoFileReadingStream = camIt->second[0];
   std::ifstream& rearVideoFileReadingStream = camIt->second[1];
 
+  int gop = C::INVALID;
+  if (auto handlerPtr = acsHandlerPtr.lock()) {
+    if (const std::vector<int64_t> gopVec = handlerPtr->getGop(); gopVec.empty()) {
+      logger->severe("Dongvin, fail to get gop value vector!");
+      videoSampleRtpPtr->length = C::INVALID;
+      return;
+    } else {
+      gop = static_cast<int>(gopVec[0]);
+    }
+  }
+
   if (!frontVideoFileReadingStream.is_open() || !rearVideoFileReadingStream.is_open()) {
     logger->severe("Dongvin, video file stream is not open!");
   }
 
-  frontVideoFileReadingStream.seekg(curFrontVideoSampleInfo.getOffset(), std::ios::beg);
-  rearVideoFileReadingStream.seekg(curRearVideoSampleInfo.getOffset(), std::ios::beg);
+  const std::string frameType = sampleNo % gop == 0 ? C::KEY_FRAME_TYPE : C::P_FRAME_TYPE;
+  const std::optional<HybridSampleMeta> frontVideoHybridMeta = Util::getHybridSampleMetaSafe(
+    hybridMetaMap, camId, std::to_string(C::FRONT_VIDEO_VID)+frameType, sampleNo
+  );
+  const std::optional<HybridSampleMeta> rearVideoHybridMeta = Util::getHybridSampleMetaSafe(
+    hybridMetaMap, camId, std::to_string(C::REAR_VIDEO_VID)+frameType, sampleNo
+  );
 
-  if (
-      !frontVideoFileReadingStream.read(
+  if (auto sessionPtr = parentSessionPtr.lock()) {
+    // process front video.
+    int64_t nextStartOffsetForRearVideo = 0;
+    if (frontVideoHybridMeta.has_value()) {
+      const std::vector<unsigned char> metaData = frontVideoHybridMeta->getHybridMetaBinary(
+        C::getAvptSampleQChannel(C::FRONT_VIDEO_VID), camId, C::FRONT_VIDEO_VID, frameType
+      );
+      for (int i = 0; i < metaData.size(); ++i) {
+        videoSampleRtpPtr->data[i] = metaData[i];
+      }
+      (videoSampleRtpPtr->refCount) += 1;
+      (videoSampleRtpPtr->length) += metaData.size();
+      nextStartOffsetForRearVideo = static_cast<int64_t>(metaData.size());
+      auto* rtpInfo = new RtpPacketInfo();
+      rtpInfo->flag = C::VIDEO_ID;
+      rtpInfo->videoSamplePtr = videoSampleRtpPtr;
+      rtpInfo->audioSamplePtr = nullptr;
+      rtpInfo->offset = 0;
+      rtpInfo->length = metaData.size();
+      sessionPtr->enqueueRtpInfo(rtpInfo);
+    } else {
+      // no front V sample meta for hybrid D & S. read sample from file stream.
+      frontVideoFileReadingStream.seekg(curFrontVideoSampleInfo.getOffset(), std::ios::beg);
+      if (
+        !frontVideoFileReadingStream.read(
           reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpPtr->data),
           curFrontVideoSampleInfo.getSize()
-        ) ||
-      !rearVideoFileReadingStream.read(
-        reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpPtr->data + curFrontVideoSampleInfo.getSize()),
-        curRearVideoSampleInfo.getSize()
         )
-    ) {
-    logger->severe("Dongvin, failed to read video sample! sample no : " + std::to_string(sampleNo));
-  } else if (auto sessionPtr = parentSessionPtr.lock()) {
-    // reading successful. need to enqueue all rtp packet's meta.
-    videoSampleRtpPtr->length = curFrontVideoSampleInfo.getSize() + curRearVideoSampleInfo.getSize();
-
-    const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
-    const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
-    videoSampleRtpPtr->refCount = static_cast<int>(frontRtpMetaVec.size() + rearRtpMetaVec.size());
-
-    int offsetForFrontVRtp = 0;
-    for (int i=0; i<frontRtpMetaVec.size(); ++i) {
-      const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
-      // enqueue front v's all rtp
-      auto* rtpInfo = new RtpPacketInfo();
-      rtpInfo->flag = C::VIDEO_ID;
-      rtpInfo->videoSamplePtr = videoSampleRtpPtr;
-      rtpInfo->audioSamplePtr = nullptr;
-      rtpInfo->offset = offsetForFrontVRtp;
-      rtpInfo->length = rtpMeta.len;
-      offsetForFrontVRtp += rtpMeta.len;
-      sessionPtr->enqueueRtpInfo(rtpInfo);
+      ) {
+        logger->severe("Dongvin, fail to read front video sample! sample no : " + std::to_string(sampleNo));
+        videoSampleRtpPtr->length = C::INVALID;
+        return;
+      } else {
+        (videoSampleRtpPtr->length) += curFrontVideoSampleInfo.getSize();
+        const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
+        int offsetForFrontVRtp = 0;
+        for (int i=0; i<frontRtpMetaVec.size(); ++i) {
+          const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
+          // enqueue front v's all rtp
+          auto* rtpInfo = new RtpPacketInfo();
+          rtpInfo->flag = C::VIDEO_ID;
+          rtpInfo->videoSamplePtr = videoSampleRtpPtr;
+          rtpInfo->audioSamplePtr = nullptr;
+          rtpInfo->offset = offsetForFrontVRtp;
+          rtpInfo->length = rtpMeta.len;
+          offsetForFrontVRtp += rtpMeta.len;
+          sessionPtr->enqueueRtpInfo(rtpInfo);
+        }
+        nextStartOffsetForRearVideo = static_cast<int64_t>(curFrontVideoSampleInfo.getSize());
+      }
     }
 
-    int offsetForRearVRtp = curFrontVideoSampleInfo.getSize();
-    for (int i=0; i<rearRtpMetaVec.size(); ++i) {
-      const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
-      // enqueue rear v's all rtp
+    // process rear video.
+    if (rearVideoHybridMeta.has_value()) {
+      const std::vector<unsigned char> metaData = rearVideoHybridMeta->getHybridMetaBinary(
+        C::getAvptSampleQChannel(C::REAR_VIDEO_VID), camId, C::REAR_VIDEO_VID, frameType
+      );
+      for (int i = 0; i < metaData.size(); ++i) {
+        videoSampleRtpPtr->data[i+nextStartOffsetForRearVideo] = metaData[i];
+      }
+      (videoSampleRtpPtr->refCount) += 1;
+      (videoSampleRtpPtr->length) += metaData.size();
       auto* rtpInfo = new RtpPacketInfo();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->videoSamplePtr = videoSampleRtpPtr;
       rtpInfo->audioSamplePtr = nullptr;
-      rtpInfo->offset = offsetForRearVRtp;
-      rtpInfo->length = rtpMeta.len;
-      offsetForRearVRtp += rtpMeta.len;
+      rtpInfo->offset = nextStartOffsetForRearVideo;
+      rtpInfo->length = metaData.size();
       sessionPtr->enqueueRtpInfo(rtpInfo);
+    } else {
+      // no rear V sample meta for hybrid D & S. read sample from file stream.
+      rearVideoFileReadingStream.seekg(curRearVideoSampleInfo.getOffset(), std::ios::beg);
+      if (
+        !rearVideoFileReadingStream.read(
+          reinterpret_cast<std::ifstream::char_type *>(videoSampleRtpPtr->data + videoSampleRtpPtr->length),
+          curRearVideoSampleInfo.getSize()
+        )
+      ) {
+        logger->severe("Dongvin, fail to read rear video sample! sample no : " + std::to_string(sampleNo));
+        videoSampleRtpPtr->length = C::INVALID;
+        return;
+      } else {
+        const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
+        int offsetForRearVRtp = static_cast<int>(videoSampleRtpPtr->length);
+        (videoSampleRtpPtr->length) += curRearVideoSampleInfo.getSize();
+        for (int i=0; i<rearRtpMetaVec.size(); ++i) {
+          const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
+          // enqueue rear v's all rtp
+          auto* rtpInfo = new RtpPacketInfo();
+          rtpInfo->flag = C::VIDEO_ID;
+          rtpInfo->videoSamplePtr = videoSampleRtpPtr;
+          rtpInfo->audioSamplePtr = nullptr;
+          rtpInfo->offset = offsetForRearVRtp;
+          rtpInfo->length = rtpMeta.len;
+          offsetForRearVRtp += rtpMeta.len;
+          sessionPtr->enqueueRtpInfo(rtpInfo);
+        }
+      }
     }
   } else {
-    logger->severe("Dongvin, failed to get session ptr! RtpHandler::readVideoSample");
+    logger->severe("Dongvin, faild to get session ptr! RtpHandler::readVideoSample()");
   }
 }
 
@@ -194,27 +261,84 @@ void RtpHandler::readAudioSample(
   const int len,
   HybridMetaMapType& hybridMetaMap
 ) noexcept {
-  // TODO : need to implement hybrid D & S later.
-  if (!audioFileStream.is_open()) {
-    logger->severe("Dongvin, audio file stream is not open!");
-    audioSampleRtpPtr->length = C::INVALID;
-    return;
-  }
+  if (hybridMetaMap.empty()) {
+    // full streaming. need to send audio rtp packets.
+    if (!audioFileStream.is_open()) {
+      logger->severe("Dongvin, audio file stream is not open!");
+      audioSampleRtpPtr->length = C::INVALID;
+      return;
+    }
 
-  audioFileStream.seekg(offset, std::ios::beg);
-  if (!audioFileStream.read(reinterpret_cast<std::ifstream::char_type *>(audioSampleRtpPtr->data), len)) {
-    audioSampleRtpPtr->length = C::INVALID;
-    logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
-  } else if (auto sessionPtr = parentSessionPtr.lock()) {
-    audioSampleRtpPtr->length = len;
-    auto* rtpInfo = new RtpPacketInfo();
-    rtpInfo->flag = C::AUDIO_ID;
-    rtpInfo->videoSamplePtr = nullptr;
-    rtpInfo->audioSamplePtr = audioSampleRtpPtr;
-    rtpInfo->offset = 0;
-    rtpInfo->length = len;
-    sessionPtr->enqueueRtpInfo(rtpInfo);
+    audioFileStream.seekg(offset, std::ios::beg);
+    if (!audioFileStream.read(reinterpret_cast<std::ifstream::char_type *>(audioSampleRtpPtr->data), len)) {
+      audioSampleRtpPtr->length = C::INVALID;
+      logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
+    } else if (auto sessionPtr = parentSessionPtr.lock()) {
+      audioSampleRtpPtr->length = len;
+      auto* rtpInfo = new RtpPacketInfo();
+      rtpInfo->flag = C::AUDIO_ID;
+      rtpInfo->videoSamplePtr = nullptr;
+      rtpInfo->audioSamplePtr = audioSampleRtpPtr;
+      rtpInfo->offset = 0;
+      rtpInfo->length = len;
+      sessionPtr->enqueueRtpInfo(rtpInfo);
+    } else {
+      logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
+    }
   } else {
-    logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
+    // do not send audio rtp. send only meta.
+    const HybridSampleMeta audioSampleMeta(sampleNo, C::INVALID_OFFSET, C::INVALID, C::INVALID_OFFSET);
+    const std::vector<unsigned char> metaData = audioSampleMeta.getHybridMetaBinary(
+      C::AUDIO_ID,
+      C::HYBRID_META_FACTOR_FOR_AUDIO,
+      C::INVALID,
+      C::KEY_FRAME_TYPE
+    );
+    for (int i = 0; i < metaData.size(); ++i) {
+      audioSampleRtpPtr->data[i] = metaData[i];
+    }
+    audioSampleRtpPtr->length = metaData.size();
+    if (auto sessionPtr = parentSessionPtr.lock()) {
+      auto* rtpInfo = new RtpPacketInfo();
+      rtpInfo->flag = C::AUDIO_ID;
+      rtpInfo->videoSamplePtr = nullptr;
+      rtpInfo->audioSamplePtr = audioSampleRtpPtr;
+      rtpInfo->offset = 0;
+      rtpInfo->length = metaData.size();
+      sessionPtr->enqueueRtpInfo(rtpInfo);
+    } else {
+      logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
+    }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
