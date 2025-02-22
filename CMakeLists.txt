@@ -51,13 +51,7 @@ add_executable(AlphaStreamer3.1Cpp
         src/util/RtpMetaInfo.cpp
         include/Server.h
         src/server/Server.cpp
-        include/AudioSample.h
-        src/server/file/AudioSample.cpp
-        include/VideoSample.h
-        src/server/file/VideoSample.cpp
         constants/Util.h
-        include/AVSampleBuffer.h
-        src/util/AVSampleBuffer.cpp
         include/SntpRefTimeProvider.h
         src/server/SntpRefTimeProvider.cpp
         include/PeriodicTask.h

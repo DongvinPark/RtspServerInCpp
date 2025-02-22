@@ -5,8 +5,6 @@
 
 #include "../constants/Util.h"
 #include "../include/Session.h"
-#include "../include/VideoSample.h"
-#include "../include/AudioSample.h"
 #include "../include/VideoAccess.h"
 
 class Session;

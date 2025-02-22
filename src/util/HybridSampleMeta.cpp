@@ -12,7 +12,7 @@ HybridSampleMeta::HybridSampleMeta()
 HybridSampleMeta::HybridSampleMeta(int sampleNo, int64_t startOffset, int64_t len, int64_t timeStamp)
     : sampleNo(sampleNo), startOffset(startOffset), len(len), timeStamp(timeStamp) {}
 
-std::vector<unsigned char> HybridSampleMeta::getHybridMetaBinary(
+[[nodiscard]] std::vector<unsigned char> HybridSampleMeta::getHybridMetaBinary(
     unsigned char channelForAvptSampleQ,
     int camId,
     int viewNum,
@@ -25,7 +25,7 @@ std::vector<unsigned char> HybridSampleMeta::getHybridMetaBinary(
     return data;
 }
 
-std::string HybridSampleMeta::makeStringForTx(int camId, int viewNum, const std::string& frameType) const {
+[[nodiscard]] std::string HybridSampleMeta::makeStringForTx(int camId, int viewNum, const std::string& frameType) const {
     std::ostringstream oss;
     oss << C::HYBRID_META_PAYLOAD_PREFIX
         << camId << C::COMMA_SEPARATOR
@@ -52,7 +52,7 @@ void HybridSampleMeta::recordPayLoad(std::vector<unsigned char>& data, const std
     }
 }
 
-std::string HybridSampleMeta::toString() const {
+[[nodiscard]] std::string HybridSampleMeta::toString() const {
     std::ostringstream oss;
     oss << sampleNo << C::COMMA_SEPARATOR
         << startOffset << C::COMMA_SEPARATOR

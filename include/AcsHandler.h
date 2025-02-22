@@ -6,7 +6,6 @@
 #include "../include/RtpInfo.h"
 #include "../include/ReadInfo.h"
 #include "../include/Buffer.h"
-#include "../include/AVSampleBuffer.h"
 
 class Session;
 class RtspHandler;

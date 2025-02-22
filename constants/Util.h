@@ -20,7 +20,6 @@
 #include "../constants/C.h"
 #include "../include/Buffer.h"
 #include "../include/ParsableByteArray.h"
-#include "../include/VideoSample.h"
 #include "../include/HybridSampleMeta.h"
 
 #ifdef _WIN32
@@ -203,11 +202,6 @@ namespace Util {
 		ParsableByteArray rtpPacket(rtp);
 		rtpPacket.skipBytes(C::TCP_RTP_HEAD_LEN + 2);
 		rtpPacket.writeUnsignedShort(seqNum);
-	}
-
-	inline int findSequenceNumberInVideoSample(VideoSample& sample) {
-		Buffer firstRtp = sample.getFirstRtp();
-		return findSequenceNumber(firstRtp);
 	}
 
 	inline int64_t findTimestamp(const Buffer& rtp) {

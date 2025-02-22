@@ -4,9 +4,7 @@
 #include <mutex>
 #include <cstdint> // For int64_t
 
-#include "../include/AudioSample.h"
 #include "../include/HybridSampleMeta.h"
-#include "../include/VideoSample.h"
 #include "../include/RtpInfo.h"
 #include "../constants/C.h"
 #include "../include/Logger.h"
