@@ -56,6 +56,8 @@ RtpHandler::~RtpHandler() {
     }
 
     return true;
+  } else {
+    logger->severe("Dongvin, failed to open video file! RtpHandler::openAllFileStreamsForVideoAndAudio()");
   }
 }
 
