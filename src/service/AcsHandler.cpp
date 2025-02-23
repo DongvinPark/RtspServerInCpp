@@ -150,12 +150,16 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         return;
       }
 
-      int sampleNo = info.curSampleNo;
-      const VideoSampleInfo& curFrontVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList().at(0).at(sampleNo);
+      const int sampleNo = info.curSampleNo;
+      const VideoSampleInfo& curFrontVideoSampleInfo
+        = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList()
+          .at(C::FRONT_VIDEO_VID).at(sampleNo);
 
-      const VideoSampleInfo& curRearVideoSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList().at(1).at(sampleNo);
+      const VideoSampleInfo& curRearVideoSampleInfo
+        = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList()
+          .at(C::REAR_VIDEO_VID).at(sampleNo);
 
       rtpHandlerPtr->readVideoSample(
         videoSampleRtpPtr,
@@ -180,8 +184,8 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
 
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);
-        info.curSampleNo++;
       }
+      info.curSampleNo++;
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextVideoSample()");
     }
@@ -205,8 +209,9 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
       }
 
       const int sampleNo = info.curSampleNo;
-      const AudioSampleInfo& curAudioSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-        .getConstAudioMeta().getConstMeta().at(sampleNo);
+      const AudioSampleInfo& curAudioSampleInfo
+        = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
+          .getConstAudioMeta().getConstMeta().at(sampleNo);
 
       rtpHandlerPtr->readAudioSample(
         audioSampleRtpPtr,
@@ -229,8 +234,8 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
 
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp);
-        info.curSampleNo++;
       }
+      info.curSampleNo++;
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextAudioSample()");
     }

@@ -7,34 +7,37 @@
 <br>
 
 ## 개발 정책
-- Jetbrains 사의 CLion IDE로 개발되었습니다.
-- Windows, Linux, M chip MacOS 의 환경에서 동작하게 만들었습니다.
+- ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
+  - 컴파일러 구현 의존적인 기능은 일절 사용하지 않습니다.(VLA 등)
+- Windows, Linux, M chip MacOS 운영체제에서 실행 가능합니다.
   - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다.
 - Boost.asio 라이브러리를 사용하여 스레드의 생성을 최소화 했습니다.
-- new, delete, raw pointer의 사용을 최소화 했습니다.
+  - 클라이언트가 늘어나도 스레드를 새로 생성하지 않습니다.
 - std 라이브러리를 최대한 많이 사용하여 직접적인 메모리 관리를 최소화 했습니다.
-  - std::unique_ptr, std::shared_ptr, std::weak_ptr 를 활용합니다.
+  - std::unique_ptr, std::shared_ptr, std::weak_ptr 를 활용했습니다.
+  - new, delete, raw pointer의 사용을 최소화 했습니다.
 <br><br/>
 
-## CMakeLists.txt 빌드 및 실행 테스트 결과
-- 다음의 OS 및 boost 라이브러리 버전에 대하여 현재 master 브랜치의 CMakeLists.txt의 빌드와 프로젝트의 실행이 되는 것을 확인했습니다.
-- 다른 운영체제 하에서는 세부적인 수정이 필요할 수 있습니다.
-  - Windows
-    - Window 11 : C++ 17 or later, boost 1.86.0
-  - Linux
-    - Ubuntu 20.04 LTS : C++ 17 or later, boost 1.71.0
-    - Ubuntu 22.04 LTS : C++ 17 or later, boost 1.74.0
-    - Amazon Linux 2023 : C++ 17 or later, boost 1.75.0
-  - MacOS
-    - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
-    - Sequoia 15.3 : C++ 17 or later, boost 1.87.0
+## OS별 빌드 및 실행 테스트 결과
+- Windows
+  - Window 11 : C++ 17 or later, boost 1.86.0
+- Linux
+  - Ubuntu 20.04 LTS : C++ 17 or later, boost 1.71.0
+  - Ubuntu 22.04 LTS : C++ 17 or later, boost 1.74.0
+  - Amazon Linux 2023 : C++ 17 or later, boost 1.75.0
+- MacOS
+  - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
+  - Sequoia 15.3 : C++ 17 or later, boost 1.87.0
 <br><br/>
 
 ## 개발환경 셋팅
 - 각자의 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
-  - Windows : Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치하고 둘을 링크 해줍니다.
-  - MacOS : GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
-  - Linux : GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
+  - Windows
+    - Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치하고 둘을 링크 해줍니다.
+  - MacOS
+    - GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
+  - Linux
+    - GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
 - 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
 - 셋 중 편한 환경을 선택한 후 각자의 환경에 따라서 아래의 안내대로 실행시키면 됩니다.
 <br><br/>
@@ -115,8 +118,8 @@ vcpkg 깃허브 리포지토리를 정확하게 C 드라이브 최상위 디렉�
 1. Linux OS가 설치된 AWS EC2 또는 Ubuntu 가 설치된 실제 컴퓨터를 준비합니다.
 2. 현재 깃허브 리포지토리를 준비된 머신에 클론합니다.
 3. 준비된 머신에 GCC, G++, CMake, Boost.Asio를 설치합니다. Mac이라면 homebrew를 사용합니다.
-4. 리눅스 환경이라면, build_and_run_on_linux로 시작하는 .sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 됩니다.<br>
-5. MacOS 환경이라면, 프로젝트 root 디렉토리 내에 build 디렉토리를 만든 다음, 그 디렉토리로 이동해서 'cmake ..', 'make' 명령어를 순서대로 실행하여 실행파일을 만듭니다. 그 후 실행파일을 './실행파일이름' 명령어로 수동으로 실행하면 됩니다.<br>
+4. 리눅스 환경이라면, fast_build_and_run_for_dev_linux_foreground.sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 됩니다.<br>
+5. MacOS 환경이라면, delete_build_and_run_on_Mchip_MacOS.sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 됩니다.<br>
 6. Linux 또는 MacOS 환경에서 JetBrains CLion IDE를 사용하고, 3번 단계에서 언급한 툴들이 전부 설치돼 있다면 현재 프로젝트를 IDE로 열고 바로 실행시키면 됩니다.
 <br><br/>
 
