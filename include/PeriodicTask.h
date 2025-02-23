@@ -13,14 +13,16 @@ public:
     // constructor with no task
     explicit PeriodicTask(
         boost::asio::io_context& io_context,
-        std::chrono::milliseconds interval
+        boost::asio::strand<boost::asio::io_context::executor_type> inputStrand,
+        std::chrono::milliseconds inputInterval
     );
 
-    // constructor with task
+    // constructor with task and interval
     explicit PeriodicTask(
         boost::asio::io_context& io_context,
-        std::chrono::milliseconds interval,
-        TaskCallback task
+        boost::asio::strand<boost::asio::io_context::executor_type> inputStrand,
+        std::chrono::milliseconds inputInterval,
+        TaskCallback inputTask
     );
 
     ~PeriodicTask();
@@ -34,6 +36,7 @@ private:
     void scheduleTask();
 
     std::shared_ptr<Logger> logger;
+    boost::asio::strand<boost::asio::io_context::executor_type> strand;
     boost::asio::steady_timer timer;
     std::chrono::milliseconds interval;
     TaskCallback task;

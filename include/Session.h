@@ -172,6 +172,9 @@ private:
   std::vector<bool> playDone = {false, false};
   std::atomic<bool> interruptSending = false;
 
+  // used strand to reduce cache miss
+  boost::asio::strand<boost::asio::io_context::executor_type> strand;
+
   // for rtsp msg rx/tx
   std::string rtspBuffer;
 
@@ -205,7 +208,6 @@ private:
   std::vector<std::shared_ptr<PeriodicTask>> videoReadingTaskVec;
   std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;
 
-  bool isShutdown = false;
   bool isRecordSaved = false;
 };
 

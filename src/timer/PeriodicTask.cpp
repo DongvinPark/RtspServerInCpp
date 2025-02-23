@@ -6,8 +6,10 @@
 
 PeriodicTask::PeriodicTask(
     boost::asio::io_context& io_context,
+    boost::asio::strand<boost::asio::io_context::executor_type> inputStrand,
     std::chrono::milliseconds inputInterval
-) : timer(io_context),
+) : strand(std::move(inputStrand)),
+    timer(io_context),
     interval(inputInterval),
     running(false),
     isTaskSet(false),
@@ -15,9 +17,11 @@ PeriodicTask::PeriodicTask(
 
 PeriodicTask::PeriodicTask(
     boost::asio::io_context& io_context,
+    boost::asio::strand<boost::asio::io_context::executor_type> inputStrand,
     std::chrono::milliseconds inputInterval,
     TaskCallback inputTask
-)    : timer(io_context),
+) : strand(std::move(inputStrand)),
+    timer(io_context),
     interval(inputInterval),
     task(std::move(inputTask)),
     running(false),
@@ -48,29 +52,25 @@ void PeriodicTask::stop() {
     if (running == false) return;
     logger->severe("task stop called!");
     running = false;
-    timer.cancel();
+    boost::asio::post(strand, [this]{ timer.cancel(); });
 }
 
 void PeriodicTask::scheduleTask() {
-    if(!running){
-        timer.expires_after(std::chrono::milliseconds(C::ZERO));
-        timer.cancel();
-    } else {
-        timer.expires_after(interval);
-        timer.async_wait(
-            [this](const boost::system::error_code& ec){
-                if(!ec){
-                    if(task){
-                        task();
-                    }
-                    if(running){
-                        scheduleTask();
-                    }
-                } else {
-                    // used ec.message() instead of ec.what() for boost backward comparability
-                    logger->severe("boost steady timer failed! error message : " + ec.message());
+    timer.expires_after(interval);
+    timer.async_wait(boost::asio::bind_executor(
+        strand,
+        [this](const boost::system::error_code& ec){
+            if(!ec){
+                if(task){
+                    task();
                 }
+                if(running){
+                    scheduleTask();
+                }
+            } else {
+                // used ec.message() instead of ec.what() for boost backward comparability
+                logger->severe("boost steady timer failed! error message : " + ec.message());
             }
-        );
-    }
+        }
+    ));
 }

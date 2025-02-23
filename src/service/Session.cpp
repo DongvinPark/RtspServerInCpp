@@ -1,5 +1,6 @@
 #include "../include/Session.h"
 
+#include <boost/asio/bind_executor.hpp>
 #include <iostream>
 
 #include "../../constants/Util.h"
@@ -22,8 +23,9 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    rtpTransportTask(inputIoContext, inputZeroIntervalMs),
-    bitrateRecodeTask(inputIoContext, inputZeroIntervalMs),
+    strand(boost::asio::make_strand(inputIoContext)),
+    rtpTransportTask(inputIoContext, strand, inputZeroIntervalMs),
+    bitrateRecodeTask(inputIoContext, strand, inputZeroIntervalMs),
     rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
@@ -293,7 +295,7 @@ void Session::onPlayStart() {
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
     }
   };
-  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
+  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(audioInterval);
@@ -303,7 +305,7 @@ void Session::onPlayStart() {
       if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
     }
   };
-  auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, aInterval, audioSampleReadingTask);
+  auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
 
   if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
@@ -335,7 +337,7 @@ void Session::startPlayForCamSwitching() {
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
     }
   };
-  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, vInterval, videoSampleReadingTask);
+  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
   logger->info2("Dongvin, video reading task for cam switching started!");
   if (!videoReadingTaskVec.empty()){
@@ -344,7 +346,6 @@ void Session::startPlayForCamSwitching() {
     throw std::runtime_error("Dongvin, failed to start video reading timer task for cam switching : " + sessionId);
   }
 }
-
 
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
@@ -540,9 +541,13 @@ void Session::asyncReceive() {
     return;
   }
 
+  auto self = shared_from_this();
   auto buf = std::make_shared<std::vector<unsigned char>>(C::RTSP_MSG_BUFFER_SIZE);  // shared buffer
-  socketPtr->async_read_some(boost::asio::buffer(*buf),
-    [this, buf](const boost::system::error_code& error, std::size_t bytesRead) {
+  socketPtr->async_read_some(
+    boost::asio::buffer(*buf),
+    boost::asio::bind_executor(
+      strand,
+    [this, self, buf](const boost::system::error_code& error, std::size_t bytesRead) {
       if (error) {
         if (error == boost::asio::error::eof) {
           logger->warning("Dongvin, connection closed by peer. session id : " + sessionId);
@@ -578,11 +583,12 @@ void Session::asyncReceive() {
         transmitRtspRes(std::move(bufferPtr));
         if (isTearRes || isErrorRes) {
           onTeardown();
+          return; // stop receiving rtsp req after shutting down session
         }
       }
 
-      // continue receiving recursively
-      asyncReceive();
+      // post next asyncReceive() on strand to avoid deep recursion
+      boost::asio::post(strand, [self](){ self->asyncReceive(); });
     }
-  );
+  ));// end of bind_executor() and async_read_some()
 }

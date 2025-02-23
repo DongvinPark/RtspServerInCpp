@@ -25,7 +25,9 @@ Server::Server(
     sntpTimeProvider(inputSntpRefTimeProvider),
     connectionCnt(0),
     projectRootPath(inputProjectRoot),
-    removeClosedSessionTask(inputIoContext, inputIntervalMs){}
+    removeClosedSessionTask(
+      inputIoContext, boost::asio::make_strand(inputIoContext), inputIntervalMs
+    ){}
 
 Server::~Server() {
   shutdownServer();
