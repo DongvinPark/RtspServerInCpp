@@ -34,7 +34,13 @@ Session::Session(
   clientRemoteAddress = clientIpAddressEndpoint.address().to_string();
 }
 
-Session::~Session() {}
+Session::~Session() {
+  // delete all remaining rtp packets
+  RtpPacketInfo* rtpPacketInfoPtr = nullptr;
+  while (rtpQueuePtr->pop(rtpPacketInfoPtr)) {
+    delete rtpPacketInfoPtr;
+  }
+}
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
