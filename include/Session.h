@@ -30,7 +30,7 @@ class RtspHandler;
 class RtpHandler;
 
 struct VideoSampleRtp {
-  unsigned char data[C::FRONT_VIDEO_MAX_BYTE_SIZE + C::REAR_VIDEO_MAX_BYTE_SIZE]; // 5MB
+  unsigned char data[C::FRONT_VIDEO_MAX_BYTE_SIZE + C::REAR_VIDEO_MAX_BYTE_SIZE]; // 3MB
   size_t length;
   std::atomic<int> refCount{0};
 };

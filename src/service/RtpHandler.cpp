@@ -105,6 +105,7 @@ void RtpHandler::readVideoSample(
   const auto camIt = camIdVideoFileStreamMap.find(camId);
   if (camIt == camIdVideoFileStreamMap.end() || camIt->second.size() < 2) {
     logger->severe("Dongvin, invalid camId or insufficient video file streams! camId: " + std::to_string(camId));
+    videoSampleRtpPtr->length = C::INVALID;
     return;
   }
 
@@ -123,7 +124,9 @@ void RtpHandler::readVideoSample(
   }
 
   if (!frontVideoFileReadingStream.is_open() || !rearVideoFileReadingStream.is_open()) {
+    videoSampleRtpPtr->length = C::INVALID;
     logger->severe("Dongvin, video file stream is not open!");
+    return;
   }
 
   const std::string frameType = sampleNo % gop == 0 ? C::KEY_FRAME_TYPE : C::P_FRAME_TYPE;
@@ -236,7 +239,9 @@ void RtpHandler::readVideoSample(
       }
     }
   } else {
+    videoSampleRtpPtr->length = C::INVALID;
     logger->severe("Dongvin, faild to get session ptr! RtpHandler::readVideoSample()");
+    return;
   }
 }
 
@@ -278,6 +283,7 @@ void RtpHandler::readAudioSample(
     if (!audioFileStream.read(reinterpret_cast<std::ifstream::char_type *>(audioSampleRtpPtr->data), len)) {
       audioSampleRtpPtr->length = C::INVALID;
       logger->severe("Dongvin, failed to read audio sample! sample no : " + std::to_string(sampleNo));
+      return;
     } else if (auto sessionPtr = parentSessionPtr.lock()) {
       audioSampleRtpPtr->length = len;
       (audioSampleRtpPtr->refCount) += 1;
@@ -289,7 +295,9 @@ void RtpHandler::readAudioSample(
       rtpInfo->length = len;
       sessionPtr->enqueueRtpInfo(rtpInfo);
     } else {
+      audioSampleRtpPtr->length = C::INVALID;
       logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
+      return;
     }
   } else {
     // do not send audio rtp. send only meta.
@@ -314,7 +322,9 @@ void RtpHandler::readAudioSample(
       rtpInfo->length = metaData.size();
       sessionPtr->enqueueRtpInfo(rtpInfo);
     } else {
+      audioSampleRtpPtr->length = C::INVALID;
       logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
+      return;
     }
   }
 }

@@ -502,31 +502,33 @@ void Session::transmitRtp() {
   RtpPacketInfo* rtpPacketInfoPtr = nullptr;
   if (rtpQueuePtr->pop(rtpPacketInfoPtr) && rtpPacketInfoPtr) {
     boost::system::error_code ignored_error;
-    if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
-      // tx video rtp
-      boost::asio::write(
+    // send only valid rtps
+    if (rtpPacketInfoPtr->length != C::INVALID){
+      if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
+        // tx video rtp
+        boost::asio::write(
+            *socketPtr,
+            boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
+            ignored_error
+        );
+        // free videoSamplePool only when all rtp packets are transported to clint
+        if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
+          videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
+        }
+      } else {
+        // tx audio rtp
+        boost::asio::write(
           *socketPtr,
-          boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
+          boost::asio::buffer(rtpPacketInfoPtr->audioSamplePtr->data, rtpPacketInfoPtr->length),
           ignored_error
-      );
-      // free videoSamplePool only when all rtp packets are transported to clint
-      if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
-        videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
+        );
+        // free audioSamplePool only when all rtp packets are transported to clint
+        if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
+          audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
+        }
       }
-    } else {
-      // tx audio rtp
-      boost::asio::write(
-        *socketPtr,
-        boost::asio::buffer(rtpPacketInfoPtr->audioSamplePtr->data, rtpPacketInfoPtr->length),
-        ignored_error
-      );
-      // free audioSamplePool only when all rtp packets are transported to clint
-      if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
-        audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
-      }
+      sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }
-    sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
-
     delete rtpPacketInfoPtr;
   }
 }

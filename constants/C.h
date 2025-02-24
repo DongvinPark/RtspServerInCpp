@@ -60,8 +60,8 @@ namespace C {
 
     // Network settings
     constexpr int RTP_TX_QUEUE_SIZE = 5*1024;
-    constexpr int FRONT_VIDEO_MAX_BYTE_SIZE = 3*1024*1024; //3MB
-    constexpr int REAR_VIDEO_MAX_BYTE_SIZE = 2*1024*1024; //2MB
+    constexpr int FRONT_VIDEO_MAX_BYTE_SIZE = 2*1024*1024; //2MB
+    constexpr int REAR_VIDEO_MAX_BYTE_SIZE = 1*1024*1024; //1MB
     constexpr int FRONT_VIDEO_SAMPLE_POOL_RTP_MAX_LEN
         = FRONT_VIDEO_MAX_BYTE_SIZE/(TCP_RTP_HEAD_LEN + MTU_SIZE) + 1; // 2132
     constexpr int REAR_VIDEO_SAMPLE_POOL_RTP_MAX_LEN
