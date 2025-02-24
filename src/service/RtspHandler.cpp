@@ -37,7 +37,7 @@ void RtspHandler::handleRtspRequest(
   std::string method = reqStr.substr(0, idx);
   if (std::find(C::RTSP_METHOD_VECTOR.begin(), C::RTSP_METHOD_VECTOR.end(), method) == C::RTSP_METHOD_VECTOR.end()) {
     logger->severe("Dongvin, not implemented method! : " + method);
-    respondError(inputBuffer, 405, method);
+    respondError(inputBuffer, C::METHOD_NOT_ALLOWED, method);
     return;
   }
 
@@ -46,13 +46,13 @@ void RtspHandler::handleRtspRequest(
   if (_cSeq == -1) {
     // invalid CSeq. bad req.
     logger->severe("Dongvin, failed to find CSeq header!");
-    respondError(inputBuffer, 400, method);
+    respondError(inputBuffer, C::BAD_REQUEST, method);
     return;
   }
   int next = cSeq + 1;
   if (next != _cSeq) {
     logger->severe("Dongvin, bad sequence number! server side/client side : " + std::to_string(next) + "/" + std::to_string(_cSeq));
-    respondError(inputBuffer, 400, method);
+    respondError(inputBuffer, C::BAD_REQUEST, method);
     return;
   }
 
@@ -80,7 +80,7 @@ void RtspHandler::handleRtspRequest(
           return;
         }
         logger->severe("Dongvin, failed to find session id!");
-        respondError(inputBuffer, 400, method);
+        respondError(inputBuffer, C::BAD_REQUEST, method);
         return;
       }
 
@@ -123,7 +123,7 @@ void RtspHandler::handleRtspRequest(
           return;
         }
         logger->severe("Dongvin, server doesn't have content : " + cid);
-        respondError(inputBuffer, 400, method);
+        respondError(inputBuffer, C::BAD_REQUEST, method);
         return;
       } else if (method == "DESCRIBE") {
         // assume url and username are correct or same. Don't check again.
@@ -137,7 +137,7 @@ void RtspHandler::handleRtspRequest(
         std::string notToTxList = findNotTx(strings);
         if (transport == C::EMPTY_STRING && hybridMode == C::EMPTY_STRING) {
           logger->severe("Dongvin, invalid SETUP header!");
-          respondError(inputBuffer, 400, method);
+          respondError(inputBuffer, C::BAD_REQUEST, method);
           return;
         }
 
@@ -222,7 +222,7 @@ void RtspHandler::handleRtspRequest(
             }
             nptElem += "]";
             logger->severe("Dongvin, invalid npt in play req for seek : " + nptElem);
-            respondError(inputBuffer, 400, method);
+            respondError(inputBuffer, C::BAD_REQUEST, method);
             return;
           }
           // valid npt
@@ -269,7 +269,7 @@ void RtspHandler::handleRtspRequest(
             }
             nptElem += "]";
             logger->severe("Dongvin, invalid npt in play req for initial play : " + nptElem);
-            respondError(inputBuffer, 400, method);
+            respondError(inputBuffer, C::BAD_REQUEST, method);
             return;
           } else {
 
@@ -278,12 +278,12 @@ void RtspHandler::handleRtspRequest(
             if (auto rtpHandlePtr = weakPtr.lock()) {
               if (bool initResult = rtpHandlePtr->openAllFileStreamsForVideoAndAudio(); !initResult) {
                 logger->severe("Dongvin, failed to open video/audio file stream! session id : " + sessionId);
-                respondError(inputBuffer, 400, method);
+                respondError(inputBuffer, C::BAD_REQUEST, method);
                 return;
               }
             } else {
               logger->severe("Dongvin, failed to get RtpHandler ptr!");
-              respondError(inputBuffer, 400, method);
+              respondError(inputBuffer, C::BAD_REQUEST, method);
               return;
             }
 
@@ -364,7 +364,7 @@ void RtspHandler::handleRtspRequest(
           isValid = cam < maxCam && nextVid < maxVnum;
           if (!isValid) {
             logger->info("Dongvin, invalid next id or video id for cam change!");
-            respondError(inputBuffer, 400, method);
+            respondError(inputBuffer, C::BAD_REQUEST, method);
             return;
           }
           respondCameraChange(inputBuffer, cam);
@@ -372,11 +372,11 @@ void RtspHandler::handleRtspRequest(
           return;
         }
         logger->info("Dongvin, invalid set_parameter header!");
-        respondError(inputBuffer, 400, method);
+        respondError(inputBuffer, C::BAD_REQUEST, method);
         return;
       } else {
         logger->warning("Dongvin, invalid or not implemented method: " + method);
-        respondError(inputBuffer, 400, method);
+        respondError(inputBuffer, C::BAD_REQUEST, method);
         return;
       }
 
@@ -386,11 +386,11 @@ void RtspHandler::handleRtspRequest(
       return;
     }
     logger->severe("Dongvin, failed to get weak acs handler ptr!");
-    respondError(inputBuffer, 500, method);
+    respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
     return;
   }
   logger->severe("Dongvin, failed to get weak session ptr!");
-  respondError(inputBuffer, 500, method);
+  respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
 }// end of handleRtspRequest();
 
 bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
@@ -483,7 +483,7 @@ void RtspHandler::respondPlay(
     if (lastVideoSampleNo > C::ZERO && lastAudioSampleNo > C::ZERO) initResult = true;
     else {
       logger->severe("Dongvin, sample meta init failed!");
-      respondError(buffer, 500, "PLAY");
+      respondError(buffer, C::INTERNAL_SERVER_ERROR, "PLAY");
       return;
     }
   }
@@ -493,7 +493,7 @@ void RtspHandler::respondPlay(
     if (numberOfCamDirectories > C::ZERO) initResult = true;
     else {
       logger->severe("Dongvin, session meta init failed!");
-      respondError(buffer, 500, "PLAY");
+      respondError(buffer, C::INTERNAL_SERVER_ERROR, "PLAY");
     }
   }
 
@@ -523,7 +523,7 @@ void RtspHandler::respondPlay(
     buffer.updateBuf(response);
   } else {
     logger->severe("Dongvin, Failed to init Rtp-Info header for PLAY request");
-    respondError(buffer, 500, "PLAY");
+    respondError(buffer, C::INTERNAL_SERVER_ERROR, "PLAY");
   }
 }
 

@@ -92,6 +92,12 @@ namespace C {
     const std::vector<std::string> RTSP_METHOD_VECTOR = {
         "DESCRIBE","SETUP","PLAY","PAUSE","TEARDOWN","SET_PARAMETER","OPTIONS" // !! "OPTIONS" must be the last.
     };
+    constexpr int OK = 200;
+    constexpr int BAD_REQUEST = 400;
+    constexpr int METHOD_NOT_ALLOWED = 405;
+    constexpr int SESSION_NOT_FOUND = 454;
+    constexpr int NOT_IMPLEMENTED = 501;
+    constexpr int INTERNAL_SERVER_ERROR = 500;
     const std::unordered_map<int, std::string> RTSP_STATUS_CODES_MAP = {
         {200, "OK"},
         {400, "Bad Request"},

@@ -763,7 +763,7 @@ private:
 <br><br/>
 21. Graceful shutting down logic 구현이 필수적이다.
     <br> 본 프로젝트는 RTSP 스트리밍 서버이기 때문에 소켓, 파일 핸들러, 스레드 풀, boost.asio io_context 등의 자원을 서버 종료시 모두 회수해야 한다.
-    <br> 서버 종료 시 자원 회수 로직은 main.cpp 에 구현돼 있으며, Future, Boost.asio signal handling, try-catch exception handling 이 사용되었다.
+    <br> 서버 종료 시 자원 회수 로직은 main.cpp 에 구현돼 있으며, Future, Boost.Asio signal handling, try-catch exception handling 이 사용되었다.
     <br> 자세한 코드와 구현 시 고려한 사항은 main.cpp를 참고한다.
     <br> 특정 상황에서 반드시 실행돼야 하는 로직을 구현할 때는, 중간의 blocking 함수가 예외를 던지는지 유심히 관찰하자. 
 ```c++
