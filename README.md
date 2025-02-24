@@ -36,10 +36,14 @@
     - Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치하고 둘을 링크 해줍니다.
   - MacOS
     - GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
-  - Linux
+  - Linux - Ubuntu Desktop
     - GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
-- 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 native Windows Visual Studio, M series chip MacOS Visual Studio Code, WSL ubuntu terminal 환경에서 빌드 및 실행 테스트를 통과한 상태입니다.
-- 셋 중 편한 환경을 선택한 후 각자의 환경에 따라서 아래의 안내대로 실행시키면 됩니다.
+- 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 아래의 IDE에서 빌드 및 실행이 가능합니다.
+  - native Windows Visual Studio, CLion
+  - WSL ubuntu 22.04 LTS CLion
+  - Linux ubuntu 20.04 CLion
+  - M chip MacOS CLion, Visual Studio Code
+- 다른 OS 또는 IDE에서는 추가 설정이 필요할 수 있습니다.
 <br><br/>
 
 ## Window 환경 Visual Studio 실행방법
