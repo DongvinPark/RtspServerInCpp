@@ -14,6 +14,7 @@
     #include <libproc.h>
     #include <unistd.h>
 #elif __linux__
+    #include <pthread.h>
     #include <unistd.h>
 #endif
 
@@ -29,6 +30,22 @@
 // 1.0.0        2024.12.27      Util, DTO, and FileRaader Initialized
 
 using boost::asio::ip::tcp;
+
+void set_thread_priority() {
+#ifdef _WIN32
+    // on Windows: set thread priority to highest
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+#elif defined(__linux__) || defined(__APPLE__)
+    // on Linux & macOS: set priority using pthreads
+    sched_param sch_params{};
+    sch_params.sched_priority = 10; // Adjust priority value as needed
+
+    int policy = SCHED_RR;  // SCHED_FIFO (real-time) or SCHED_RR (round-robin)
+    if (pthread_setschedparam(pthread_self(), policy, &sch_params) != 0) {
+        std::cerr << "Failed to set thread priority" << std::endl;
+    }
+#endif
+}
 
 std::string getExecutablePath() {
     char path[1024];
@@ -91,6 +108,7 @@ int main() {
     for (auto i = 0; i < threadCnt; ++i) {
         threadVec.emplace_back(
             [&io_context]() {
+                set_thread_priority();
                 io_context.run();
             }
         );
