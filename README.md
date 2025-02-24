@@ -1,35 +1,39 @@
-
 # Alpha Streamer 3.1
 <br>
 
 ## C++ Rewrite of Alpha Streamer 3.0 with Boost Library
 <br>
 
-### C++17 또는 그 이상 버전이 필요합니다.
+### C++17 또는 그 이후 버전에서 작동합니다.
 ### boost library 1.71.0 또는 그 이상 버전을 권장합니다.
 <br>
 
 ## 개발 정책
 - ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
   - 특정 컴파일러에서만 지원하는 기능은 사용하지 않았습니다(Variable Length Array 등).
-- Windows, Linux, M chip macOS 운영체제에서 실행 가능합니다.
-  - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다.
-- Boost.Asio 라이브러리를 사용하여 스레드의 생성을 최소화 했습니다.
+- 멀티 플랫폼에서의 실행을 지향합니다.
+  - Windows, Linux(Ubuntu, Amazon Linux), macOS(M chip)에서 실행 가능합니다.
+- Boost 라이브러리를 사용합니다.
   - 클라이언트가 늘어나도 스레드를 새로 생성하지 않습니다.
 - 직접적인 메모리 관리를 최소화 했습니다.
-  - new, delete, raw pointer의 사용을 최소화 했습니다.
+  - RAII를 준수합니다.
+  - new, delete 연산을 직접 호출하는 코드가 없습니다.
 <br><br/>
 
-## OS별 빌드 및 실행 테스트 결과
-- Windows
-  - Window 11 : C++ 17 or later, boost 1.86.0
-- Linux
-  - Ubuntu 20.04 LTS : C++ 17 or later, boost 1.71.0
-  - Ubuntu 22.04 LTS : C++ 17 or later, boost 1.74.0
-  - Amazon Linux 2023 : C++ 17 or later, boost 1.75.0
-- macOS
-  - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
-  - Sequoia 15.3 : C++ 17 or later, boost 1.87.0
+## Why C++ and Boost Libray?
+- C++
+  - 저비용 추상화(class, smart pointer ...)를 이용하면서도 성능에서 손해가 발생하지 않습니다.
+- Boost Library
+  - 1999 년 출시 후 현재까지 널리 사용되어 안정성이 확보된 라이브러리
+    - Google, Microsoft, Amazon, Meta, Bloomberg, Glodman Sachs 등에서 사용합니다.
+    - 모던 C++의 표준 라이브러리에 편입될 정도로 안정성과 성능이 검증 된 라이브러리 입니다.
+      - shared_ptr, wear_ptr, unique_ptr, thread, mutex, chrono, unordered_map, filesystem이 boost library에서 처음 등장하여 C++의 standard library에 편입 되었습니다.
+  - Asio : 고성능 Async-Nonblocking 네트워킹 제공
+    - io_context : 스레드의 생성을 최소화 합니다.
+  - Pool : 안전한 메모리 관리 수단 제공
+    - object pool : 메모리 누수와 힙 공간 파편화를 방지합니다.
+  - Lockfree : 효율적인 thread-safe 자료구조 제공
+    - thread safe non-blocking queue : mutex locking & unlock 동작이 없습니다.
 <br><br/>
 
 ## 개발환경 셋팅
@@ -40,7 +44,7 @@
     - GCC, G++, CMake를 터미널 명령어로 설치한 후, boost.asio를 homebrew로 설치해줍니다.
   - Linux - Ubuntu Desktop
     - GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
-- 현재 main 브랜치는 아래의 IDE에서 빌드 및 실행이 가능합니다.
+- main 브랜치는 아래의 OS 및 IDE에서 빌드 및 실행이 가능합니다.
   - native Windows
     - CLion 
     - Visual Studio
@@ -49,6 +53,18 @@
   - M chip macOS
     - CLion
     - Visual Studio Code
+<br><br/>
+
+## 플랫폼별 빌드 및 실행 테스트 결과
+- Windows
+  - Window 11 : C++ 17 or later, boost 1.86.0
+- Linux
+  - Ubuntu 20.04 LTS : C++ 17 or later, boost 1.71.0
+  - Ubuntu 22.04 LTS : C++ 17 or later, boost 1.74.0
+  - Amazon Linux 2023 : C++ 17 or later, boost 1.75.0
+- macOS
+  - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
+  - Sequoia 15.3 : C++ 17 or later, boost 1.87.0
 <br><br/>
 
 ## Window 환경 Visual Studio 실행방법
@@ -62,7 +78,7 @@ git clone https://github.com/microsoft/vcpkg.git
 ```
 
 3. 아래의 명령어를 사용해서 vcpkg의 부트스트랩 스크립트를 실행시킵니다.
-   이 명령어의 맨 앞 글자에 '마침표'가 있을을 기억합니다.
+   이 명령어의 맨 앞 부분에 '마침표'가 있어야 합니다.
 ```text
 .\bootstrap-vcpkg.bat
 ```
