@@ -40,7 +40,6 @@
     - GCC, G++, CMake, boost.asio를 터미널 명령어로 설치해줍니다.
 - 현재 master 브랜치에 등록돼 있는 CMakeLists.txt는 아래의 IDE에서 빌드 및 실행이 가능합니다.
   - native Windows Visual Studio, CLion
-  - WSL ubuntu 22.04 LTS CLion
   - Linux ubuntu 20.04 CLion
   - M chip MacOS CLion, Visual Studio Code
 - 다른 OS 또는 IDE에서는 추가 설정이 필요할 수 있습니다.
