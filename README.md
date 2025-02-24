@@ -8,7 +8,7 @@
 
 ## 개발 정책
 - ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
-  - 컴파일러 구현 의존적인 기능은 일절 사용하지 않습니다.(VLA 등)
+  - 특정 컴파일러에서만 지원하는 기능은 사용하지 않았습니다(Variable Length Array 등).
 - Windows, Linux, M chip MacOS 운영체제에서 실행 가능합니다.
   - 하나의 CMakeLists.txt 파일로 3 종류의 OS에서 빌드 및 실행이 가능합니다.
 - Boost.asio 라이브러리를 사용하여 스레드의 생성을 최소화 했습니다.

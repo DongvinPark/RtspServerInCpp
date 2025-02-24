@@ -8,7 +8,7 @@ Logger::Logger(const std::string& className)
     : className(className), showPrompt(false) {}
 
 std::shared_ptr<Logger> Logger::getLogger(const std::string& className) {
-    return std::shared_ptr<Logger>(new Logger(className));
+    return std::make_shared<Logger>(className);
 }
 
 void Logger::setUserInputPrompt(bool prompt) {

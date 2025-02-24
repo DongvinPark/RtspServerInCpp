@@ -4,11 +4,11 @@
 #include <string>
 #include <memory>
 
-// singleton design was used.
 class Logger {
 public:
     static std::shared_ptr<Logger> getLogger(const std::string& className);
 
+    explicit Logger(const std::string& className);
     void severe(const std::string& msg);
     void warning(const std::string& msg);
     void info(const std::string& msg);
@@ -18,7 +18,6 @@ public:
     void setUserInputPrompt(bool prompt);
 
 private:
-    explicit Logger(const std::string& className);
 
     std::string makeString(const std::string& msg, const std::string& level, const std::string& color);
     void print(const std::string& msg);
