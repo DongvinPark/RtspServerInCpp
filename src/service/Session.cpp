@@ -63,6 +63,7 @@ Session::~Session(){
     std::cerr << "exception occurred during destruction! session id : " + sessionId
     << ". error msg " << e.what() << "\n";
   } catch (...) {
+    // must catch all exceptions in destructor!!
     std::cerr << "unknown exception was thrown during session destruction! session id : " + sessionId << "\n";
   }
 }

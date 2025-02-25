@@ -978,22 +978,55 @@ else if (method == "PAUSE") {
 // ...
 ```
 <br><br/>
-27. 특정한 함수를 async 하게 실행시키는 방법
+27. 특정한 함수를 async-nonblocking 하게 실행시키는 방법
     <br> java에는 CompletableFuture 등의 방법으로 특정 Runnable을 별도의 스레드에서 async하게 실행시킬 수 있다.
-    <br> C++에서도 std library를 이용해서 이와 같은 기능을 직접 만들어서 쓸 수 있다.
-    <br> 한 가지 반드시 기억해야할 점은, lambda 에게 포인터 변수를 전달할 때는 '값'으로 캡쳐해서 전달하는게 안전하다는 점이다. 괜히 '참조'로 캡쳐되게 했다가 dangling pointer가 되면서 SIGSEGV 메시지를 받고 서버가 바로 죽을 수도 있다.
+    <br> C++에서도 std library를 이용해서 이와 같은 기능을 직접 만들어서 쓸 수 있고, 3 가지 방법이 존재한다.
+    <br> 한 가지 반드시 기억해야할 점은, lambda 에게 포인터 변수를 전달할 때는 '값'으로 캡쳐해서 전달하는게 안전하다는 점이다. 괜히 '참조'로 캡쳐되게 했다가 dangling pointer가 되면서 SIGSEGV 메시지가 뜨면서 서버가 바로 죽을 수도 있다.
+    <br> 그러나 Boost.Asio를 쓰고 있다면, io_context를 이용해서 구현한 버전을 이용하자. std::thread를 이용한 버전은 io_context에 접근할 수 없을 때만 사용하자.
 ```c++
 #include <iostream>
 #include <thread>
 
+// boost.asio의 io_context를 사용하고 있다면, 이게 가장 안전하고 효과적인 방법이다.
+// 새로운 스레드를 만들어서 detach 시킬 필요도 없고, std::async가 예상치 못하게 blockihg 하게 동작하는 문제도 피할 수 있다.
+void delayedExecutorAsyncByIoContext(
+		boost::asio::io_context& io_context, int delayInMillis, std::function<void()> task
+) {
+	auto timer = std::make_shared<boost::asio::steady_timer>(io_context);
+	timer->expires_after(std::chrono::milliseconds(delayInMillis));
+	// 이 때도 포인터 변수(timer)는 '참조'가 아니라 '값'으로 캡처해서 lambda에게 전달해야 안전하다.
+	timer->async_wait([task, timer](const boost::system::error_code& ec) {
+		if (!ec) {
+			task();
+		}
+	});
+}
+
+// 차선책은 새로운 스레드를 만들고 detach() 시키는 것이다.
+// 이것은 std::async가 예상치 못하게 blocking하게 작동하는 문제는 피할 수 있지만,
+// detach 시킨 스레드가 강제 종료되는 등의 추가적인 리스크가 존재한다.
+// detach() 된 스레드는 OS에서 자동으로 정리하므로, resource 누수가 일어나지 않는다.
 void delayedExecutorAsyncByThread(int delayInMillis, const std::function<void()>& task) {
-    // std::thread를 이용해서 직접 스레드를 만든 후, 거기에서 task를 실행시키고 detach()
-    // 하는 방식이다.
-    // detach() 된 스레드는 OS에서 자동으로 정리하므로, resource 누수가 일어나지 않는다.
   std::thread([delayInMillis, task]() {
       std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
       task();
   }).detach();
+}
+
+// 이것은 std::async를 이용한 버전인덴, 이 버전은 항상 non-blocking 하게 실행되지 않는다는 점에서 불완전하다.
+// 그 이유는 컴파일러 별로 std::async의 구현 차이 때문이기도 하고,
+// task가 함수 범위를 넘어가면서 소멸되기 직전일 때는 std library에서 dangling ptr 이슈를 막기 위해
+// 고의적으로 아래의 std::async를 Blocking 하게 실행되게 만들기 때문이다.
+// 이것을 막기 위해서는 무조건 std::thread를 만들어서 거기서 실행시키고 detach 시키던지,
+// 아니면 delayedExecutorAsyncByFuture() 이 함수가 리턴하는 future 객체를
+// delayedExecutorAsyncByFuture() 함수 범위 바깥에 존재하는 std::future 객체에 저장해야 한다.
+std::future<void> delayedExecutorAsyncByFuture(
+		int delayInMillis, const std::function<void()> &task
+) {
+	return std::async(std::launch::async, [delayInMillis, task]() {
+	  std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
+	  task();
+	});
 }
 
 class MyClass {
