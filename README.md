@@ -8,6 +8,10 @@
 ### boost library 1.71.0 또는 그 이상 버전을 권장합니다.
 <br>
 
+## 버전 정보
+- 2.0.0(2025.Feb.25) : Play, Pause, Seek, Cam Switching, Hybrid D & S, Looking Sample Control 지원
+<br><br/><br><br/>
+
 ## 개발 정책
 - Java로 작성된 Alpha Streamer 3.0을 C++로 재작성 합니다. 
   - Alpha Streamer에서는 클라이언트 1 명당 스레드 7 개를 만들어야 했습니다.
