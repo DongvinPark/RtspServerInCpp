@@ -392,11 +392,6 @@ void Session::onTeardown() {
   shutdownSession();
 }
 
-void Session::onPlayDone(const int streamId) {
-  if (streamId == C::VIDEO_ID) for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
-  if (streamId == C::AUDIO_ID) for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
-}
-
 void Session::recordBitrateTestResult() {
   if (isRecordSaved){
     logger->warning("Dongvin, bitrate test result already saved. session id : " + sessionId);
@@ -548,10 +543,6 @@ void Session::closeHandlersAndSocket() {
   } catch (...) {
     std::cerr << "unknown exception was thrown on closing socket and handlers! \n";
   }
-}
-
-bool Session::isPlayDone(int streamId) {
-    return false; // TODO : update later.
 }
 
 void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {

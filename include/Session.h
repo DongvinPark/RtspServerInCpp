@@ -142,7 +142,6 @@ public:
   void onPlayStart();
   void startPlayForCamSwitching();
   void onTeardown();
-  void onPlayDone(int streamId);
   void recordBitrateTestResult();
 
   // looking sample control
@@ -160,7 +159,6 @@ private:
   void stopAllPeriodicTasks();
   void closeHandlersAndSocket();
 
-  bool isPlayDone(int streamId);
   void transmitRtspRes(std::unique_ptr<Buffer> bufPtr);
   void transmitRtp();
 
