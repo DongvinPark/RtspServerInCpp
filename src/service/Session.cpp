@@ -34,7 +34,38 @@ Session::Session(
   clientRemoteAddress = clientIpAddressEndpoint.address().to_string();
 }
 
-Session::~Session() {}
+Session::~Session(){
+  // cleanup and release resources one more time before object destruction.
+  try {
+    rtpTransportTask.stop();
+    bitrateRecodeTask.stop();
+    for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
+    for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
+    if (socketPtr->is_open()){
+      socketPtr->close();
+    }
+    if (rtspHandlerPtr != nullptr){
+      rtspHandlerPtr.reset();
+      rtspHandlerPtr = nullptr;
+    }
+    if (acsHandlerPtr != nullptr){
+      acsHandlerPtr.reset();
+      acsHandlerPtr = nullptr;
+    }
+    if (rtpHandlerPtr != nullptr){
+      rtpHandlerPtr.reset();
+      rtpHandlerPtr = nullptr;
+    }
+
+    // try one more time to save bitrate tx/rx recode
+    recordBitrateTestResult();
+  } catch (const std::exception & e) {
+    std::cerr << "exception occurred during destruction! session id : " + sessionId
+    << ". error msg " << e.what() << "\n";
+  } catch (...) {
+    std::cerr << "unknown exception was thrown during session destruction! session id : " + sessionId << "\n";
+  }
+}
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
@@ -350,7 +381,7 @@ void Session::startPlayForCamSwitching() {
 void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
-  stopAllTimerTasks();
+  stopAllPeriodicTasks();
   closeHandlersAndSocket();
   recordBitrateTestResult();
   shutdownSession();
@@ -459,21 +490,43 @@ void Session::recordBitrateTestResult() {
   }
 }
 
-void Session::stopAllTimerTasks() {
-  rtpTransportTask.stop();
-  bitrateRecodeTask.stop();
-  for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
-  for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
-  logger->info("Dongvin, stopped all timers. session id : " + sessionId);
+void Session::stopAllPeriodicTasks() {
+  try {
+    rtpTransportTask.stop();
+    bitrateRecodeTask.stop();
+    for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
+    for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
+    logger->warning("Dongvin, stopped all timers. session id : " + sessionId);
+  } catch (const std::exception& e) {
+    std::cerr << "exception was thrown on stopping PeriodicTasks! : " << e.what() << "\n";
+  } catch (...) {
+    std::cerr << "unknown exception was thrown on stopping PeriodicTasks! \n";
+  }
 }
 
 void Session::closeHandlersAndSocket() {
-  socketPtr->close();
-  socketPtr.reset();
-  rtspHandlerPtr.reset();
-  acsHandlerPtr.reset();
-  rtpHandlerPtr.reset();
-  logger->info("Dongvin, closed socket and all handlers. session id : " + sessionId);
+  try {
+    if (socketPtr->is_open()){
+      socketPtr->close();
+    }
+    if (rtspHandlerPtr != nullptr){
+      rtspHandlerPtr.reset();
+      rtspHandlerPtr = nullptr;
+    }
+    if (acsHandlerPtr != nullptr){
+      acsHandlerPtr.reset();
+      acsHandlerPtr = nullptr;
+    }
+    if (rtpHandlerPtr != nullptr){
+      rtpHandlerPtr.reset();
+      rtpHandlerPtr = nullptr;
+    }
+    logger->warning("Dongvin, closed socket and all handlers. session id : " + sessionId);
+  } catch (const std::exception& e) {
+    std::cerr << "exception was thrown on closing socket and handlers! : " << e.what() << "\n";
+  } catch (...) {
+    std::cerr << "unknown exception was thrown on closing socket and handlers! \n";
+  }
 }
 
 bool Session::isPlayDone(int streamId) {

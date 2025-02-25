@@ -149,7 +149,7 @@ public:
   void clearRtpQueue();
 
 private:
-  void stopAllTimerTasks();
+  void stopAllPeriodicTasks();
   void closeHandlersAndSocket();
 
   bool isPlayDone(int streamId);
