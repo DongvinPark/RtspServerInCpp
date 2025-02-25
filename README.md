@@ -9,6 +9,8 @@
 <br>
 
 ## 개발 정책
+- Java로 작성된 Alpha Streamer 3.0을 C++로 재작성 했습니다. 
+  - Alpha Streamer에서는 클라이언트 1 명당 스레드 7 개를 만들어야 합니다.
 - ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
   - 특정 컴파일러에서만 지원하는 기능은 사용하지 않았습니다(Variable Length Array 등).
 - 멀티 플랫폼에서의 실행을 지원합니다.
