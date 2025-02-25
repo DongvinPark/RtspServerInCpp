@@ -64,8 +64,9 @@
     - Visual Studio Code
 <br><br/><br><br/>
 
-## 플랫폼별 빌드 및 실행 테스트 결과
+## 프로젝트 실행이 가능한 OS, C++ 언어, Boost 라이브러리 버전 
 - Windows
+  - Window 10 : C++ 17 or later, boost 1.86.0
   - Window 11 : C++ 17 or later, boost 1.86.0
 - Linux
   - Ubuntu 20.04 LTS : C++ 17 or later, boost 1.71.0
