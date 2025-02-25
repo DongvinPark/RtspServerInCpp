@@ -231,9 +231,10 @@ void RtspHandler::handleRtspRequest(
           std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
           respondPlay(inputBuffer, timestamp0, sessionId);
 
-          Util::delayedExecutorAsyncByFuture(
-              C::DELAY_BEFORE_RTP_START_ON_SEEK,
-              [&sessionPtr](){sessionPtr->onPlayStart();}
+          Util::delayedExecutorAsyncByIoContext(
+            sessionPtr->getIoContext(),
+            C::DELAY_BEFORE_RTP_START_ON_SEEK,
+            [sessionPtr](){sessionPtr->onPlayStart();}
           );
           return;
         } else {
@@ -297,9 +298,10 @@ void RtspHandler::handleRtspRequest(
             std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
             respondPlay(inputBuffer, timestamp0, sessionId);
 
-            Util::delayedExecutorAsyncByFuture(
+            Util::delayedExecutorAsyncByIoContext(
+              sessionPtr->getIoContext(),
               C::DELAY_BEFORE_RTP_START,
-              [&sessionPtr](){sessionPtr->onPlayStart();}
+              [sessionPtr](){sessionPtr->onPlayStart();}
             );
 
             sessionPtr->updatePauseStatus(false);
@@ -373,12 +375,12 @@ void RtspHandler::handleRtspRequest(
             respondError(inputBuffer, C::BAD_REQUEST, method);
             return;
           }
-          sessionPtr->latestCamSwitchingSampleIdx = static_cast<int>(switchingInfo[0]);
           respondCameraChange(inputBuffer, cam);
           sessionPtr->onCameraChange(cam, nextVid, switchingInfo);
-          Util::delayedExecutorAsyncByFuture(
+          Util::delayedExecutorAsyncByIoContext(
+              sessionPtr->getIoContext(),
               C::UPDATE_CAM_SWITCHING_STATUS_DELAY_MILLIS,
-            [&](){sessionPtr->updateIsInCamSwitching(false);}
+              [sessionPtr](){sessionPtr->updateIsInCamSwitching(false);}
           );
           return;
         } else if (info.find(C::P_FRAME_KEY) != std::string::npos) {

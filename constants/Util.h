@@ -16,6 +16,7 @@
 #include <future>
 #include <thread>
 #include <optional>
+#include <boost/asio.hpp>
 
 #include "../constants/C.h"
 #include "../include/Buffer.h"
@@ -262,15 +263,6 @@ namespace Util {
 			   (static_cast<int32_t>(metaLenBuf[3]));
 	}
 
-	inline std::future<void> delayedExecutorAsyncByFuture(
-		int delayInMillis, const std::function<void()> &task
-	) {
-		return std::async(std::launch::async, [delayInMillis, task]() {
-		  std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
-		  task();
-		});
-	}
-
 	inline void delayedExecutorAsyncByThread(
 		int delayInMillis, const std::function<void()>& task
 	) {
@@ -278,6 +270,18 @@ namespace Util {
 			std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
 			task();
 		}).detach();
+	}
+
+	inline void delayedExecutorAsyncByIoContext(
+		boost::asio::io_context& io_context, int delayInMillis, std::function<void()> task
+	) {
+		auto timer = std::make_shared<boost::asio::steady_timer>(io_context);
+		timer->expires_after(std::chrono::milliseconds(delayInMillis));
+		timer->async_wait([task, timer](const boost::system::error_code& ec) {
+			if (!ec) {
+				task();
+			}
+		});
 	}
 
 	inline std::optional<HybridSampleMeta> getHybridSampleMetaSafe(

@@ -83,6 +83,8 @@ public:
 
   void start();
 
+  boost::asio::io_context& getIoContext();
+
   void setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr);
   void setRtspHandlerPtr(std::shared_ptr<RtspHandler> inputRtspHandlerPtr);
   void setRtpHandlerPtr(std::shared_ptr<RtpHandler> inputRtpHandlerPtr);
@@ -144,7 +146,6 @@ public:
   void recordBitrateTestResult();
 
   // looking sample control
-  int latestCamSwitchingSampleIdx = C::UNSET;
   bool getPFrameTxStatus();
   void updatePFrameTxStatus(bool newState);
   bool getIsInCamSwitching();

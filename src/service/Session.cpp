@@ -99,6 +99,10 @@ void Session::start() {
   bitrateRecodeTask.start();
 }
 
+boost::asio::io_context& Session::getIoContext(){
+  return io_context;
+}
+
 void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
   this->acsHandlerPtr = std::move(inputAcsHandlerPtr);
 }

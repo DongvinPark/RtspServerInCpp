@@ -218,21 +218,20 @@ void RtpHandler::readVideoSample(
       // no rear V sample meta for hybrid D & S. read sample from file stream.
 
       // if it is not the time to send P frames, just return.
-      /*if (auto acsHandle = acsHandlerPtr.lock()) {
+      if (auto acsHandle = acsHandlerPtr.lock()) {
         if (
           !sessionPtr->getIsInCamSwitching()
-          && sampleNo > (sessionPtr->latestCamSwitchingSampleIdx + acsHandle->getGop()[0])
           && !sessionPtr->getPFrameTxStatus()
           && sampleNo < (sessionPtr->getRefVideoSampleCnt() - acsHandle->getGop()[0])
           && sampleNo%acsHandle->getGop()[0] > 1
         ){
-          std::cout << "!!! don't send P !!!" << sampleNo << std::endl;
+          return;
         }
       } else {
         videoSampleRtpPtr->length = C::INVALID;
         logger->severe("Dongvin, failed to get AcsHandler ptr! RtpHander::readVideoSample()");
         return;
-      }*/
+      }
 
       rearVideoFileReadingStream.seekg(curRearVideoSampleInfo.getOffset(), std::ios::beg);
       if (

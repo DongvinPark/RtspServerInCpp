@@ -981,21 +981,10 @@ else if (method == "PAUSE") {
 27. 특정한 함수를 async 하게 실행시키는 방법
     <br> java에는 CompletableFuture 등의 방법으로 특정 Runnable을 별도의 스레드에서 async하게 실행시킬 수 있다.
     <br> C++에서도 std library를 이용해서 이와 같은 기능을 직접 만들어서 쓸 수 있다.
+    <br> 한 가지 반드시 기억해야할 점은, lambda 에게 포인터 변수를 전달할 때는 '값'으로 캡쳐해서 전달하는게 안전하다는 점이다. 괜히 '참조'로 캡쳐되게 했다가 dangling pointer가 되면서 SIGSEGV 메시지를 받고 서버가 바로 죽을 수도 있다.
 ```c++
 #include <iostream>
-#include <future>
 #include <thread>
-
-std::future<void> delayedExecutorAsyncByFuture(int delayInMillis, const std::function<void()> &task) {
-    // 전달 받은 함수 객체인 'task'를 별도의 스레드에서 실행시킨다.
-    // 아래의 delayedExecutorAsyncByThread()에 비해서 std library에서 지원하는 최신
-    // 기능들을 이용해서 작성한 버전이다.
-    // 직접 스레드를 만들고, detach() 시킬 필요가 없다.
-  return std::async(std::launch::async, [delayInMillis, task]() {
-    std::this_thread::sleep_for(std::chrono::milliseconds(delayInMillis));
-    task();
-  });
-}
 
 void delayedExecutorAsyncByThread(int delayInMillis, const std::function<void()>& task) {
     // std::thread를 이용해서 직접 스레드를 만든 후, 거기에서 task를 실행시키고 detach()
@@ -1031,7 +1020,7 @@ int main(){
     // 참조는 복사하지 않고 전달하는 방법이지만, 포인터는 기본적으로 복사로 전달한다는 점이다.
     // 여기서 만약에 [&ptr] 이런 식으로 포인터를 참조로 전달해버리면 async task가 
     // 실행되지 않는다.
-    delayedExecutorAsyncByFuture(1000, [ptr]() {
+    delayedExecutorAsyncByThread(1000, [ptr]() {
         ptr->printAsync();
     });
   } else {
