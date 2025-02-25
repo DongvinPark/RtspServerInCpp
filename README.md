@@ -11,7 +11,7 @@
 ## 개발 정책
 - ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
   - 특정 컴파일러에서만 지원하는 기능은 사용하지 않았습니다(Variable Length Array 등).
-- 멀티 플랫폼에서의 실행을 지향합니다.
+- 멀티 플랫폼에서의 실행을 지원합니다.
   - Windows, Linux(Ubuntu, Amazon Linux), macOS(M chip)에서 실행 가능합니다.
 - Boost 라이브러리를 사용합니다.
   - 클라이언트가 늘어나도 스레드를 새로 생성하지 않습니다.
@@ -20,20 +20,21 @@
   - new, delete 연산을 직접 호출하는 코드가 없습니다.
 <br><br/>
 
-## Why C++ and Boost Libray?
-### C++
+## Why C++17 and Boost Libray?
+### C++17
   - 고수준의 가독성 높은 코드와 기능들(class, smart pointer, iterator ...)을 이용하면서도 성능에서 손해가 발생하지 않습니다.
+  - std::filesystem 을 지원하는 최초의 모던 C++ 입니다.
 ### Boost Library
   - 1999 년 출시 후 현재까지 널리 사용되고 있으며 안정성이 확보된 라이브러리
     - Google, Microsoft, Amazon, Meta, Bloomberg, Glodman Sachs 등에서 사용합니다.
-    - 모던 C++의 표준 라이브러리에 편입될 정도로 안정성과 성능이 검증 된 라이브러리 입니다.
-      - shared_ptr, wear_ptr, unique_ptr, thread, mutex, chrono, unordered_map, filesystem이 boost library에서 처음 등장하여 C++의 standard library에 편입 되었습니다.
+    - C++ 표준 라이브러리에 편입될 정도로 안정성과 성능이 검증 된 라이브러리 입니다.
+      - filesystem, shared_ptr, wear_ptr, unique_ptr, thread, mutex, chrono, unordered_map 등의 기능이 boost library에서 처음 구현된 후 C++의 standard library에 편입 되었습니다.
   - Boost Asio : 고성능 Async-Nonblocking 네트워킹 제공
     - io_context : 스레드의 생성을 최소화 합니다.
   - Boost Pool : 안전한 메모리 관리 수단 제공
     - object pool : 메모리 누수와 힙 공간 파편화를 방지합니다.
   - Boost Lock free : 효율적인 thread-safe 자료구조 제공
-    - non-blocking queue : mutex locking & unlock 동작이 없습니다.
+    - non-blocking queue : mutex locking & unlocking 동작이 없습니다.
 <br><br/>
 
 ## 개발환경 셋팅
