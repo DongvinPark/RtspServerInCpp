@@ -247,6 +247,10 @@ void RtspHandler::handleRtspRequest(
 
           std::vector<float> npt = findNormalPlayTime(strings);
 
+          if (!isLookingSampleControInUse(strings)){
+            sessionPtr->updatePFrameTxStatus(true);
+          }
+
           if (sessionPtr->getDeviceModelNo() == C::EMPTY_STRING) {
             std::string deviceName = findDeviceModelName(strings);
             if (deviceName != C::EMPTY_STRING) {
@@ -359,21 +363,37 @@ void RtspHandler::handleRtspRequest(
 
         bool isValid = false;
         if (info.find(C::CAM_CHANG_KEY) != std::string::npos) {
+          sessionPtr->updateIsInCamSwitching(true);
           int maxCam = ptrForAcsHandler->getMaxCamNumber();
           int maxVnum = ptrForAcsHandler->getMainVideoNumber();
           isValid = cam < maxCam && nextVid < maxVnum;
           if (!isValid) {
             logger->info("Dongvin, invalid next id or video id for cam change!");
+            sessionPtr->updateIsInCamSwitching(false);
             respondError(inputBuffer, C::BAD_REQUEST, method);
             return;
           }
+          sessionPtr->latestCamSwitchingSampleIdx = static_cast<int>(switchingInfo[0]);
           respondCameraChange(inputBuffer, cam);
           sessionPtr->onCameraChange(cam, nextVid, switchingInfo);
+          Util::delayedExecutorAsyncByFuture(
+              C::UPDATE_CAM_SWITCHING_STATUS_DELAY_MILLIS,
+            [&](){sessionPtr->updateIsInCamSwitching(false);}
+          );
+          return;
+        } else if (info.find(C::P_FRAME_KEY) != std::string::npos) {
+          logger->info2(
+            "Dongvin, id:" + sessionId+", looking sample control request comes in! : " + pFrameControlAction
+          );
+          bool pFrameTxMode = pFrameControlAction == C::SEND_P_FRAMES ? true : false;
+          sessionPtr->updatePFrameTxStatus(pFrameTxMode);
+          respondPFrameControl(inputBuffer, pFrameTxMode);
+          return;
+        } else {
+          logger->info("Dongvin, invalid set_parameter header!");
+          respondError(inputBuffer, C::BAD_REQUEST, method);
           return;
         }
-        logger->info("Dongvin, invalid set_parameter header!");
-        respondError(inputBuffer, C::BAD_REQUEST, method);
-        return;
       } else {
         logger->warning("Dongvin, invalid or not implemented method: " + method);
         respondError(inputBuffer, C::BAD_REQUEST, method);
@@ -551,6 +571,15 @@ void RtspHandler::respondCameraChange(Buffer& buffer, int targetCamId) {
                 "Session: "+ sessionId + std::string{C::CRLF} +
                 C::CAM_CHANG_KEY + ": " + std::to_string(targetCamId) + std::string{C::CRLF} +
                 "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF2};
+  const std::vector<unsigned char> response(rsp.begin(), rsp.end());
+  buffer.updateBuf(response);
+}
+
+void RtspHandler::respondPFrameControl(Buffer& buffer, bool needToTxPFrames){
+  std::string rsp = "RTSP/1.0 200 OK"+std::string{C::CRLF}+
+                "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
+                "Server: "+ std::string{C::MY_NAME} + std::string{C::CRLF} +
+                C::P_FRAME_KEY + ": " + std::to_string(needToTxPFrames) + std::string{C::CRLF2};
   const std::vector<unsigned char> response(rsp.begin(), rsp.end());
   buffer.updateBuf(response);
 }
@@ -766,6 +795,17 @@ std::string RtspHandler::findManufacturer(std::vector<std::string> strings) {
     }
   }
   return C::EMPTY_STRING;
+}
+
+bool RtspHandler::isLookingSampleControInUse(std::vector<std::string> strings){
+  for (std::string elem : strings) {
+    if ( elem.find(C::USE_P_FRAME_CONTROL) != std::string::npos) {
+      if (Util::splitToVecBySingleChar(elem, ' ')[1] == "true") {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 // for play req right after pause

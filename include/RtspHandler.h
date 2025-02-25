@@ -35,6 +35,7 @@ private:
   void respondPlayAfterPause(Buffer& buffer);
   void respondSwitching(Buffer& buffer);
   void respondCameraChange(Buffer& buffer, int targetCamId);
+  void respondPFrameControl(Buffer& buffer, bool needToTxPFrames);
   void respondTeardown(Buffer& buffer);
   void respondError(Buffer& buffer, int error, std::string rtspMethod);
   void respondPause(Buffer& buffer);
@@ -52,6 +53,7 @@ private:
   std::vector<float> findNormalPlayTime(std::vector<std::string> strings);
   std::string findDeviceModelName(std::vector<std::string> strings);
   std::string findManufacturer(std::vector<std::string> strings);
+  bool isLookingSampleControInUse(std::vector<std::string> strings);
   int findLatestReceivedSampleIdx(std::vector<std::string> strings, std::string filter);
   bool isSeekRequest(std::vector<std::string> strings);
   bool isValidPlayTime(std::vector<float> ntpSec);

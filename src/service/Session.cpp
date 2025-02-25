@@ -490,6 +490,22 @@ void Session::recordBitrateTestResult() {
   }
 }
 
+bool Session::getPFrameTxStatus() {
+  return needSendPFrames;
+}
+
+void Session::updatePFrameTxStatus(bool newState) {
+  needSendPFrames = newState;
+}
+
+bool Session::getIsInCamSwitching() {
+  return isInCamSwitching;
+}
+
+void Session::updateIsInCamSwitching(bool newState) {
+  isInCamSwitching = newState;
+}
+
 void Session::stopAllPeriodicTasks() {
   try {
     rtpTransportTask.stop();

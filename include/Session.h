@@ -143,6 +143,13 @@ public:
   void onPlayDone(int streamId);
   void recordBitrateTestResult();
 
+  // looking sample control
+  int latestCamSwitchingSampleIdx = C::UNSET;
+  bool getPFrameTxStatus();
+  void updatePFrameTxStatus(bool newState);
+  bool getIsInCamSwitching();
+  void updateIsInCamSwitching(bool newState);
+
   // rtp queue control
   boost::object_pool<RtpPacketInfo>& getRtpPacketInfoPool();
   void enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr);
@@ -173,6 +180,10 @@ private:
 
   std::vector<bool> playDone = {false, false};
   std::atomic<bool> interruptSending = false;
+
+  // looking sample control
+  bool needSendPFrames = false;
+  bool isInCamSwitching = false;
 
   // used strand to reduce cache miss
   boost::asio::strand<boost::asio::io_context::executor_type> strand;
