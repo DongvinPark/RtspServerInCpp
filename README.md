@@ -28,7 +28,7 @@
   - 1999 년 출시 후 현재까지 널리 사용되고 있으며 안정성이 확보된 라이브러리
     - Google, Microsoft, Amazon, Meta, Bloomberg, Glodman Sachs 등에서 사용합니다.
     - C++ 표준 라이브러리에 편입될 정도로 안정성과 성능이 검증 된 라이브러리 입니다.
-      - filesystem, shared_ptr, wear_ptr, unique_ptr, thread, mutex, chrono, unordered_map 등의 기능이 boost library에서 처음 구현된 후 C++의 standard library에 편입 되었습니다.
+      - filesystem, shared_ptr, weak_ptr, unique_ptr, thread, mutex, chrono, unordered_map 등의 기능이 boost library에서 처음 구현된 후 C++의 standard library에 편입 되었습니다.
 ### RTSP server and Boost
   - Boost Asio : 고성능 Async-Nonblocking 네트워킹 제공
     - io_context : 새로운 클라이언트가 와도 새로운 스레드를 생성할 필요가 없습니다.
