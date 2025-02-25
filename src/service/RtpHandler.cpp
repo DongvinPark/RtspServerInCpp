@@ -150,12 +150,13 @@ void RtpHandler::readVideoSample(
       (videoSampleRtpPtr->refCount) += 1;
       (videoSampleRtpPtr->length) += metaData.size();
       nextStartOffsetForRearVideo = static_cast<int64_t>(metaData.size());
-      auto* rtpInfo = new RtpPacketInfo();
+      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->videoSamplePtr = videoSampleRtpPtr;
       rtpInfo->audioSamplePtr = nullptr;
       rtpInfo->offset = 0;
       rtpInfo->length = metaData.size();
+      rtpInfo->isHybridMeta = true;
       sessionPtr->enqueueRtpInfo(rtpInfo);
     } else {
       // no front V sample meta for hybrid D & S. read sample from file stream.
@@ -177,12 +178,13 @@ void RtpHandler::readVideoSample(
         for (int i=0; i<frontRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue front v's all rtp
-          auto* rtpInfo = new RtpPacketInfo();
+          auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
           rtpInfo->flag = C::VIDEO_ID;
           rtpInfo->videoSamplePtr = videoSampleRtpPtr;
           rtpInfo->audioSamplePtr = nullptr;
           rtpInfo->offset = offsetForFrontVRtp;
           rtpInfo->length = rtpMeta.len;
+          rtpInfo->isHybridMeta = false;
           offsetForFrontVRtp += rtpMeta.len;
           sessionPtr->enqueueRtpInfo(rtpInfo);
         }
@@ -200,12 +202,13 @@ void RtpHandler::readVideoSample(
       }
       (videoSampleRtpPtr->refCount) += 1;
       (videoSampleRtpPtr->length) += metaData.size();
-      auto* rtpInfo = new RtpPacketInfo();
+      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->videoSamplePtr = videoSampleRtpPtr;
       rtpInfo->audioSamplePtr = nullptr;
       rtpInfo->offset = nextStartOffsetForRearVideo;
       rtpInfo->length = metaData.size();
+      rtpInfo->isHybridMeta = true;
       sessionPtr->enqueueRtpInfo(rtpInfo);
     } else {
       // no rear V sample meta for hybrid D & S. read sample from file stream.
@@ -227,12 +230,13 @@ void RtpHandler::readVideoSample(
         for (int i=0; i<rearRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue rear v's all rtp
-          auto* rtpInfo = new RtpPacketInfo();
+          auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
           rtpInfo->flag = C::VIDEO_ID;
           rtpInfo->videoSamplePtr = videoSampleRtpPtr;
           rtpInfo->audioSamplePtr = nullptr;
           rtpInfo->offset = offsetForRearVRtp;
           rtpInfo->length = rtpMeta.len;
+          rtpInfo->isHybridMeta = false;
           offsetForRearVRtp += rtpMeta.len;
           sessionPtr->enqueueRtpInfo(rtpInfo);
         }
@@ -287,12 +291,13 @@ void RtpHandler::readAudioSample(
     } else if (auto sessionPtr = parentSessionPtr.lock()) {
       audioSampleRtpPtr->length = len;
       (audioSampleRtpPtr->refCount) += 1;
-      auto* rtpInfo = new RtpPacketInfo();
+      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
       rtpInfo->flag = C::AUDIO_ID;
       rtpInfo->videoSamplePtr = nullptr;
       rtpInfo->audioSamplePtr = audioSampleRtpPtr;
       rtpInfo->offset = 0;
       rtpInfo->length = len;
+      rtpInfo->isHybridMeta = false;
       sessionPtr->enqueueRtpInfo(rtpInfo);
     } else {
       audioSampleRtpPtr->length = C::INVALID;
@@ -314,12 +319,13 @@ void RtpHandler::readAudioSample(
     audioSampleRtpPtr->length = metaData.size();
     (audioSampleRtpPtr->refCount) += 1;
     if (auto sessionPtr = parentSessionPtr.lock()) {
-      auto* rtpInfo = new RtpPacketInfo();
+      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
       rtpInfo->flag = C::AUDIO_ID;
       rtpInfo->videoSamplePtr = nullptr;
       rtpInfo->audioSamplePtr = audioSampleRtpPtr;
       rtpInfo->offset = 0;
       rtpInfo->length = metaData.size();
+      rtpInfo->isHybridMeta = true;
       sessionPtr->enqueueRtpInfo(rtpInfo);
     } else {
       audioSampleRtpPtr->length = C::INVALID;

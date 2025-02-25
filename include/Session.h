@@ -47,6 +47,7 @@ struct RtpPacketInfo {
   AudioSampleRtp* audioSamplePtr;
   size_t offset;
   size_t length;
+  bool isHybridMeta;
 };
 
 // dongvin : for hybrid streaming
@@ -143,6 +144,7 @@ public:
   void recordBitrateTestResult();
 
   // rtp queue control
+  boost::object_pool<RtpPacketInfo>& getRtpPacketInfoPool();
   void enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr);
   void clearRtpQueue();
 
@@ -181,9 +183,11 @@ private:
   // tx queue for rtp.
   std::unique_ptr<boost::lockfree::queue<RtpPacketInfo*>> rtpQueuePtr;
 
-  // memory pool for Video and Audio Sample to prevent head memory fragmentation.
+  // memory pools for video sample, audio sample, and RTP packets
+  // to prevent head memory fragmentation and memory leak.
   boost::object_pool<AudioSampleRtp> audioRtpPool;
   boost::object_pool<VideoSampleRtp> videoRtpPool;
+  boost::object_pool<RtpPacketInfo> rtpPacketPool;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;

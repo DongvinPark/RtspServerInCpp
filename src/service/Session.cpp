@@ -34,13 +34,7 @@ Session::Session(
   clientRemoteAddress = clientIpAddressEndpoint.address().to_string();
 }
 
-Session::~Session() {
-  // delete all remaining rtp packets
-  RtpPacketInfo* rtpPacketInfoPtr = nullptr;
-  while (rtpQueuePtr->pop(rtpPacketInfoPtr)) {
-    delete rtpPacketInfoPtr;
-  }
-}
+Session::~Session() {}
 
 void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
@@ -492,6 +486,10 @@ void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += (bufPtr->len * 8);
 }
 
+boost::object_pool<RtpPacketInfo>& Session::getRtpPacketInfoPool(){
+  return   rtpPacketPool;
+}
+
 void Session::enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr) {
   // repeat until success
   while (!rtpQueuePtr->push(rtpPacketInfoPtr)) {}
@@ -514,7 +512,10 @@ void Session::transmitRtp() {
         // tx video rtp
         boost::asio::write(
             *socketPtr,
-            boost::asio::buffer(rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length),
+            boost::asio::buffer(
+                rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset,
+                rtpPacketInfoPtr->length
+                ),
             ignored_error
         );
         // free videoSamplePool only when all rtp packets are transported to clint
@@ -534,8 +535,8 @@ void Session::transmitRtp() {
         }
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
-    }
-    delete rtpPacketInfoPtr;
+    }// end of length check if
+    rtpPacketPool.free(rtpPacketInfoPtr);
   }
 }
 
