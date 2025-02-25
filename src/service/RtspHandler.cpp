@@ -328,7 +328,7 @@ void RtspHandler::handleRtspRequest(
         // for instance, SwitchingInfo: next=1;tv=1234567;ta=45678900
         // CameraInfo: cam=0;next=1;tv=1234567;ta=45678900
 
-        std::string info = strings[strings.size() - 1];
+        const std::string& info = strings[strings.size() - 1];
         std::vector<std::string> words = Util::splitToVecBySingleChar(
           Util::trim(Util::splitToVecBySingleChar(info, ':')[1]), ';'
         );
@@ -415,7 +415,7 @@ void RtspHandler::handleRtspRequest(
   respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
 }// end of handleRtspRequest();
 
-bool RtspHandler::hasSessionId(std::vector<std::string> strings) {
+bool RtspHandler::hasSessionId(const std::vector<std::string>& strings) {
   std::string _sessionId = findSessionId(strings);
   logger->info("Dongvin, session in rtsp request " + _sessionId);
   return (!_sessionId.empty() && _sessionId == sessionId);
@@ -441,7 +441,7 @@ void RtspHandler::respondOptions(Buffer &buffer) {
   buffer.updateBuf(response);
 }
 
-void RtspHandler::respondDescribe(Buffer &buffer, std::string mediaInfo) {
+void RtspHandler::respondDescribe(Buffer &buffer, const std::string& mediaInfo) {
   std::string rsp = "RTSP/1.0 200 OK" + std::string{C::CRLF} +
                 "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
                 "Content-Base: " + C::DUMMY_CONTENT_BASE +"/"+ std::string{C::CRLF} +
@@ -595,7 +595,7 @@ void RtspHandler::respondTeardown(Buffer& buffer) {
   buffer.updateBuf(response);
 }
 
-void RtspHandler::respondError(Buffer& buffer, int error, std::string rtspMethod) {
+void RtspHandler::respondError(Buffer& buffer, int error, const std::string& rtspMethod) {
   std::string rsp = "RTSP/1.0 " + std::to_string(error) + " " + C::RTSP_STATUS_CODES_MAP.at(error) + std::string{C::CRLF} +
                 "CSeq: " + std::to_string(cSeq) + std::string{C::CRLF} +
                 "Server: " + std::string{C::MY_NAME} + std::string{C::CRLF} +
@@ -616,8 +616,8 @@ void RtspHandler::respondPause(Buffer &buffer) {
   buffer.updateBuf(response);
 }
 
-std::string RtspHandler::findUserName(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+std::string RtspHandler::findUserName(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if (elem.find("User-Agent") != std::string::npos) {
       return Util::trim( Util::splitToVecBySingleChar(elem, ':')[1] );
     }
@@ -625,8 +625,8 @@ std::string RtspHandler::findUserName(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-int RtspHandler::findCSeq(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+int RtspHandler::findCSeq(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if (elem.find("CSeq") != std::string::npos) {
       return std::stoi(
         Util::trim( Util::splitToVecBySingleChar(elem, ':')[1] )
@@ -636,9 +636,9 @@ int RtspHandler::findCSeq(std::vector<std::string> strings) {
   return C::INVALID;
 }
 
-std::string RtspHandler::findContents(std::string line0) {
-  std::string address = Util::splitToVecBySingleChar(line0, ' ')[1];
-  std::vector<std::string> words = Util::splitToVecBySingleChar(address, ':');
+std::string RtspHandler::findContents(const std::string& line0) {
+  const std::string address = Util::splitToVecBySingleChar(line0, ' ')[1];
+  const std::vector<std::string> words = Util::splitToVecBySingleChar(address, ':');
   if (words.size() != C::URL_SPLIT_BY_SEMI_COLON_LENGTH) {
     logger->severe("Invalid Title!");
     return C::EMPTY_STRING;
@@ -648,11 +648,11 @@ std::string RtspHandler::findContents(std::string line0) {
   );
 }
 
-std::string RtspHandler::getMediaInfo(std::string fullCid) {
+std::string RtspHandler::getMediaInfo(const std::string& fullCid) {
   if (auto handlerPtr = acsHandlerPtr.lock()) {
 
-    std::vector<int64_t> unitCnt = handlerPtr->getUnitFrameCount();
-    std::vector<int64_t> gop = handlerPtr->getGop();
+    const std::vector<int64_t> unitCnt = handlerPtr->getUnitFrameCount();
+    const std::vector<int64_t> gop = handlerPtr->getGop();
 
     std::string mediaInfo = handlerPtr->getMediaInfo();
     std::vector<std::string> lines = Util::splitToVecByString(mediaInfo, C::CRLF);
@@ -695,7 +695,7 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
     }//for
 
     std::string result = C::EMPTY_STRING;
-    for (std::string line : lines) {
+    for (const std::string& line : lines) {
       if (line == C::EMPTY_STRING) {
         continue;
       }
@@ -708,15 +708,15 @@ std::string RtspHandler::getMediaInfo(std::string fullCid) {
   return C::EMPTY_STRING;
 }
 
-int RtspHandler::findTrackId(std::string line0) {
-  std::string addr = Util::splitToVecBySingleChar(line0, ' ')[1];
+int RtspHandler::findTrackId(const std::string& line0) {
+  const std::string addr = Util::splitToVecBySingleChar(line0, ' ')[1];
   return std::stoi( Util::splitToVecBySingleChar(addr, '=')[1] );
 }
 
-std::string RtspHandler::findTransport(std::vector<std::string> strings) {
+std::string RtspHandler::findTransport(const std::vector<std::string>& strings) {
   // required
   // refer to https://www.rfc-editor.org/rfc/rfc2326.html#section-12.39
-  for (std::string elem : strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("Transport:") != std::string::npos) {
       return Util::splitToVecBySingleChar(elem, ' ')[1];
     }
@@ -724,8 +724,8 @@ std::string RtspHandler::findTransport(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-std::string RtspHandler::findHybridMode(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+std::string RtspHandler::findHybridMode(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("HybridMode") != std::string::npos) {
       std::string mode = Util::splitToVecBySingleChar(elem, ' ')[1];
       if (C::HYBRID_MODE_SET.find(mode) != C::HYBRID_MODE_SET.end()) {
@@ -738,8 +738,8 @@ std::string RtspHandler::findHybridMode(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-std::string RtspHandler::findNotTx(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+std::string RtspHandler::findNotTx(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("NotTx") != std::string::npos) {
       return Util::splitToVecBySingleChar(elem, ' ')[1];
     }
@@ -747,7 +747,7 @@ std::string RtspHandler::findNotTx(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-std::vector<int> RtspHandler::findChannels(std::string transport) {
+std::vector<int> RtspHandler::findChannels(const std::string& transport) {
   std::string range = Util::splitToVecBySingleChar(transport, '=')[1];
   std::vector<std::string> channels = Util::splitToVecBySingleChar(range, '-');
   std::vector<int> channelVec;
@@ -756,8 +756,8 @@ std::vector<int> RtspHandler::findChannels(std::string transport) {
   return channelVec;
 }
 
-std::string RtspHandler::findSessionId(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+std::string RtspHandler::findSessionId(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if (elem.find("Session:") != std::string::npos) {
       return Util::trim( Util::splitToVecBySingleChar(elem, ':')[1] );
     }
@@ -765,10 +765,10 @@ std::string RtspHandler::findSessionId(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-std::vector<float> RtspHandler::findNormalPlayTime(std::vector<std::string> strings) {
+std::vector<float> RtspHandler::findNormalPlayTime(const std::vector<std::string>& strings) {
   // optional.
   // refer to https://www.rfc-editor.org/rfc/rfc2326.html#section-3.6 chapter
-  for (std::string line : strings) {
+  for (const std::string& line : strings) {
     if (line.find("npt") != std::string::npos) {
       const std::vector<std::string> rangePart = Util::splitToVecBySingleChar(line, '=');
       const std::vector<std::string> range = Util::splitToVecBySingleChar(rangePart[1], '-');
@@ -781,8 +781,8 @@ std::vector<float> RtspHandler::findNormalPlayTime(std::vector<std::string> stri
   return {};
 }
 
-std::string RtspHandler::findDeviceModelName(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+std::string RtspHandler::findDeviceModelName(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("ModelNo") != std::string::npos) {
       return Util::splitToVecBySingleChar(elem, ' ')[1];
     }
@@ -790,8 +790,8 @@ std::string RtspHandler::findDeviceModelName(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-std::string RtspHandler::findManufacturer(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+std::string RtspHandler::findManufacturer(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("Manufacturer") != std::string::npos) {
       return Util::splitToVecBySingleChar(elem, ' ')[1];
     }
@@ -799,8 +799,8 @@ std::string RtspHandler::findManufacturer(std::vector<std::string> strings) {
   return C::EMPTY_STRING;
 }
 
-bool RtspHandler::isLookingSampleControInUse(std::vector<std::string> strings){
-  for (std::string elem : strings) {
+bool RtspHandler::isLookingSampleControInUse(const std::vector<std::string>& strings){
+  for (const std::string& elem : strings) {
     if ( elem.find(C::USE_P_FRAME_CONTROL) != std::string::npos) {
       if (Util::splitToVecBySingleChar(elem, ' ')[1] == "true") {
         return true;
@@ -812,14 +812,14 @@ bool RtspHandler::isLookingSampleControInUse(std::vector<std::string> strings){
 
 // for play req right after pause
 int RtspHandler::findLatestReceivedSampleIdx(
-  std::vector<std::string> strings,std::string filter
+  const std::vector<std::string>& strings, const std::string& filter
 ) {
   // PLAY req header example
   // PlayInfo: videoIndex=144;videoRtpIndex=8;audioIndex=228;
-  for (std::string headerLine: strings) {
+  for (const std::string& headerLine: strings) {
     if (headerLine.rfind("PlayInfo", 0) == 0) {
       std::string HeaderValue = Util::splitToVecByString(headerLine, " ")[1];
-      for (std::string value: Util::splitToVecBySingleChar(headerLine, ';')) {
+      for (const std::string& value: Util::splitToVecBySingleChar(headerLine, ';')) {
         if (value.find(filter) != std::string::npos) {
           return std::stoi(Util::splitToVecBySingleChar(value, '=')[1]);
         }
@@ -829,8 +829,8 @@ int RtspHandler::findLatestReceivedSampleIdx(
   return C::INVALID;
 }
 
-bool RtspHandler::isSeekRequest(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+bool RtspHandler::isSeekRequest(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("SeekInfo") != std::string::npos) {
       return true;
     }
@@ -838,7 +838,7 @@ bool RtspHandler::isSeekRequest(std::vector<std::string> strings) {
   return false;
 }
 
-bool RtspHandler::isValidPlayTime(std::vector<float> ntpSec) {
+bool RtspHandler::isValidPlayTime(const std::vector<float>& ntpSec) {
   if (auto acsHandler = acsHandlerPtr.lock()) {
     std::vector<int64_t> playTimeUs = acsHandler->getPlayTimeUs();
     int mediaPlayTimeMs = static_cast<int>(std::max(playTimeUs[0], playTimeUs[1])/1000);
@@ -850,7 +850,7 @@ bool RtspHandler::isValidPlayTime(std::vector<float> ntpSec) {
   }
 }
 
-std::string RtspHandler::getContentsTitle(std::vector<std::string> urls) {
+std::string RtspHandler::getContentsTitle(const std::vector<std::string>& urls) {
   if (urls.empty()) {
     return C::EMPTY_STRING;
   }
@@ -884,8 +884,8 @@ std::string RtspHandler::getSupportingBitrateTypes(std::vector<int> bitrateTypes
   }
 }
 
-bool RtspHandler::isContainingPlayInfoHeader(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+bool RtspHandler::isContainingPlayInfoHeader(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("PlayInfo") != std::string::npos) {
       return true;
     }
@@ -893,8 +893,8 @@ bool RtspHandler::isContainingPlayInfoHeader(std::vector<std::string> strings) {
   return false;
 }
 
-bool RtspHandler::isThereMonitoringInfoHeader(std::vector<std::string> strings) {
-  for (std::string elem : strings) {
+bool RtspHandler::isThereMonitoringInfoHeader(const std::vector<std::string>& strings) {
+  for (const std::string& elem : strings) {
     if ( elem.find("MonitoringInfo") != std::string::npos) {
       return true;
     }
@@ -902,7 +902,7 @@ bool RtspHandler::isThereMonitoringInfoHeader(std::vector<std::string> strings) 
   return false;
 }
 
-void RtspHandler::parseHybridVideoSampleMetaDataForDandS(std::string notTxIdListStr) {
+void RtspHandler::parseHybridVideoSampleMetaDataForDandS(const std::string& notTxIdListStr) {
   // dongvin : for hybrid streaming
 /*
 hybridMetaMap inside : camId >> view number & frame type >> sampleNo & sampleMetaData

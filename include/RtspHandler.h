@@ -21,9 +21,9 @@ public:
   );
 
 private:
-  bool hasSessionId(std::vector<std::string> strings);
+  bool hasSessionId(const std::vector<std::string>& strings);
   void respondOptions(Buffer& buffer);
-  void respondDescribe(Buffer& buffer, std::string mediaInfo);
+  void respondDescribe(Buffer& buffer, const std::string& mediaInfo);
   void respondSetup(
     Buffer& buffer, std::string transport, std::string sessionId, int64_t ssrc,
     int trackId, int refVideoSampleCnt, int camDirectoryCnt
@@ -37,31 +37,31 @@ private:
   void respondCameraChange(Buffer& buffer, int targetCamId);
   void respondPFrameControl(Buffer& buffer, bool needToTxPFrames);
   void respondTeardown(Buffer& buffer);
-  void respondError(Buffer& buffer, int error, std::string rtspMethod);
+  void respondError(Buffer& buffer, int error, const std::string& rtspMethod);
   void respondPause(Buffer& buffer);
 
-  std::string findUserName(std::vector<std::string> strings);
-  int findCSeq(std::vector<std::string> strings);
-  std::string findContents(std::string line0);
-  std::string getMediaInfo(std::string fullCid);
-  int findTrackId(std::string line0);
-  std::string findTransport(std::vector<std::string> strings);
-  std::string findHybridMode(std::vector<std::string> strings);
-  std::string findNotTx(std::vector<std::string> strings);
-  std::vector<int> findChannels(std::string transport);
-  std::string findSessionId(std::vector<std::string> strings);
-  std::vector<float> findNormalPlayTime(std::vector<std::string> strings);
-  std::string findDeviceModelName(std::vector<std::string> strings);
-  std::string findManufacturer(std::vector<std::string> strings);
-  bool isLookingSampleControInUse(std::vector<std::string> strings);
-  int findLatestReceivedSampleIdx(std::vector<std::string> strings, std::string filter);
-  bool isSeekRequest(std::vector<std::string> strings);
-  bool isValidPlayTime(std::vector<float> ntpSec);
-  std::string getContentsTitle(std::vector<std::string> urls);
+  std::string findUserName(const std::vector<std::string>& strings);
+  int findCSeq(const std::vector<std::string>& strings);
+  std::string findContents(const std::string& line0);
+  std::string getMediaInfo(const std::string& fullCid);
+  int findTrackId(const std::string& line0);
+  std::string findTransport(const std::vector<std::string>& strings);
+  std::string findHybridMode(const std::vector<std::string>& strings);
+  std::string findNotTx(const std::vector<std::string>& strings);
+  std::vector<int> findChannels(const std::string& transport);
+  std::string findSessionId(const std::vector<std::string>& strings);
+  std::vector<float> findNormalPlayTime(const std::vector<std::string>& strings);
+  std::string findDeviceModelName(const std::vector<std::string>& strings);
+  std::string findManufacturer(const std::vector<std::string>& strings);
+  bool isLookingSampleControInUse(const std::vector<std::string>& strings);
+  int findLatestReceivedSampleIdx(const std::vector<std::string>& strings, const std::string& filter);
+  bool isSeekRequest(const std::vector<std::string>& strings);
+  bool isValidPlayTime(const std::vector<float>& ntpSec);
+  std::string getContentsTitle(const std::vector<std::string>& urls);
   std::string getSupportingBitrateTypes(std::vector<int> bitrateTypes);
-  bool isContainingPlayInfoHeader(std::vector<std::string> strings);
-  bool isThereMonitoringInfoHeader(std::vector<std::string> strings);
-  void parseHybridVideoSampleMetaDataForDandS(std::string notTxIdListStr);
+  bool isContainingPlayInfoHeader(const std::vector<std::string>& strings);
+  bool isThereMonitoringInfoHeader(const std::vector<std::string>& strings);
+  void parseHybridVideoSampleMetaDataForDandS(const std::string& notTxIdListStr);
 
   std::shared_ptr<Logger> logger;
   std::weak_ptr<Session> parentSessionPtr;
