@@ -18,7 +18,7 @@
 - 직접적인 메모리 관리를 최소화 했습니다.
   - RAII를 준수합니다.
   - new, delete 연산을 직접 호출하는 코드가 없습니다.
-<br><br/>
+<br><br/><br><br/>
 
 ## Why C++17 and Boost Libray?
 ### C++17
@@ -35,7 +35,7 @@
     - object pool : 메모리 누수와 힙 공간 파편화를 방지합니다.
   - Boost Lock free : 효율적인 thread-safe 자료구조 제공
     - non-blocking queue : mutex locking & unlocking 동작이 없습니다.
-<br><br/>
+<br><br/><br><br/>
 
 ## 개발환경 셋팅
 - 각자의 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
@@ -54,7 +54,7 @@
   - M chip macOS
     - CLion
     - Visual Studio Code
-<br><br/>
+<br><br/><br><br/>
 
 ## 플랫폼별 빌드 및 실행 테스트 결과
 - Windows
@@ -66,7 +66,7 @@
 - macOS
   - Sequoia 15.2 : C++ 17 or later, boost 1.87.0
   - Sequoia 15.3 : C++ 17 or later, boost 1.87.0
-<br><br/>
+<br><br/><br><br/>
 
 ## Window 환경 Visual Studio 실행방법
 - Window 환경에서 실행할 경우, vcpkg라는 윈도우용 C++ 패키지 매니저 설치 및 셋팅, 해당 패키지 매니저로 boost 라이브러리 설치, Visual Studio에 boost 라이브러리 연동하기, CMakeLists.txt로 Visual Studio 프로젝트 빌드하기라는 다소 많은 단계를 거쳐야 합니다.
@@ -102,7 +102,7 @@ git clone https://github.com/DongvinPark/MyFirstCppBoostAsio
 
 7. Visual Studio의 File > Open > CMake 메뉴를 클릭한 다음, 본 프로젝트의 CMakeLists.txt를 선택하여 열어줍니다. Visual Stuio 2022 기준 여기까지 해주면 IDE가 알아서 빌드 및 프로젝트 임포트까지 다 해줍니다.
 <br> 그래도 잘 되지 않을 경우, 본 프로젝트의 github URL을 Chat GPT에게 전달하면서, "how can I open this project in Visual Studio with boost library using vcpkg?"라고 물어보면 친절히 알려줄 것입니다.
-<br><br/>
+<br><br/><br><br/>
 
 ## Window 환경 CLion 실행방법
 - boost 라이브러리를 설치하는 것은 Visual Studio에서 본 프로젝트를 실행하는 것과 똑같습니다. Window 환경에서 실행할 경우, vcpkg라는 윈도우용 C++ 패키지 매니저 설치 및 셋팅, 해당 패키지 매니저로 boost 라이브러리 설치, CLion에 boost 포함시키라는 단계를 거쳐야 하지만, Visual Studio에서 실행시키는 것보다는 좀 더 간단합니다.
@@ -138,7 +138,7 @@ File > setting > Build, Execution, Deployment > CMake
 ```
 이게 정확하게 작동하기 위해서는,
 vcpkg 깃허브 리포지토리를 정확하게 C 드라이브 최상위 디렉토리에다가 클론한 상태여야 합니다. 중요한 것은, -DCMAKE_TOOLCHAIN_FILE이라는 환경 변수에 주입해주는 값이 vcpkg.cmake 라는 파일이 실제로 위치하는 디렉토리 경로여야 한다는 점입니다.
-<br><br/>
+<br><br/><br><br/>
 
 ## Linux & macOS(M series chip) CLion 실행방법
 1. Linux OS가 설치된 AWS EC2 또는 Ubuntu 가 설치된 실제 컴퓨터를 준비합니다.
@@ -147,7 +147,7 @@ vcpkg 깃허브 리포지토리를 정확하게 C 드라이브 최상위 디렉�
 4. 리눅스 환경이라면, fast_build_and_run_for_dev_linux_foreground.sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 됩니다.<br>
 5. macOS 환경이라면, delete_build_and_run_on_Mchip_macOS.sh 파일에 'chmod +x .sh 파일명' 명령어로 실행권한을 준 다음, 실행하면 됩니다.<br>
 6. Linux 또는 macOS 환경에서 JetBrains CLion IDE를 사용하고, 3번 단계에서 언급한 툴들이 전부 설치돼 있다면 현재 프로젝트를 IDE로 열고 바로 실행시키면 됩니다.
-<br><br/>
+<br><br/><br><br/>
 
 ## macOS(M series chip) Visual Studio Code 실행방법
 1. mac에 Xcode, GCC, G++, CMake를 설치해줍니다. homebrew가 없다면 설치해줍니다. boost 라이브러리는 homebrew를 이용해서 설치해줍니다.
