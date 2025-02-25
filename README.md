@@ -21,22 +21,24 @@
 <br><br/><br><br/>
 
 ## Why C++17 and Boost Libray?
-### C++17
+### [C++17](https://www.iso.org/standard/68564.html)
   - 고수준의 가독성 높은 코드와 기능들(class, smart pointer, iterator ...)을 이용하면서도 성능에서 손해가 발생하지 않습니다.
   - std::filesystem 을 지원하는 최초의 모던 C++ 입니다.
-### Boost Library
+### [Boost Library](https://www.boost.org/)
   - 1999 년 출시 후 현재까지 널리 사용되고 있으며 안정성이 확보된 라이브러리
     - Google, Microsoft, Amazon, Meta, Bloomberg, Glodman Sachs 등에서 사용합니다.
     - C++ 표준 라이브러리에 편입될 정도로 안정성과 성능이 검증 된 라이브러리 입니다.
       - filesystem, shared_ptr, weak_ptr, unique_ptr, thread, mutex, chrono, unordered_map 등의 기능이 boost library에서 처음 구현된 후 C++의 standard library에 편입 되었습니다.
-### RTSP server and Boost
-  - Boost Asio : 고성능 Async-Nonblocking 네트워킹 제공
+    - boost 라이브러리 개발자 중 다수는 C++ 표준 위원회에 소속돼 있습니다.
+      - ex : Bjarne Stroustrup, Herb Sutter, Howard Hinnant, Peter Dimov, Thomas Witt, Andrei Alexandrescu ... 
+### [RTSP server and Boost](https://github.com/boostorg)
+  - [Boost Asio](https://www.boost.org/doc/libs/1_87_0/doc/html/boost_asio/overview/basics.html) : 고성능 Async-Nonblocking 네트워킹 제공
     - io_context : 새로운 클라이언트가 와도 새로운 스레드를 생성할 필요가 없습니다.
-  - Boost Strand : io_context 내 task 간 동기화 수단 제공
+  - [Boost Strand](https://www.boost.org/doc/libs/1_87_0/doc/html/boost_asio/overview/core/strands.html) : io_context 내 task 간 동기화 수단 제공
     - CPU core 간의 context switching과 cache miss를 줄입니다.
-  - Boost Pool : 안전한 메모리 관리 수단 제공
+  - [Boost Pool](https://www.boost.org/doc/libs/1_87_0/libs/pool/doc/html/boost_pool/pool/introduction.html) : 안전한 메모리 관리 수단 제공
     - object pool : 메모리 누수와 힙 공간 파편화를 방지합니다.
-  - Boost Lock free : 효율적인 thread-safe 자료구조 제공
+  - [Boost Lockfree](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html) : 효율적인 thread-safe queue & stack 제공
     - non-blocking queue : mutex locking & unlocking 동작이 없습니다.
 <br><br/><br><br/>
 
