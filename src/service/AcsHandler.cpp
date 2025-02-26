@@ -205,13 +205,13 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         = camId == 0 ? cachedCam0frontVSampleMetaListPtr->at(sampleNo)
           : camId == 1 ? cachedCam1frontVSampleMetaListPtr->at(sampleNo)
             : camId == 2 ? cachedCam2frontVSampleMetaListPtr->at(sampleNo)
-              : throw std::runtime_error("invalid cam id!");
+              : VideoSampleInfo();
 
       const VideoSampleInfo& curRearVideoSampleInfo
         = camId == 0 ? cachedCam0rearVSampleMetaListPtr->at(sampleNo)
           : camId == 1 ? cachedCam1rearVSampleMetaListPtr->at(sampleNo)
             : camId == 2 ? cachedCam2rearVSampleMetaListPtr->at(sampleNo)
-              : throw std::runtime_error("invalid cam id!");
+              : VideoSampleInfo();
 
       rtpHandlerPtr->readVideoSample(
         videoSampleRtpPtr,

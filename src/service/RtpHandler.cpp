@@ -102,6 +102,11 @@ void RtpHandler::readVideoSample(
   int sampleNo,
   HybridMetaMapType &hybridMetaMap
 ) noexcept {
+  if (curFrontVideoSampleInfo.getSize() == 0 || curRearVideoSampleInfo.getSize() == 0) {
+    logger->severe("Dongvin, invalid video sample meta!");
+    return;
+  }
+
   const auto camIt = camIdVideoFileStreamMap.find(camId);
   if (camIt == camIdVideoFileStreamMap.end() || camIt->second.size() < 2) {
     logger->severe("Dongvin, invalid camId or insufficient video file streams! camId: " + std::to_string(camId));
