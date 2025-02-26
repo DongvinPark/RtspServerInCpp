@@ -87,6 +87,9 @@ void RtspHandler::handleRtspRequest(
       cSeq = _cSeq;
 
       if (method == "OPTIONS") {
+        sessionPtr->updateOptionsReqTimeMillis(
+          Util::getCurrentTimeMillis()
+        );
         if (isThereMonitoringInfoHeader(strings)) {
           // t: NTP time at which OPTION method was sent. (ms)
           // sa: The amount of samples received by the client. (bitrate, utc time(ms))

@@ -154,6 +154,11 @@ public:
   boost::object_pool<RtpPacketInfo>& getRtpPacketInfoPool();
   void enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr);
   void clearRtpQueue();
+  void updateReadLastVideoSample();
+  void updateReadLastAudioSample();
+
+  // client aliveness check
+  void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);
 
 private:
   void stopAllPeriodicTasks();
@@ -198,6 +203,11 @@ private:
   boost::object_pool<AudioSampleRtp> audioRtpPool;
   boost::object_pool<VideoSampleRtp> videoRtpPool;
   boost::object_pool<RtpPacketInfo> rtpPacketPool;
+
+  std::vector<bool> readingEndSampleStatusVec = {false, false};
+
+  // client alive check
+  int64_t latestOptionsReqTimeMillis = C::UNSET;
 
   std::string clientRemoteAddress = C::EMPTY_STRING;
   int64_t sessionInitTimeSecUtc = C::INVALID_OFFSET;

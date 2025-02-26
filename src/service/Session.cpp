@@ -83,6 +83,24 @@ void Session::start() {
   rtpTransportTask.start();
 
   auto txBitrateTask = [&]() {
+    // shutdown session when client connection was lost
+    if (
+        readingEndSampleStatusVec[0] == true
+        && readingEndSampleStatusVec[1] == true
+    ) {
+      logger->severe("Dongvin, sent last video and audio sample. shutdonw session. id : " + sessionId);
+      onTeardown();
+      return;
+    }
+    if (
+      Util::getCurrentTimeMillis() - latestOptionsReqTimeMillis
+        > C::CLIENT_CONNECTION_LOSS_THRESHOLD_DURATION_MS
+    ){
+      logger->severe("Dongvin, client connection was lost. shutdown session. id : " + sessionId);
+      onTeardown();
+      return;
+    }
+
     int32_t sentBit = sentBitsSize;
     sentBitsSize = 0;
     int64_t recordTimeUtcSec = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
@@ -560,11 +578,23 @@ void Session::enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr) {
   while (!rtpQueuePtr->push(rtpPacketInfoPtr)) {}
 }
 
+void Session::updateReadLastVideoSample(){
+  if(readingEndSampleStatusVec.size() == 2) readingEndSampleStatusVec[0] = true;
+}
+
+void Session::updateReadLastAudioSample(){
+  if(readingEndSampleStatusVec.size() == 2) readingEndSampleStatusVec[1] = true;
+}
+
 void Session::clearRtpQueue() {
   // replace the rtp queue with a fresh instance since boost lock free queue does not support .clear() util.
   // it's because, clear() util needs a locking mechanism but boost lock free has no locking mechanism.
   auto new_queue = std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE);
   rtpQueuePtr.swap(new_queue);  // old queue is discarded
+}
+
+void Session::updateOptionsReqTimeMillis(const int64_t inputOptionsReqTimeMillis){
+  latestOptionsReqTimeMillis = inputOptionsReqTimeMillis;
 }
 
 void Session::transmitRtp() {

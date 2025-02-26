@@ -147,6 +147,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
       ReadInfo& info = sInfo.at(C::VIDEO_ID);
       if (info.isDone()) {
         videoSampleRtpPtr->length = C::INVALID;
+        sessionPtr->updateReadLastVideoSample();
         return;
       }
 
@@ -205,6 +206,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
       ReadInfo& info = sInfo.at(C::AUDIO_ID);
       if (info.isDone()) {
         audioSampleRtpPtr->length = C::INVALID;
+        sessionPtr->updateReadLastAudioSample();
         return;
       }
 

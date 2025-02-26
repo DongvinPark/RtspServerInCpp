@@ -106,6 +106,7 @@ namespace C {
         {501, "Not Implemented"},
         {500, "Internal Server Error"}
     };
+    constexpr int64_t CLIENT_CONNECTION_LOSS_THRESHOLD_DURATION_MS = 20*1000; // 20 sec
 
     // Adaptive bitrate
     constexpr char SWITCHING_KEY[] = "SwitchingInfo";
