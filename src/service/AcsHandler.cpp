@@ -136,6 +136,55 @@ std::vector<std::vector<unsigned char>> AcsHandler::getAllV0Images() {
   return contentsStorage.getCid(contentTitle).getAllV0ImagesCopy();
 }
 
+bool AcsHandler::setVideoAudioSampleMetaDataCache(const std::string& contentTitle) {
+  try {
+    const auto& metaMap = contentsStorage.getContentFileMetaMap();
+    const auto& contentMeta = metaMap.at(contentTitle).getConstVideoMeta();
+
+    const auto cam0Iter = contentMeta.find(C::CAM_ID_LIST[0]);
+    const auto cam1Iter = contentMeta.find(C::CAM_ID_LIST[1]);
+    const auto cam2Inter = contentMeta.find(C::CAM_ID_LIST[2]);
+
+    if (cam0Iter != contentMeta.end()) {
+      const auto& frontVMeta
+        = cam0Iter->second.getConstVideoSampleInfoList().at(C::FRONT_VIDEO_VID);
+      const auto& rearVMeta
+        = cam0Iter->second.getConstVideoSampleInfoList().at(C::REAR_VIDEO_VID);
+      cachedCam0frontVSampleMetaListPtr = &frontVMeta;
+      cachedCam0rearVSampleMetaListPtr = &rearVMeta;
+    }
+    if (cam1Iter != contentMeta.end()) {
+      const auto& frontVMeta
+        = cam1Iter->second.getConstVideoSampleInfoList().at(C::FRONT_VIDEO_VID);
+      const auto& rearVMeta
+        = cam1Iter->second.getConstVideoSampleInfoList().at(C::REAR_VIDEO_VID);
+      cachedCam1frontVSampleMetaListPtr = &frontVMeta;
+      cachedCam1rearVSampleMetaListPtr = &rearVMeta;
+    }
+    if (cam2Inter != contentMeta.end()) {
+      const auto& frontVMeta
+        = cam2Inter->second.getConstVideoSampleInfoList().at(C::FRONT_VIDEO_VID);
+      const auto& rearVMeta
+        = cam2Inter->second.getConstVideoSampleInfoList().at(C::REAR_VIDEO_VID);
+      cachedCam2frontVSampleMetaListPtr = &frontVMeta;
+      cachedCam2rearVSampleMetaListPtr = &rearVMeta;
+    }
+
+    const auto& audioMeta = contentsStorage.getContentFileMetaMap().at(contentTitle)
+          .getConstAudioMeta().getConstMeta();
+    cachedAudioSampleMetaListPtr = &audioMeta;
+
+    return true;
+  } catch (std::exception& e) {
+    logger->severe("Dongvin, video and audio meta cache init failed!");
+    std::cerr << e.what() << "\n";
+    return false;
+  } catch (...){
+    logger->severe("Dongvin, unknown exception was thrown in setVideoAudioSampleMetaCache()!");
+    return false;
+  }
+}
+
 void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
@@ -153,14 +202,16 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
 
       const int sampleNo = info.curSampleNo;
       const VideoSampleInfo& curFrontVideoSampleInfo
-        = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList()
-          .at(C::FRONT_VIDEO_VID).at(sampleNo);
+        = camId == 0 ? cachedCam0frontVSampleMetaListPtr->at(sampleNo)
+          : camId == 1 ? cachedCam1frontVSampleMetaListPtr->at(sampleNo)
+            : camId == 2 ? cachedCam2frontVSampleMetaListPtr->at(sampleNo)
+              : throw std::runtime_error("invalid cam id!");
 
       const VideoSampleInfo& curRearVideoSampleInfo
-        = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-          .getConstVideoMeta().at(C::CAM_ID_LIST[camId]).getConstVideoSampleInfoList()
-          .at(C::REAR_VIDEO_VID).at(sampleNo);
+        = camId == 0 ? cachedCam0rearVSampleMetaListPtr->at(sampleNo)
+          : camId == 1 ? cachedCam1rearVSampleMetaListPtr->at(sampleNo)
+            : camId == 2 ? cachedCam2rearVSampleMetaListPtr->at(sampleNo)
+              : throw std::runtime_error("invalid cam id!");
 
       rtpHandlerPtr->readVideoSample(
         videoSampleRtpPtr,
@@ -212,8 +263,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
 
       const int sampleNo = info.curSampleNo;
       const AudioSampleInfo& curAudioSampleInfo
-        = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
-          .getConstAudioMeta().getConstMeta().at(sampleNo);
+        = cachedAudioSampleMetaListPtr->at(sampleNo);
 
       rtpHandlerPtr->readAudioSample(
         audioSampleRtpPtr,

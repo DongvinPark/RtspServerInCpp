@@ -1,6 +1,8 @@
 #ifndef ACSHANDLER_H
 #define ACSHANDLER_H
 
+#include <unordered_set>
+
 #include "../include/ContentFileMeta.h"
 #include "../include/Session.h"
 #include "../include/RtpInfo.h"
@@ -36,6 +38,7 @@ public:
   int getLastAudioSampleNumber();
   std::vector<unsigned char> getAccData();
   std::vector<std::vector<unsigned char>> getAllV0Images();
+  bool setVideoAudioSampleMetaDataCache(const std::string& contentTitle);
   void getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr);
   void getNextAudioSample(AudioSampleRtp* audioSampleRtp);
   bool isDone(int streamId);
@@ -76,6 +79,21 @@ private:
   std::weak_ptr<Session> parentSessionPtr;
   ContentsStorage& contentsStorage;
   std::string contentTitle = C::EMPTY_STRING;
+
+  // cam 0 meta cache
+  const std::vector<VideoSampleInfo>* cachedCam0frontVSampleMetaListPtr = nullptr;
+  const std::vector<VideoSampleInfo>* cachedCam0rearVSampleMetaListPtr = nullptr;
+
+  // cam 1 meta cache
+  const std::vector<VideoSampleInfo>* cachedCam1frontVSampleMetaListPtr = nullptr;
+  const std::vector<VideoSampleInfo>* cachedCam1rearVSampleMetaListPtr = nullptr;
+
+  // cam 2 meta cache
+  const std::vector<VideoSampleInfo>* cachedCam2frontVSampleMetaListPtr = nullptr;
+  const std::vector<VideoSampleInfo>* cachedCam2rearVSampleMetaListPtr = nullptr;
+
+  // audio meta cache
+  const std::vector<AudioSampleInfo>* cachedAudioSampleMetaListPtr = nullptr;
 
   std::unordered_map<int, ReadInfo> sInfo{};
   RtpInfo rtpInfo;

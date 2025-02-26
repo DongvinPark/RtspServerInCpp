@@ -286,12 +286,27 @@ void RtspHandler::handleRtspRequest(
             if (auto rtpHandlePtr = weakPtr.lock()) {
               if (bool initResult = rtpHandlePtr->openAllFileStreamsForVideoAndAudio(); !initResult) {
                 logger->severe("Dongvin, failed to open video/audio file stream! session id : " + sessionId);
-                respondError(inputBuffer, C::BAD_REQUEST, method);
+                respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
                 return;
               }
             } else {
               logger->severe("Dongvin, failed to get RtpHandler ptr!");
-              respondError(inputBuffer, C::BAD_REQUEST, method);
+              respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
+              return;
+            }
+
+            if (auto handlePtr = acsHandlerPtr.lock()){
+              if (
+                bool cacheResult = handlePtr->setVideoAudioSampleMetaDataCache(sessionPtr->getContentTitle());
+                !cacheResult
+              ) {
+                logger->severe("Dongvin, failed to init cache video and audio sample meta data!");
+                respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
+                return;
+              }
+            } else{
+              logger->severe("Dongvin, failed to get acsHandler ptr!");
+              respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
               return;
             }
 

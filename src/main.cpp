@@ -42,7 +42,7 @@ void set_thread_priority() {
 
     int policy = SCHED_RR;  // SCHED_FIFO (real-time) or SCHED_RR (round-robin)
     if (pthread_setschedparam(pthread_self(), policy, &sch_params) != 0) {
-        std::cerr << "Failed to set thread priority" << std::endl;
+        std::cerr << "Failed to set thread priority\n";
     }
 #endif
 }
