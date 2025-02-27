@@ -21,7 +21,7 @@
 - 멀티 플랫폼에서의 실행을 지원합니다.
   - Windows, Linux(Ubuntu, Amazon Linux), macOS(M chip)에서 실행 가능합니다.
 - Boost 라이브러리를 사용합니다.
-  - 클라이언트가 늘어나도 스레드를 새로 생성하지 않습니다.
+  - 다수의 유명한 기술 기업에서 사용되고 있으며, 성능과 안정성이 검증 되었습니다.
 - 직접적인 메모리 관리를 최소화 했습니다.
   - RAII를 준수합니다.
   - new, delete 연산을 직접 호출하는 코드가 없습니다.
@@ -33,7 +33,7 @@
   - std::filesystem 을 지원하는 최초의 모던 C++ 입니다.
 ### [Boost Library](https://www.boost.org/)
   - 1999 년 출시 후 현재까지 널리 사용되고 있으며 안정성이 확보된 라이브러리
-    - Google, Microsoft, Amazon, Meta, Bloomberg, Glodman Sachs 등에서 사용합니다.
+    - Google, Microsoft, Amazon, Meta, Bloomberg, Goldman Sachs 등에서 사용합니다.
     - C++ 표준 라이브러리에 편입될 정도로 안정성과 성능이 검증 된 라이브러리 입니다.
       - filesystem, shared_ptr, weak_ptr, unique_ptr, thread, mutex, chrono, unordered_map 등의 기능이 boost library에서 처음 구현된 후 C++의 standard library에 편입 되었습니다.
     - boost 라이브러리 개발자 중 다수는 C++ 표준 위원회에 소속돼 있습니다.
