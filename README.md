@@ -38,7 +38,7 @@
       - filesystem, shared_ptr, weak_ptr, unique_ptr, thread, mutex, chrono, unordered_map 등의 기능이 boost library에서 처음 구현된 후 C++의 standard library에 편입 되었습니다.
     - boost 라이브러리 개발자 중 다수는 C++ 표준 위원회에 소속돼 있습니다.
       - ex : Bjarne Stroustrup, Herb Sutter, Howard Hinnant, Peter Dimov, Thomas Witt, Andrei Alexandrescu ... 
-### [RTSP server and Boost](https://github.com/boostorg)
+### [Used Boost Library In This RTSP Server](https://github.com/boostorg)
   - [Boost Asio](https://www.boost.org/doc/libs/1_87_0/doc/html/boost_asio/overview/basics.html) : 고성능 Async-Nonblocking 네트워킹 제공
     - io_context : 새로운 클라이언트가 와도 새로운 스레드를 생성할 필요가 없습니다.
   - [Boost Strand](https://www.boost.org/doc/libs/1_87_0/doc/html/boost_asio/overview/core/strands.html) : io_context 내 task 간 동기화 수단 제공
