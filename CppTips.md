@@ -1395,11 +1395,10 @@ void Session::asyncReceive() {
 ```
 <br><br/>
 40. C++ 표준을 준수하자.
-    <br> 어떤 기능들은 특정 컴파일러에서는 컴파일 및 실행이 되지만, 다른 컴파일러로 옮기면 그렇지 않은 경우가 있다.
+    <br> 어떤 기능들은 특정 컴파일러에서는 컴파일 및 실행이 되지만, 다른 컴파일러에서는 컴파일에 실패하는 경우가 있다.
     <br> VLA(Variable Length Array)가 대표적으로 이러한 경우다.
     <br> 다른 사례가 발생하면 여기에 추가로 기록하자.
 ```c++
-
 case 1 : VLA
 // 겉으로 보기에는 잘 작동할 것처럼 보이지만, 아래와 같이 런타입에 특정 타입의 배열의 크기를 정하는 것은
 // C++ 17 표준이 아니다. C++ 표준을 엄격하게 준수하는 MSVC에서는 아래의 코드 때문에 컴파일이 되지 않는다.
@@ -1423,17 +1422,70 @@ case 1 : VLA
         // ...
 
 
-
 case 2 : "falling off the end of a function" or "implicit return undefined behavior"
 
         // 아래의 함수는 void가 아니지만, 컴파일 및 실행을 하면 실행이 되기는 한다.
         // GCC, G++, Apple CLang에서는 되지만, Window MSVC에서는 컴파일 타임 에러가 뜬다.
         bool Session::isPlayDone(int streamId) {
-            // 아무 것도 리턴하지 않는다...
+            // void가 아닌데, 아무 것도 리턴하지 않는다...
         }
-
 ```
+<br><br/>
+41. 참조를 캐싱하는 방법 - '참조'와 '포인터' 간의 관계
+    <br> const reference를 리턴하는 함수들을 연쇄적으로 호출해야 한다고 가정하자.
+    <br> 함수 호출은 분명 H/W 적 오버헤드가 발생한다.
+    <br> 결론적으로 특정 객체의 참조에서 주소값을 알아내서 그 주소값을 가지고 호출하면 연쇄적인 함수 호출을 최소화 할 수 있다.
+    <br> 이것이 가능한 이유는, C++의 참조는 컴파일 시 C 스타일 포인터로 변환되기 때문이다.
+    <br> C++ 의 참조는 '안전한 사용을 위해 제한 사항을 더 많이 적용한 포인터'다.
+    <br> 좀 더 간단하게는, '참조는 포인터 dereferencing이 완료된 상태'다.
+    <br> 아래의 표를 보면 이 의문에도 답 할 수 있게 된다. "참조 타입 멤버 변수는 왜 반드시 생성자에서 초기화 해줘야 하는가?"
+```c++
+// 그래서 AcsHandler 에서 이런 동작이 허용된다.
+// getConstVideoSampleInfoList()는 const std::vector<std::vector<VideoSampleInfo>>& 를 리턴하기 때문이다. 
+// cachedCam0frontVSampleMetaListPtr 의 타입은 const std::vector<VideoSampleInfo>* 이다.
+    if (cam0Iter != contentMeta.end()) {
+      const auto& frontVMeta
+        = cam0Iter->second.getConstVideoSampleInfoList().at(C::FRONT_VIDEO_VID);
+      const auto& rearVMeta
+        = cam0Iter->second.getConstVideoSampleInfoList().at(C::REAR_VIDEO_VID);
+      
+      // '참조'에서 '참조가 가리키는 객체의 주소값'을 가져다가 별도의 포인터 변수에 복사해 놓는다.
+      // 이 포인터 변수를 역참조하면 반복적인 함수 호출을 단 1회로 줄일 수 있다.
+      cachedCam0frontVSampleMetaListPtr = &frontVMeta;
+      cachedCam0rearVSampleMetaListPtr = &rearVMeta;
+    }
     
+// 똑같은 기능을 C++과 C에서 어떻게 서로 다르게 구현하고 있는지를 보면 참조와 포인터 간의 관계와 차이점을 명확히 알 수 있다.
+#include <stdio.h>
+void increment(int* x) {  // Pass by pointer
+    (*x)++;
+}
+int main() {
+    int a = 5;
+    increment(&a);  // Pass address of a
+    printf("%d", a); // Output: 6
+}
+// C로 작성한 프로그램을 C++의 참조로 재작성해보면 다음과 같다.
+#include <iostream>
+void increment(int& x) {  // Pass by reference
+    x++;
+}
+int main() {
+    int a = 5;
+    increment(a);  // a is modified directly
+    std::cout << a; // Output: 6
+}
+    
+// '참조'는 C에서는 존재하지 않는 C++ 고유의 기능이다. '참조'는 결국 '안전한 사용을 위해서 제한 사항이 몇 가지 적용된 포인터'다.
+// 둘 간의 차이점을 GPT가 정리해주었다.
+```
+| Feature            | C++ References | C Pointers |
+|--------------------|---------------|------------|
+| Can be `nullptr`? | ❌ No (must always bind to an object) | ✅ Yes (can be NULL) |
+| Can be reassigned? | ❌ No (always refers to the same object) | ✅ Yes (can point to different objects) |
+| Syntax complexity | ✅ Simple (`x` behaves like normal variable) | ❌ Requires `*` (dereferencing) and `&` (address-of) |
+| Memory usage      | ✅ Often optimized | ✅ Explicit, but requires careful management |
+| Required for function parameter modification | ✅ Yes | ✅ Yes | 
 
 
 

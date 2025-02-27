@@ -651,6 +651,8 @@ void Session::asyncReceive() {
     boost::asio::buffer(*buf),
     boost::asio::bind_executor(
       strand,
+      // this lambda will be passed to io_context.
+      // to safely reference the Session object in lambda, self ptr is made and captured in this lambda.
     [this, self, buf](const boost::system::error_code& error, std::size_t bytesRead) {
       if (error) {
         if (error == boost::asio::error::eof) {
@@ -690,9 +692,9 @@ void Session::asyncReceive() {
           return; // stop receiving rtsp req after shutting down session
         }
       }
-
       // post next asyncReceive() on strand to avoid deep recursion
       boost::asio::post(strand, [self](){ self->asyncReceive(); });
-    }
+    }// end of lambda which will be passed to io_context.
+
   ));// end of bind_executor() and async_read_some()
 }
