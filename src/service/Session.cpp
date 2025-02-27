@@ -88,7 +88,7 @@ void Session::start() {
         readingEndSampleStatusVec[0] == true
         && readingEndSampleStatusVec[1] == true
     ) {
-      logger->severe("Dongvin, sent last video and audio sample. shutdonw session. id : " + sessionId);
+      logger->severe("Dongvin, sent last video and audio sample. shutdown session. id : " + sessionId);
       onTeardown();
       return;
     }
