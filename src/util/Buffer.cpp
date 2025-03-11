@@ -1,5 +1,5 @@
 #include "../include/Buffer.h"
-#include <sstream> // For std::ostringstream
+#include <sstream>
 #include <stdexcept>
 
 Buffer::Buffer()

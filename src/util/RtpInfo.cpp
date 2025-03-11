@@ -7,9 +7,9 @@ RtpInfo::RtpInfo(const RtpInfo& other) {
 }
 
 RtpInfo& RtpInfo::operator=(const RtpInfo& other) {
-	// 'this' keyward means 'address of current class instance'.
-	// That is, 'this' means 'pointer of current class instance'.
-	// result of 'dereference operation to pointer' is '&'.
+	// 'this' is a pointer to the current class instance.
+	// '*this' dereferences the pointer to get the instance itself.
+	// Returning '*this' allows assignment chaining (a = b = c).
 	if (this != &other) {
 		copyFrom(other);
 	}
@@ -31,7 +31,6 @@ const std::string RtpInfo::toString() {
 	std::ostringstream oss;
 	oss << "{";
 
-	// just like map.entrySet(); in java.
 	for (const auto& [key, value] : kv) {
 		oss << key << ": [";
 		for (auto i = 0; i < value.size(); ++i) {

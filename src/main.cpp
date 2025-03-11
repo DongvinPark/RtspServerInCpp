@@ -27,7 +27,7 @@
 
 // Version History
 // VER          Date            Changes
-// 1.0.0        2024.12.27      Util, DTO, and FileRaader Initialized
+// 1.0.0        2025.02.25.     PLAY, PAUSE, SEEK, Paused-SEEK, Hybrid D&S, Looking Sample Control
 
 using boost::asio::ip::tcp;
 
@@ -56,13 +56,12 @@ std::string getExecutablePath() {
     proc_pidpath(getpid(), path, sizeof(path));
 #elif __linux__
     ssize_t count = readlink("/proc/self/exe", path, sizeof(path));
-    if (count != -1) path[count] = '\0'; // Null-terminate
+    if (count != -1) path[count] = '\0';
 #endif
 
     return std::string(path);
 }
 
-// Function to find the project root directory
 std::string getProjectRoot() {
     std::filesystem::path exePath = getExecutablePath();
 
@@ -74,7 +73,7 @@ std::string getProjectRoot() {
         }
     }
 
-    return ""; // If not found, return empty string
+    return "";
 }
 
 std::string getContentsRootPath() {

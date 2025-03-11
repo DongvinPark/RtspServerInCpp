@@ -3,7 +3,6 @@
 
 #include <algorithm>
 
-// constructor
 ContentFileMeta::ContentFileMeta(const std::filesystem::path &path)
   : logger(Logger::getLogger(C::FILE_READER)),
     cidDirectory(path),
@@ -25,7 +24,6 @@ ContentFileMeta::ContentFileMeta(ContentFileMeta && other) noexcept
   other.shutdown();
 }
 
-// public
 int ContentFileMeta::getNumberOfCamDirectories() const {
   return static_cast<int>(videoFiles.size());
 }
@@ -123,22 +121,19 @@ int ContentFileMeta::getVideoSampleSize() const {
 }
 
 const AudioAccess& ContentFileMeta::getConstAudioMeta() const {
-  // do not copy. just return const ref('&')
   return audioFile;
 }
 
 const std::unordered_map<std::string, VideoAccess>& ContentFileMeta::getConstVideoMeta() const {
-  // do not copy. just return const ref('&')
   return videoFiles;
 }
 
-// private
 bool ContentFileMeta::handleCamDirectories(const std::filesystem::path &inputCidDirectory) {
   std::vector<std::filesystem::path> camDirectoryList;
   for (std::filesystem::path camDirectory : std::filesystem::directory_iterator(inputCidDirectory)) {
     camDirectoryList.push_back(camDirectory);
   }
-  // sort ascending order of filenames
+  // sort in ascending order.
   std::sort(
     camDirectoryList.begin(), camDirectoryList.end(),
     [](const std::filesystem::path& lhs, const std::filesystem::path& rhs) {

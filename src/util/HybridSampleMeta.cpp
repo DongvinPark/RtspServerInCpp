@@ -1,5 +1,5 @@
 #include "../include/HybridSampleMeta.h"
-#include "../constants/C.h" // Constants are defined here
+#include "../constants/C.h"
 #include <cassert>
 #include <sstream>
 

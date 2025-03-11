@@ -443,7 +443,7 @@ std::unique_ptr<Buffer> AcsHandler::get1stRtpOfRefSample(int streamId, int sampl
 
         return rtpHandlerPtr->readFirstRtpOfCurVideoSample(sampleNo, offset, len);
       }
-      // audio sample. one audio sample == one rtp packet.
+      // read audio sample. one audio sample == one rtp packet.
       const AudioSampleInfo& curAudioSampleInfo = contentsStorage.getContentFileMetaMap().at(sessionPtr->getContentTitle())
         .getConstAudioMeta().getConstMeta().at(sampleNo);
       const int64_t offset = curAudioSampleInfo.offset;
@@ -528,14 +528,13 @@ void AcsHandler::findNextSampleForSwitchingAudio(const int64_t targetSampleNo) {
 
   ReadInfo& readInfo = infoIt->second;
 
-  // all calculation to find the next sample number is done in the client side.
-  // Server just transmits the sample corresponding to the sample number.
+  // All calculations to find the next sample number are done by the client.
   if (targetSampleIdx > readInfo.maxSampleNo) {
     logger->warning("Dongvin, don't switch on audio. sample number is over the end.");
     return;
   }
 
-  // sampleNo is actually the number of sample client codec has.
+  // Actually, sampleNo is the number of sample in the client device's codec.
   // there are many samples on the network line and the client's sample buffer.
   const int sampleDiff = readInfo.curSampleNo - targetSampleIdx;
   readInfo.curSampleNo = targetSampleIdx;

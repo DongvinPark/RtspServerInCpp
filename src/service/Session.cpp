@@ -63,7 +63,6 @@ Session::~Session(){
     std::cerr << "exception occurred during destruction! session id : " + sessionId
     << ". error msg " << e.what() << "\n";
   } catch (...) {
-    // must catch all exceptions in destructor!!
     std::cerr << "unknown exception was thrown during session destruction! session id : " + sessionId << "\n";
   }
 }
@@ -72,10 +71,8 @@ void Session::start() {
   logger->info2("session id : " + sessionId + " starts.");
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
-  // for rtsp msg rx and tx.
   asyncReceive();
 
-  // launch rtp packet transmit periodic task.
   auto rtpTxTask = [&](){
     if (!isPaused) transmitRtp();
   };
@@ -113,7 +110,7 @@ void Session::start() {
     }
   };
   bitrateRecodeTask.setTask(txBitrateTask);
-  const std::chrono::milliseconds bitrateInterval(C::TX_BITRATE_SAMPLING_PERIOD_MS); // 1 sec
+  const std::chrono::milliseconds bitrateInterval(C::TX_BITRATE_SAMPLING_PERIOD_MS);
   bitrateRecodeTask.setInterval(bitrateInterval);
   bitrateRecodeTask.start();
 }

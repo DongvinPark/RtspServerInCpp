@@ -88,8 +88,7 @@ int ParsableByteArray::readUnsignedShort() {
     if (position + 2 > limit) {
         throw std::out_of_range("Not enough bytes to read");
     }
-    // used squential style to remove warning form compiler
-    // ': multiple unsequenced modifications'.
+    // used squential style to remove warning form compiler ': multiple unsequenced modifications'.
     int byte1 = data[position++] & 0xFF;
     int byte2 = data[position++] & 0xFF;
     return (byte1 << 8) | byte2;

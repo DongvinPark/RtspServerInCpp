@@ -71,7 +71,6 @@ void Server::start() {
       sessionPtr->setRtpHandlerPtr(rtpHandlerPtr);
       sessionPtr->start();
 
-      // register session pointer at session map
       sessions.insert({sessionId, sessionPtr});
       logger->warning(
         "Dongvin, new client arrives, id: " + sessionId

@@ -24,7 +24,7 @@ namespace C {
     constexpr char RTP_HANDLER[] = "RtpHandler";
 
     // General constants
-    constexpr char MY_NAME[] = "alphaStreamer-3.1/2.0.0";
+    constexpr char MY_NAME[] = "alphaStreamer-3.1/1.0.0";
     constexpr int FRONT_VIDEO_VID = 0;
     constexpr int REAR_VIDEO_VID = 1;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
