@@ -27,7 +27,7 @@
 
 // Version History
 // VER          Date            Changes
-// 1.0.0        2025.02.25.     PLAY, PAUSE, SEEK, Paused-SEEK, Hybrid D&S, Looking Sample Control
+// 1.0.0        2025.02.25.     PLAY, PAUSE, SEEK, Paused-SEEK, Cam Switching, Hybrid D&S, Looking Sample Control
 
 using boost::asio::ip::tcp;
 
