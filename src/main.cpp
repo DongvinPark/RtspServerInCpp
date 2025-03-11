@@ -166,9 +166,7 @@ int main() {
     // Wait for shutdown to complete
     shutdownFuture.wait();
 
-    // do cleaning before shutting down. shutdown all sessions and close boost asio io_context worker thread pool.
-    // do not need to call server.shutdownServer();
-    // destructor in Server class is called here automatically.
+    // do cleaning before shutting down.
 
     for (auto& thread : threadVec) {
         if (thread.joinable()) {
