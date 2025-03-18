@@ -9,7 +9,7 @@
 <br>
 
 ## 버전 정보
-- 2.0.0(2025.Feb.25) : Play, Pause, Seek, Cam Switching, Hybrid D & S, Looking Sample Control 지원
+- 1.0.0(2025.Feb.25) : Play, Pause, Seek, Cam Switching, Hybrid D & S, Looking Sample Control 지원
 <br><br/><br><br/>
 
 ## 개발 정책
