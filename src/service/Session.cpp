@@ -654,7 +654,6 @@ void Session::asyncReceive() {
       if (error) {
         if (error == boost::asio::error::eof) {
           logger->warning("Dongvin, connection closed by peer. session id : " + sessionId);
-          onTeardown();
         } else {
           logger->severe("Dongvin, receiving request failed: " + error.message());
         }

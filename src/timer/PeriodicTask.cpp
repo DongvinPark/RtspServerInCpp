@@ -52,7 +52,9 @@ void PeriodicTask::stop() {
     if (running == false) return;
     logger->severe("task stop called!");
     running = false;
-    boost::asio::post(strand, [this]{ timer.cancel(); });
+    //boost::asio::post(strand, [this]{ timer.cancel(); });
+    // timer must be cancled before removing session.
+    timer.cancel();
 }
 
 void PeriodicTask::scheduleTask() {
