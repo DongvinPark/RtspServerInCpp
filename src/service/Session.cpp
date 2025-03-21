@@ -89,14 +89,15 @@ void Session::start() {
       onTeardown();
       return;
     }
-    if (
+    // do not close session while testing is in progress.
+    /*if (
       Util::getCurrentTimeMillis() - latestOptionsReqTimeMillis
         > C::CLIENT_CONNECTION_LOSS_THRESHOLD_DURATION_MS
     ){
       logger->severe("Dongvin, client connection was lost. shutdown session. id : " + sessionId);
       onTeardown();
       return;
-    }
+    }*/
 
     int32_t sentBit = sentBitsSize;
     sentBitsSize = 0;
