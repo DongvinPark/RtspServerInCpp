@@ -613,7 +613,7 @@ void Session::transmitRtp() {
         );
         // free videoSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
-          videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
+          videoRtpPool.destroy(rtpPacketInfoPtr->videoSamplePtr);
           std::cout << "!!! free video packet !!!" << std::endl;
         }
       } else {
@@ -625,13 +625,13 @@ void Session::transmitRtp() {
         );
         // free audioSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
-          audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
+          audioRtpPool.destroy(rtpPacketInfoPtr->audioSamplePtr);
           std::cout << "!!! free audio packet !!!" << std::endl;
         }
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }// end of length check if
-    rtpPacketPool.free(rtpPacketInfoPtr);
+    rtpPacketPool.destroy(rtpPacketInfoPtr);
   }
 }
 
