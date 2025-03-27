@@ -632,7 +632,6 @@ void Session::transmitRtp() {
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }// end of length check if
     rtpPacketPool.free(rtpPacketInfoPtr);
-    std::cout << "!!! free for invalid !!!" << std::endl;
   }
 }
 
