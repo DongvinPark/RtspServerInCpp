@@ -1,10 +1,15 @@
 #include "../include/ContentsStorage.h"
 #include "../constants/C.h"
 
+#include <iostream>
+
 ContentsStorage::ContentsStorage(const std::string contentStorage)
   : logger(Logger::getLogger(C::CONTENTS_STORAGE)),
     contentRootPath(contentStorage),
-    parent(std::filesystem::path(contentStorage)) {}
+    parent(std::filesystem::path(contentStorage))
+{
+  std::cout << "!!! ContentsStorage constructor called !!!" << std::endl;
+}
 
 ContentsStorage::~ContentsStorage() {
   shutdown();
