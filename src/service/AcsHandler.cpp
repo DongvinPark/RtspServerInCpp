@@ -221,7 +221,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         C::INVALID,
         sampleNo,
         sessionPtr->getHybridMetaMap()
-      );*/
+      );
 
       if (videoSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
@@ -237,7 +237,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);
       }
-      info.curSampleNo++;
+      info.curSampleNo++;*/
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextVideoSample()");
     }
@@ -271,7 +271,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
         curAudioSampleInfo.offset,
         curAudioSampleInfo.len,
         sessionPtr->getHybridMetaMap()
-      );*/
+      );
 
       if (audioSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
@@ -287,7 +287,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp);
       }
-      info.curSampleNo++;
+      info.curSampleNo++;*/
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextAudioSample()");
     }
