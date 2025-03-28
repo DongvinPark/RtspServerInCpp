@@ -213,7 +213,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
             : camId == 2 ? cachedCam2rearVSampleMetaListPtr->at(sampleNo)
               : VideoSampleInfo();
 
-      /*rtpHandlerPtr->readVideoSample(
+      rtpHandlerPtr->readVideoSample(
         videoSampleRtpPtr,
         curFrontVideoSampleInfo,
         curRearVideoSampleInfo,
@@ -237,7 +237,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);
       }
-      info.curSampleNo++;*/
+      info.curSampleNo++;
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextVideoSample()");
     }
@@ -265,7 +265,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
       const AudioSampleInfo& curAudioSampleInfo
         = cachedAudioSampleMetaListPtr->at(sampleNo);
 
-      /*rtpHandlerPtr->readAudioSample(
+      rtpHandlerPtr->readAudioSample(
         audioSampleRtpPtr,
         sampleNo,
         curAudioSampleInfo.offset,
@@ -287,7 +287,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp);
       }
-      info.curSampleNo++;*/
+      info.curSampleNo++;
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextAudioSample()");
     }
