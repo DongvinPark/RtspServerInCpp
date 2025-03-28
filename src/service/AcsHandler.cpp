@@ -265,13 +265,13 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
       const AudioSampleInfo& curAudioSampleInfo
         = cachedAudioSampleMetaListPtr->at(sampleNo);
 
-      rtpHandlerPtr->readAudioSample(
+      /*rtpHandlerPtr->readAudioSample(
         audioSampleRtpPtr,
         sampleNo,
         curAudioSampleInfo.offset,
         curAudioSampleInfo.len,
         sessionPtr->getHybridMetaMap()
-      );
+      );*/
 
       if (audioSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
