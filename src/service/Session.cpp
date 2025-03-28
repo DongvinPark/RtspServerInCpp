@@ -79,6 +79,10 @@ void Session::start() {
   rtpTransportTask.setTask(rtpTxTask);
   rtpTransportTask.start();
 
+  // 어거지
+  rtpTransportTask.stop();
+  bitrateRecodeTask.stop();
+
   auto txBitrateTask = [&]() {
     // shutdown session when client connection was lost
     if (
@@ -329,7 +333,7 @@ void Session::onCameraChange(
 
 void Session::onPlayStart() {
   // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
-  int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+  /*int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
   int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
 
   if (videoInterval == C::INVALID || audioInterval == C::INVALID) {
@@ -365,7 +369,7 @@ void Session::onPlayStart() {
     audioReadingTaskVec.back()->start();
   } else {
     throw std::runtime_error("Dongvin, failed to start media reading timer tasks : " + sessionId);
-  }
+  }*/
 }
 
 void Session::startPlayForCamSwitching() {
