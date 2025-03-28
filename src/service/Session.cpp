@@ -344,6 +344,7 @@ void Session::onPlayStart() {
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
       VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+      std::cout << "!!! video pool next size: " << videoRtpPool.get_next_size() << std::endl;
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
     }
   };
@@ -354,6 +355,7 @@ void Session::onPlayStart() {
   auto audioSampleReadingTask = [&](){
     if (!isPaused){
       AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
+      std::cout << "!!! aideo pool next size: " << audioRtpPool.get_next_size() << std::endl;
       if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
     }
   };
@@ -603,7 +605,6 @@ void Session::transmitRtp() {
     if (rtpPacketInfoPtr->length != C::INVALID){
       if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
         // tx video rtp
-        // 어거지 : 전송하지 않고 그냥 버린다.
         boost::asio::write(
             *socketPtr,
             boost::asio::buffer(
@@ -615,7 +616,6 @@ void Session::transmitRtp() {
         // free videoSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
           videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
-          std::cout << "!!! free video packet !!!" << std::endl;
         }
       } else {
         // tx audio rtp
@@ -627,7 +627,6 @@ void Session::transmitRtp() {
         // free audioSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
           audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
-          std::cout << "!!! free audio packet !!!" << std::endl;
         }
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
