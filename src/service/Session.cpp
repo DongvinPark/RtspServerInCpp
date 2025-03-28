@@ -81,7 +81,6 @@ void Session::start() {
 
   // 어거지
   rtpTransportTask.stop();
-  bitrateRecodeTask.stop();
 
   auto txBitrateTask = [&]() {
     // shutdown session when client connection was lost
