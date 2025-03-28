@@ -647,6 +647,9 @@ void Session::asyncReceive() {
 
   auto self = shared_from_this();
   auto buf = std::make_shared<std::vector<unsigned char>>(C::RTSP_MSG_BUFFER_SIZE);  // shared buffer
+  if (buf->size() > 0){
+    std::cout << "!!! rtsp buf made !!! size/cnt : " << buf->size() << "/" << bufCnt << std::endl;
+  }
   socketPtr->async_read_some(
     boost::asio::buffer(*buf),
     boost::asio::bind_executor(

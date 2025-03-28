@@ -233,6 +233,9 @@ private:
   std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;
 
   bool isRecordSaved = false;
+
+  // for test
+  long bufCnt = 0L;
 };
 
 #endif //SESSION_H
