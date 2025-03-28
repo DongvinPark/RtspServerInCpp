@@ -604,14 +604,14 @@ void Session::transmitRtp() {
       if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
         // tx video rtp
         // 어거지 : 전송하지 않고 그냥 버린다.
-        /*boost::asio::write(
+        boost::asio::write(
             *socketPtr,
             boost::asio::buffer(
                 rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset,
                 rtpPacketInfoPtr->length
                 ),
             ignored_error
-        );*/
+        );
         // free videoSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
           videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
