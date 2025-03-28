@@ -74,7 +74,7 @@ void Session::start() {
   asyncReceive();
 
   auto rtpTxTask = [&](){
-    if (!isPaused) transmitRtp();
+    //if (!isPaused) transmitRtp();
   };
   rtpTransportTask.setTask(rtpTxTask);
   rtpTransportTask.start();
