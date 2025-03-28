@@ -613,7 +613,7 @@ void Session::transmitRtp() {
         );
         // free videoSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
-          videoRtpPool.destroy(rtpPacketInfoPtr->videoSamplePtr);
+          videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
           std::cout << "!!! free video packet !!!" << std::endl;
         }
       } else {
@@ -625,13 +625,13 @@ void Session::transmitRtp() {
         );
         // free audioSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
-          audioRtpPool.destroy(rtpPacketInfoPtr->audioSamplePtr);
+          audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
           std::cout << "!!! free audio packet !!!" << std::endl;
         }
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }// end of length check if
-    rtpPacketPool.destroy(rtpPacketInfoPtr);
+    rtpPacketPool.free(rtpPacketInfoPtr);
   }
 }
 
@@ -647,10 +647,6 @@ void Session::asyncReceive() {
 
   auto self = shared_from_this();
   auto buf = std::make_shared<std::vector<unsigned char>>(C::RTSP_MSG_BUFFER_SIZE);  // shared buffer
-  if (buf->size() > 0){
-    bufCnt++;
-    std::cout << "!!! rtsp buf made !!! size/cnt : " << buf->size() << "/" << bufCnt << std::endl;
-  }
   socketPtr->async_read_some(
     boost::asio::buffer(*buf),
     boost::asio::bind_executor(

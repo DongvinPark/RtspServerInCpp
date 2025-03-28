@@ -213,7 +213,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
             : camId == 2 ? cachedCam2rearVSampleMetaListPtr->at(sampleNo)
               : VideoSampleInfo();
 
-      rtpHandlerPtr->readVideoSample(
+      /*rtpHandlerPtr->readVideoSample(
         videoSampleRtpPtr,
         curFrontVideoSampleInfo,
         curRearVideoSampleInfo,
@@ -221,7 +221,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         C::INVALID,
         sampleNo,
         sessionPtr->getHybridMetaMap()
-      );
+      );*/
 
       if (videoSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
