@@ -350,10 +350,7 @@ void Session::onPlayStart() {
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
-  // 어거지
-  videoReadingTaskVec.back()->start();
-
-  /*std::chrono::milliseconds aInterval(audioInterval);
+  std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     if (!isPaused){
       AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
@@ -361,14 +358,14 @@ void Session::onPlayStart() {
     }
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, aInterval, audioSampleReadingTask);
-  audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));*/
+  audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
 
-  /*if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
+  if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
     videoReadingTaskVec.back()->start();
     audioReadingTaskVec.back()->start();
   } else {
     throw std::runtime_error("Dongvin, failed to start media reading timer tasks : " + sessionId);
-  }*/
+  }
 }
 
 void Session::startPlayForCamSwitching() {
@@ -606,14 +603,15 @@ void Session::transmitRtp() {
     if (rtpPacketInfoPtr->length != C::INVALID){
       if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
         // tx video rtp
-        boost::asio::write(
+        // 어거지 : 전송하지 않고 그냥 버린다.
+        /*boost::asio::write(
             *socketPtr,
             boost::asio::buffer(
                 rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset,
                 rtpPacketInfoPtr->length
                 ),
             ignored_error
-        );
+        );*/
         // free videoSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
           videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
