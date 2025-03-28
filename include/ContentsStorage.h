@@ -9,6 +9,12 @@ public:
   explicit ContentsStorage(const std::string contentStorage);
   ~ContentsStorage();
 
+  // rule of five. ContentsStorage is not allowed to move or copy
+  ContentsStorage& operator=(const ContentsStorage&) = delete;
+  ContentsStorage& operator=(ContentsStorage&&) noexcept = delete;
+  ContentsStorage(ContentsStorage&&) noexcept = delete;
+  ContentsStorage(const ContentsStorage&) = delete;
+
   void init();
 
   ContentFileMeta& getCid(std::string cid);

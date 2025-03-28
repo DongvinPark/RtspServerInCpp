@@ -687,6 +687,7 @@ void Session::asyncReceive() {
         std::cout << "\n";
         transmitRtspRes(std::move(bufferPtr));
         if (isTearRes || isErrorRes) {
+          onTeardown();
           return; // stop receiving rtsp req after shutting down session
         }
       }
