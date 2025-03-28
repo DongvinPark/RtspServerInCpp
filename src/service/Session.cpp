@@ -329,7 +329,7 @@ void Session::onCameraChange(
 
 void Session::onPlayStart() {
   // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
-  /*int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+  int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
   int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
 
   if (videoInterval == C::INVALID || audioInterval == C::INVALID) {
@@ -350,7 +350,10 @@ void Session::onPlayStart() {
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
-  std::chrono::milliseconds aInterval(audioInterval);
+  // 어거지
+  videoReadingTaskVec.back()->start();
+
+  /*std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     if (!isPaused){
       AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
@@ -358,9 +361,9 @@ void Session::onPlayStart() {
     }
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, aInterval, audioSampleReadingTask);
-  audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
+  audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));*/
 
-  if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
+  /*if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
     videoReadingTaskVec.back()->start();
     audioReadingTaskVec.back()->start();
   } else {
