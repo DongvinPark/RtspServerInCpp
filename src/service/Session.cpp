@@ -79,9 +79,6 @@ void Session::start() {
   rtpTransportTask.setTask(rtpTxTask);
   rtpTransportTask.start();
 
-  // 어거지
-  rtpTransportTask.stop();
-
   auto txBitrateTask = [&]() {
     // shutdown session when client connection was lost
     if (
