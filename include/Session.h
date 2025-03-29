@@ -202,7 +202,7 @@ private:
   // to prevent head memory fragmentation and memory leak.
   boost::object_pool<AudioSampleRtp> audioRtpPool{1};
   boost::object_pool<VideoSampleRtp> videoRtpPool{1};
-  boost::object_pool<RtpPacketInfo> rtpPacketPool;
+  boost::object_pool<RtpPacketInfo> rtpPacketPool{1};
 
   std::vector<bool> readingEndSampleStatusVec = {false, false};
 

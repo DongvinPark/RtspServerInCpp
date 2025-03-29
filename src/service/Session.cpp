@@ -574,6 +574,7 @@ void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
 }
 
 boost::object_pool<RtpPacketInfo>& Session::getRtpPacketInfoPool(){
+  rtpPacketPool.set_next_size(1); // 어거지
   return   rtpPacketPool;
 }
 
