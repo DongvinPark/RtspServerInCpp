@@ -202,7 +202,7 @@ class Session : public std::enable_shared_from_this<Session> {
   // memory pools for video sample, audio sample, and RTP packets
   // to prevent head memory fragmentation and memory leak.
   boost::object_pool<AudioSampleRtp> audioRtpPool{1};
-  boost::pool<> videoRtpPool{sizeof(VideoSampleRtp), 1};
+  boost::pool<> videoRtpPool{sizeof(VideoSampleRtp), 1, 1};
   boost::object_pool<RtpPacketInfo> rtpPacketPool{1};
   void* curVideoMem = nullptr;
 
