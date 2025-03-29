@@ -343,6 +343,7 @@ void Session::onPlayStart() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
+      videoRtpPool.set_next_size(1); // 어거지
       VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
       std::cout << "!!! video pool next size: " << videoRtpPool.get_next_size() << std::endl;
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
@@ -354,6 +355,7 @@ void Session::onPlayStart() {
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     if (!isPaused){
+      audioRtpPool.set_next_size(1); // 어거지
       AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
       std::cout << "!!! aideo pool next size: " << audioRtpPool.get_next_size() << std::endl;
       if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
@@ -377,6 +379,7 @@ void Session::startPlayForCamSwitching() {
   // fast transport video frames.
   for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
     if (!isPaused){
+      videoRtpPool.set_next_size(1); // 어거지
       VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
     }
@@ -387,6 +390,7 @@ void Session::startPlayForCamSwitching() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
+      videoRtpPool.set_next_size(1); // 어거지
       VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
     }
