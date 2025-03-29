@@ -2,6 +2,7 @@
 #define SESSION_H
 #include <boost/asio.hpp>
 #include <boost/pool/object_pool.hpp>
+#include <boost/pool/pool.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <atomic>
 #include <cstdint> // For int64_t
@@ -31,8 +32,8 @@ class RtpHandler;
 
 struct VideoSampleRtp {
   unsigned char data[C::FRONT_VIDEO_MAX_BYTE_SIZE + C::REAR_VIDEO_MAX_BYTE_SIZE]; // 3MB
-  size_t length;
-  std::atomic<int> refCount{0};
+  size_t length{0};
+  int refCount{0};
 };
 
 struct AudioSampleRtp {
@@ -63,7 +64,7 @@ using HybridMetaMapType
     = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
 
 class Session : public std::enable_shared_from_this<Session> {
-public:
+  public:
   explicit Session(
     boost::asio::io_context& inputIoContext,
     std::shared_ptr<boost::asio::ip::tcp::socket> inputSocketPtr,
@@ -160,7 +161,7 @@ public:
   // client aliveness check
   void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);
 
-private:
+  private:
   void stopAllPeriodicTasks();
   void closeHandlersAndSocket();
 
@@ -201,8 +202,9 @@ private:
   // memory pools for video sample, audio sample, and RTP packets
   // to prevent head memory fragmentation and memory leak.
   boost::object_pool<AudioSampleRtp> audioRtpPool{1};
-  boost::object_pool<VideoSampleRtp> videoRtpPool{1};
+  boost::pool<> videoRtpPool{sizeof(VideoSampleRtp), 1};
   boost::object_pool<RtpPacketInfo> rtpPacketPool{1};
+  void* curVideoMem = nullptr;
 
   std::vector<bool> readingEndSampleStatusVec = {false, false};
 

@@ -343,10 +343,11 @@ void Session::onPlayStart() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
-      videoRtpPool.set_next_size(1); // 어거지
-      VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
-      std::cout << "!!! video pool next size: " << videoRtpPool.get_next_size() << std::endl;
+      videoRtpPool.set_next_size(1);
+      void* rawMem = videoRtpPool.malloc();
+      VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+      curVideoMem = videoSampleRtpPtr;
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
@@ -357,7 +358,6 @@ void Session::onPlayStart() {
     if (!isPaused){
       audioRtpPool.set_next_size(1); // 어거지
       AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
-      std::cout << "!!! aideo pool next size: " << audioRtpPool.get_next_size() << std::endl;
       if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
     }
   };
@@ -379,9 +379,11 @@ void Session::startPlayForCamSwitching() {
   // fast transport video frames.
   for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
     if (!isPaused){
-      videoRtpPool.set_next_size(1); // 어거지
-      VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+      videoRtpPool.set_next_size(1);
+      void* rawMem = videoRtpPool.malloc();
+      VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+      curVideoMem = videoSampleRtpPtr;
     }
   }
   logger->info2("Dongvin, fast transported video samples. cnt : " + std::to_string(C::FAST_TX_FACTOR_FOR_CAM_SWITCHING));
@@ -390,9 +392,11 @@ void Session::startPlayForCamSwitching() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
-      videoRtpPool.set_next_size(1); // 어거지
-      VideoSampleRtp* videoSampleRtpPtr = videoRtpPool.construct();
+      videoRtpPool.set_next_size(1);
+      void* rawMem = videoRtpPool.malloc();
+      VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
+      curVideoMem = videoSampleRtpPtr;
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
@@ -620,7 +624,9 @@ void Session::transmitRtp() {
         );
         // free videoSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
+          rtpPacketInfoPtr->videoSamplePtr->~VideoSampleRtp();
           videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
+          std::cout << "!!! memory freed !!!\n";
         }
       } else {
         // tx audio rtp
