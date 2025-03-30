@@ -347,7 +347,7 @@ void Session::onPlayStart() {
       void* rawMem = videoRtpPool.malloc();
       VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
-      curVideoMem = videoSampleRtpPtr;
+      curVideoMem = rawMem;
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
@@ -383,7 +383,7 @@ void Session::startPlayForCamSwitching() {
       void* rawMem = videoRtpPool.malloc();
       VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
-      curVideoMem = videoSampleRtpPtr;
+      curVideoMem = rawMem;
     }
   }
   logger->info2("Dongvin, fast transported video samples. cnt : " + std::to_string(C::FAST_TX_FACTOR_FOR_CAM_SWITCHING));
@@ -396,7 +396,7 @@ void Session::startPlayForCamSwitching() {
       void* rawMem = videoRtpPool.malloc();
       VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
       if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
-      curVideoMem = videoSampleRtpPtr;
+      curVideoMem = rawMem;
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
@@ -626,6 +626,7 @@ void Session::transmitRtp() {
         if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
           rtpPacketInfoPtr->videoSamplePtr->~VideoSampleRtp();
           videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
+          curVideoMem = nullptr;
           std::cout << "!!! memory freed !!!\n";
         }
       } else {
