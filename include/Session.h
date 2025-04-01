@@ -30,22 +30,33 @@ class AcsHandler;
 class RtspHandler;
 class RtpHandler;
 
-struct VideoSampleRtp {
-  unsigned char data[C::FRONT_VIDEO_MAX_BYTE_SIZE + C::REAR_VIDEO_MAX_BYTE_SIZE]; // 3MB
-  size_t length{0};
-  int refCount{0};
-};
+struct Sample {
+  std::vector<unsigned char> buf;
+  std::atomic<int> refCount;
 
-struct AudioSampleRtp {
-  unsigned char data[C::AUDIO_MAX_BYTE_SIZE]; // 1500 byte. MTU of rtp packet is 1472 byte
-  size_t length;
-  std::atomic<int> refCount{0};
+  explicit Sample (std::ifstream& fileAccess, const long sampleLen)
+    : refCount(0) {
+    // seek is done outside of this class
+    buf.resize(sampleLen);
+    if (fileAccess.read(reinterpret_cast<std::ifstream::char_type *>(buf.data()), sampleLen)) {
+      std::cout << "!!! Sample (buf) allocated !!!\n";
+    } else {
+      refCount = C::INVALID;
+      std::cout << "!!! Sample (buf) failed to allocate !!!\n";
+    }
+  }
+
+  explicit Sample ()
+    : refCount(0) {}
+
+  ~Sample() {
+    std::cout << "!!! Sample (buf) destructed !!!\n";
+  }
 };
 
 struct RtpPacketInfo {
   int flag; // 0 for video, 1 for audio
-  VideoSampleRtp* videoSamplePtr;
-  AudioSampleRtp* audioSamplePtr;
+  std::shared_ptr<Sample> samplePtr;
   size_t offset;
   size_t length;
   bool isHybridMeta;
@@ -199,12 +210,8 @@ class Session : public std::enable_shared_from_this<Session> {
   // tx queue for rtp.
   std::unique_ptr<boost::lockfree::queue<RtpPacketInfo*>> rtpQueuePtr;
 
-  // memory pools for video sample, audio sample, and RTP packets
-  // to prevent head memory fragmentation and memory leak.
-  boost::object_pool<AudioSampleRtp> audioRtpPool{1};
-  boost::pool<> videoRtpPool{sizeof(VideoSampleRtp), 1, 1};
+  // memory pools for RTP packets
   boost::object_pool<RtpPacketInfo> rtpPacketPool{1};
-  void* curVideoMem = nullptr;
 
   std::vector<bool> readingEndSampleStatusVec = {false, false};
 

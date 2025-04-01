@@ -185,7 +185,7 @@ bool AcsHandler::setVideoAudioSampleMetaDataCache(const std::string& contentTitl
   }
 }
 
-void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
+void AcsHandler::getNextVideoSample() {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
@@ -195,7 +195,6 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
       }
       ReadInfo& info = sInfo.at(C::VIDEO_ID);
       if (info.isDone()) {
-        videoSampleRtpPtr->length = C::INVALID;
         sessionPtr->updateReadLastVideoSample();
         return;
       }
@@ -214,7 +213,6 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
               : VideoSampleInfo();
 
       rtpHandlerPtr->readVideoSample(
-        videoSampleRtpPtr,
         curFrontVideoSampleInfo,
         curRearVideoSampleInfo,
         camId,
@@ -223,7 +221,8 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
         sessionPtr->getHybridMetaMap()
       );
 
-      if (videoSampleRtpPtr->length != C::INVALID) {
+      /* 어거지
+       if (videoSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
 
@@ -236,7 +235,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
 
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::VIDEO_ID, info.timestamp);
-      }
+      }*/
       info.curSampleNo++;
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextVideoSample()");
@@ -246,7 +245,7 @@ void AcsHandler::getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr) {
   }
 }
 
-void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
+void AcsHandler::getNextAudioSample() {
   if (auto sessionPtr = parentSessionPtr.lock()) {
     std::weak_ptr<RtpHandler> weakPtr = sessionPtr->getRtpHandlerPtr();
     if (auto rtpHandlerPtr = weakPtr.lock()) {
@@ -256,7 +255,6 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
       }
       ReadInfo& info = sInfo.at(C::AUDIO_ID);
       if (info.isDone()) {
-        audioSampleRtpPtr->length = C::INVALID;
         sessionPtr->updateReadLastAudioSample();
         return;
       }
@@ -266,14 +264,14 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
         = cachedAudioSampleMetaListPtr->at(sampleNo);
 
       rtpHandlerPtr->readAudioSample(
-        audioSampleRtpPtr,
         sampleNo,
         curAudioSampleInfo.offset,
         curAudioSampleInfo.len,
         sessionPtr->getHybridMetaMap()
       );
 
-      if (audioSampleRtpPtr->length != C::INVALID) {
+      /*어거지
+       if (audioSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
 
@@ -286,7 +284,7 @@ void AcsHandler::getNextAudioSample(AudioSampleRtp* audioSampleRtpPtr) {
 
         info.timestamp = Util::findTimestamp(firstRtp);
         info.curPresentationTimeUs = getSamplePresentationTimeUs(C::AUDIO_ID, info.timestamp);
-      }
+      }*/
       info.curSampleNo++;
     } else {
       logger->severe("Dongvin, failed to get rtpHandler ptr! : getNextAudioSample()");

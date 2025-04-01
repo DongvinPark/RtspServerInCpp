@@ -6,10 +6,7 @@
 ContentFileMeta::ContentFileMeta(const std::filesystem::path &path)
   : logger(Logger::getLogger(C::FILE_READER)),
     cidDirectory(path),
-    contentTitle(path.filename().string())
-{
-  std::cout << "!!! ContentFileMeta constructor called !!!" << std::endl;
-}
+    contentTitle(path.filename().string()) {}
 
 ContentFileMeta::~ContentFileMeta() {
   shutdown();
@@ -40,7 +37,6 @@ int ContentFileMeta::getRefVideoSampleCnt() const {
 }
 
 bool ContentFileMeta::init() {
-  std::cout << "!!! ContentFileMeta::init() called !!!" << std::endl;
   if (cidDirectory.empty() || !exists(cidDirectory)) {
     logger->severe("No content files or wrong content root directory!");
     return false;
@@ -177,7 +173,6 @@ bool ContentFileMeta::handleV0Images(const std::filesystem::path &inputCidDirect
 }
 
 bool ContentFileMeta::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
-  std::cout << "!!! loadAcsFilesInCalDirectories() called !!!" << std::endl;
   std::string camDirectoryName = inputCidDirectory.filename().string();
   bool isRefCam = (
       camDirectoryName == C::REF_CAM ||
@@ -288,7 +283,6 @@ std::vector<int64_t> ContentFileMeta::getValues(std::string inputMsg, std::strin
 void ContentFileMeta::loadRtpAudioMetaData(
     const std::filesystem::path &inputAudio, AudioAccess& inputAudioFile
   ) {
-  std::cout << "!!! loadRtpAudioMetaData() called !!! " << std::endl;
   inputAudioFile.getAccess().open(inputAudio, std::ios::in | std::ios::binary);
   int64_t audioFileSize = Util::getFileSize(inputAudio);
   std::vector<unsigned char> metaData = readMetaData(audioFileSize, inputAudioFile.getAccess());
@@ -324,7 +318,6 @@ void ContentFileMeta::showAudioMinMaxSize(const std::vector<AudioSampleInfo> &au
 void ContentFileMeta::loadRtpVideoMetaData(
 const std::filesystem::path& inputCamDir, std::vector<std::filesystem::path>& videos
 ) {
-  std::cout << "!!! loadRtpVideoMetaData() called !!! " << std::endl;
   VideoAccess va{};
 
   // open ifstreams for member viedos

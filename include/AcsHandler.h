@@ -13,8 +13,7 @@ class Session;
 class RtspHandler;
 class RtpHandler;
 
-struct VideoSampleRtp;
-struct AudioSampleRtp;
+struct Sample;
 
 class AcsHandler {
 public:
@@ -39,8 +38,8 @@ public:
   std::vector<unsigned char> getAccData();
   std::vector<std::vector<unsigned char>> getAllV0Images();
   bool setVideoAudioSampleMetaDataCache(const std::string& contentTitle);
-  void getNextVideoSample(VideoSampleRtp* videoSampleRtpPtr);
-  void getNextAudioSample(AudioSampleRtp* audioSampleRtp);
+  void getNextVideoSample();
+  void getNextAudioSample();
   bool isDone(int streamId);
   int64_t getUnitFrameTimeUs(int streamId);
   std::string getMediaInfo();

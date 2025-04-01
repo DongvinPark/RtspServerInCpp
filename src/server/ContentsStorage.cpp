@@ -6,10 +6,7 @@
 ContentsStorage::ContentsStorage(const std::string contentStorage)
   : logger(Logger::getLogger(C::CONTENTS_STORAGE)),
     contentRootPath(contentStorage),
-    parent(std::filesystem::path(contentStorage))
-{
-  std::cout << "!!! ContentsStorage constructor called !!!" << std::endl;
-}
+    parent(std::filesystem::path(contentStorage)) {}
 
 ContentsStorage::~ContentsStorage() {
   shutdown();

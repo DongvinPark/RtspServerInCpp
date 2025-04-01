@@ -343,11 +343,7 @@ void Session::onPlayStart() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
-      videoRtpPool.set_next_size(1);
-      void* rawMem = videoRtpPool.malloc();
-      VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
-      if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
-      curVideoMem = rawMem;
+      acsHandlerPtr->getNextVideoSample();
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
@@ -356,9 +352,7 @@ void Session::onPlayStart() {
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     if (!isPaused){
-      audioRtpPool.set_next_size(1); // 어거지
-      AudioSampleRtp* audioSampleRtpPtr = audioRtpPool.construct();
-      if (audioSampleRtpPtr != nullptr) acsHandlerPtr->getNextAudioSample(audioSampleRtpPtr);
+      acsHandlerPtr->getNextAudioSample();
     }
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, aInterval, audioSampleReadingTask);
@@ -379,11 +373,7 @@ void Session::startPlayForCamSwitching() {
   // fast transport video frames.
   for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
     if (!isPaused){
-      videoRtpPool.set_next_size(1);
-      void* rawMem = videoRtpPool.malloc();
-      VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
-      if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
-      curVideoMem = rawMem;
+      acsHandlerPtr->getNextVideoSample();
     }
   }
   logger->info2("Dongvin, fast transported video samples. cnt : " + std::to_string(C::FAST_TX_FACTOR_FOR_CAM_SWITCHING));
@@ -392,11 +382,7 @@ void Session::startPlayForCamSwitching() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused){
-      videoRtpPool.set_next_size(1);
-      void* rawMem = videoRtpPool.malloc();
-      VideoSampleRtp* videoSampleRtpPtr = new (rawMem) VideoSampleRtp();
-      if (videoSampleRtpPtr != nullptr) acsHandlerPtr->getNextVideoSample(videoSampleRtpPtr);
-      curVideoMem = rawMem;
+      acsHandlerPtr->getNextVideoSample();
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
@@ -617,33 +603,33 @@ void Session::transmitRtp() {
         boost::asio::write(
             *socketPtr,
             boost::asio::buffer(
-                rtpPacketInfoPtr->videoSamplePtr->data + rtpPacketInfoPtr->offset,
+                rtpPacketInfoPtr->samplePtr->buf.data() + rtpPacketInfoPtr->offset,
                 rtpPacketInfoPtr->length
                 ),
             ignored_error
         );
+        rtpPacketInfoPtr->samplePtr->refCount -= 1;
         // free videoSamplePool only when all rtp packets are transported to clint
-        if (--rtpPacketInfoPtr->videoSamplePtr->refCount == 0){
-          rtpPacketInfoPtr->videoSamplePtr->~VideoSampleRtp();
-          videoRtpPool.free(rtpPacketInfoPtr->videoSamplePtr);
-          curVideoMem = nullptr;
-          std::cout << "!!! memory freed !!!\n";
+        if (rtpPacketInfoPtr->samplePtr->refCount <= 0){
+          std::cout << "!!! video reset called !!! use count : " << rtpPacketInfoPtr->samplePtr.use_count() << std::endl;
+          rtpPacketInfoPtr->samplePtr.reset();
         }
       } else {
         // tx audio rtp
         boost::asio::write(
           *socketPtr,
-          boost::asio::buffer(rtpPacketInfoPtr->audioSamplePtr->data, rtpPacketInfoPtr->length),
+          boost::asio::buffer(rtpPacketInfoPtr->samplePtr->buf.data(), rtpPacketInfoPtr->length),
           ignored_error
         );
         // free audioSamplePool only when all rtp packets are transported to clint
-        if (--rtpPacketInfoPtr->audioSamplePtr->refCount == 0){
-          audioRtpPool.free(rtpPacketInfoPtr->audioSamplePtr);
+        if (--rtpPacketInfoPtr->samplePtr->refCount == 0){
+          std::cout << "!!! audeo reset called use count : " << rtpPacketInfoPtr->samplePtr.use_count() << std::endl;
+          rtpPacketInfoPtr->samplePtr.reset();
         }
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }// end of length check if
-    rtpPacketPool.free(rtpPacketInfoPtr);
+    rtpPacketPool.destroy(rtpPacketInfoPtr);
   }
 }
 
