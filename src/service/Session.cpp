@@ -520,9 +520,16 @@ void Session::updateIsInCamSwitching(bool newState) {
 void Session::stopAllPeriodicTasks() {
   try {
     bitrateRecodeTask.stop();
+
+    // stop the sample reading tasks first.
     for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
     for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
+
+    // stop the rtp sending timer task.
     rtpTransportTask.stop();
+
+    // discard all rtp packets in the queue.
+    // this makes all std::shared_ptrs of Sample to be deleted from memory.
     clearRtpQueue();
     logger->warning("Dongvin, stopped all timers. session id : " + sessionId);
   } catch (const std::exception& e) {
