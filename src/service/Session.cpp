@@ -611,7 +611,6 @@ void Session::transmitRtp() {
         rtpPacketInfoPtr->samplePtr->refCount -= 1;
         // free videoSamplePool only when all rtp packets are transported to clint
         if (rtpPacketInfoPtr->samplePtr->refCount <= 0){
-          std::cout << "!!! video reset called !!! use count : " << rtpPacketInfoPtr->samplePtr.use_count() << std::endl;
           rtpPacketInfoPtr->samplePtr.reset();
         }
       } else {
@@ -623,7 +622,6 @@ void Session::transmitRtp() {
         );
         // free audioSamplePool only when all rtp packets are transported to clint
         if (--rtpPacketInfoPtr->samplePtr->refCount == 0){
-          std::cout << "!!! audeo reset called use count : " << rtpPacketInfoPtr->samplePtr.use_count() << std::endl;
           rtpPacketInfoPtr->samplePtr.reset();
         }
       }

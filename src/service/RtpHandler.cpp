@@ -176,7 +176,6 @@ void RtpHandler::readVideoSample(
         const auto& frontRtpMetaVec = curFrontVideoSampleInfo.getConstMetaInfoList();
         int offsetForFrontVRtp = 0;
         (frontVSamplePtr->refCount) = static_cast<int>(frontRtpMetaVec.size());
-        std::cout << "!!! video sample rtp cnt sampleNo/rtp cnt : " << sampleNo << "/" <<frontRtpMetaVec.size() << std::endl;
         for (int i=0; i<frontRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue front v's all rtp
@@ -241,7 +240,6 @@ void RtpHandler::readVideoSample(
         const auto& rearRtpMetaVec = curRearVideoSampleInfo.getConstMetaInfoList();
         int offsetForRearVRtp = 0;
         (rearVSamplePtr->refCount) = static_cast<int>(rearRtpMetaVec.size());
-        std::cout << "!!! video sample rtp cnt sampleNo/rtp cnt : " << sampleNo << "/" <<rearRtpMetaVec.size() << std::endl;
         for (int i=0; i<rearRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue rear v's all rtp
@@ -260,7 +258,6 @@ void RtpHandler::readVideoSample(
     logger->severe("Dongvin, faild to get session ptr! RtpHandler::readVideoSample()");
     return;
   }
-  std::cout << "!!! read video sample copleted !!!\n";
 }
 
 std::unique_ptr<Buffer> RtpHandler::readFirstRtpOfCurAudioSample(int sampleNo, int64_t offset, int64_t len) noexcept {
@@ -344,7 +341,6 @@ void RtpHandler::readAudioSample(
       return;
     }
   }
-  std::cout << "!!! read audio sample copleted !!!\n";
 }
 
 

@@ -39,19 +39,15 @@ struct Sample {
     // seek is done outside of this class
     buf.resize(sampleLen);
     if (fileAccess.read(reinterpret_cast<std::ifstream::char_type *>(buf.data()), sampleLen)) {
-      std::cout << "!!! Sample (buf) allocated !!!\n";
     } else {
       refCount = C::INVALID;
-      std::cout << "!!! Sample (buf) failed to allocate !!!\n";
     }
   }
 
   explicit Sample ()
     : refCount(0) {}
 
-  ~Sample() {
-    std::cout << "!!! Sample (buf) destructed !!!\n";
-  }
+  ~Sample() {}
 };
 
 struct RtpPacketInfo {
