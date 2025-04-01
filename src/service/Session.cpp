@@ -398,7 +398,7 @@ void Session::onTeardown() {
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   stopAllPeriodicTasks();
-  closeHandlersAndSocket();
+  closeSocket();
   recordBitrateTestResult();
   shutdownSession();
 }
@@ -519,10 +519,11 @@ void Session::updateIsInCamSwitching(bool newState) {
 
 void Session::stopAllPeriodicTasks() {
   try {
-    rtpTransportTask.stop();
     bitrateRecodeTask.stop();
     for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
     for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
+    rtpTransportTask.stop();
+    clearRtpQueue();
     logger->warning("Dongvin, stopped all timers. session id : " + sessionId);
   } catch (const std::exception& e) {
     std::cerr << "exception was thrown on stopping PeriodicTasks! : " << e.what() << "\n";
@@ -531,22 +532,10 @@ void Session::stopAllPeriodicTasks() {
   }
 }
 
-void Session::closeHandlersAndSocket() {
+void Session::closeSocket() {
   try {
     if (socketPtr->is_open()){
       socketPtr->close();
-    }
-    if (rtspHandlerPtr != nullptr){
-      rtspHandlerPtr.reset();
-      rtspHandlerPtr = nullptr;
-    }
-    if (acsHandlerPtr != nullptr){
-      acsHandlerPtr.reset();
-      acsHandlerPtr = nullptr;
-    }
-    if (rtpHandlerPtr != nullptr){
-      rtpHandlerPtr.reset();
-      rtpHandlerPtr = nullptr;
     }
     logger->warning("Dongvin, closed socket and all handlers. session id : " + sessionId);
   } catch (const std::exception& e) {

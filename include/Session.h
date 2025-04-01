@@ -170,7 +170,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
   private:
   void stopAllPeriodicTasks();
-  void closeHandlersAndSocket();
+  void closeSocket();
 
   void transmitRtspRes(std::unique_ptr<Buffer> bufPtr);
   void transmitRtp();
