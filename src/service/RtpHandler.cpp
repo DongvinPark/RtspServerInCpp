@@ -143,7 +143,6 @@ void RtpHandler::readVideoSample(
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
     // process front video.
-    int64_t nextStartOffsetForRearVideo = 0;
     if (frontVideoHybridMeta.has_value()) {
       const std::vector<unsigned char> metaData = frontVideoHybridMeta->getHybridMetaBinary(
         C::getAvptSampleQChannel(C::FRONT_VIDEO_VID), camId, C::FRONT_VIDEO_VID, frameType
@@ -155,7 +154,6 @@ void RtpHandler::readVideoSample(
       }
       frontVHybridPtr->refCount = 1;
 
-      nextStartOffsetForRearVideo = static_cast<int64_t>(metaData.size());
       auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->samplePtr = frontVHybridPtr;
@@ -188,7 +186,6 @@ void RtpHandler::readVideoSample(
           offsetForFrontVRtp += rtpMeta.len;
           sessionPtr->enqueueRtpInfo(rtpInfo);
         }
-        nextStartOffsetForRearVideo = static_cast<int64_t>(curFrontVideoSampleInfo.getSize());
       }
     }
 
@@ -205,7 +202,7 @@ void RtpHandler::readVideoSample(
       auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->samplePtr = rearVHybridPtr;
-      rtpInfo->offset = nextStartOffsetForRearVideo;
+      rtpInfo->offset = 0;
       rtpInfo->length = metaData.size();
       rtpInfo->isHybridMeta = true;
       sessionPtr->enqueueRtpInfo(rtpInfo);
