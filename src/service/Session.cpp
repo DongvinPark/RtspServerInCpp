@@ -85,8 +85,7 @@ void Session::start() {
         readingEndSampleStatusVec[0] == true
         && readingEndSampleStatusVec[1] == true
     ) {
-      logger->severe("Dongvin, sent last video and audio sample. shutdown session. id : " + sessionId);
-      onTeardown();
+      logger->severe("Dongvin, sent last video and audio sample. session id : " + sessionId);
       return;
     }
     // do not close session while testing is in progress.
@@ -564,7 +563,7 @@ void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
 }
 
 boost::object_pool<RtpPacketInfo>& Session::getRtpPacketInfoPool(){
-  rtpPacketPool.set_next_size(1); // 어거지
+  rtpPacketPool.set_next_size(1);
   return   rtpPacketPool;
 }
 
@@ -609,10 +608,6 @@ void Session::transmitRtp() {
             ignored_error
         );
         rtpPacketInfoPtr->samplePtr->refCount -= 1;
-        // free videoSamplePool only when all rtp packets are transported to clint
-        if (rtpPacketInfoPtr->samplePtr->refCount <= 0){
-          rtpPacketInfoPtr->samplePtr.reset();
-        }
       } else {
         // tx audio rtp
         boost::asio::write(
@@ -620,10 +615,6 @@ void Session::transmitRtp() {
           boost::asio::buffer(rtpPacketInfoPtr->samplePtr->buf.data(), rtpPacketInfoPtr->length),
           ignored_error
         );
-        // free audioSamplePool only when all rtp packets are transported to clint
-        if (--rtpPacketInfoPtr->samplePtr->refCount == 0){
-          rtpPacketInfoPtr->samplePtr.reset();
-        }
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }// end of length check if

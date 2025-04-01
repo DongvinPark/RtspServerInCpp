@@ -221,7 +221,7 @@ void AcsHandler::getNextVideoSample() {
         sessionPtr->getHybridMetaMap()
       );
 
-      /* 어거지
+      /* do not need on playing
        if (videoSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(videoSampleRtpPtr->data[2], videoSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
@@ -270,7 +270,7 @@ void AcsHandler::getNextAudioSample() {
         sessionPtr->getHybridMetaMap()
       );
 
-      /*어거지
+      /* do not need an playing
        if (audioSampleRtpPtr->length != C::INVALID) {
         const int rtpLen = Util::getRtpPacketLength(audioSampleRtpPtr->data[2], audioSampleRtpPtr->data[3]);
         const int len = 4 + rtpLen;
