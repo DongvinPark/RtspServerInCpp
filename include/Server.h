@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <boost/asio.hpp>
 #include <cstdint>
+#include <thread>
 
 #include "../include/PeriodicTask.h"
 #include "../include/SntpRefTimeProvider.h"
@@ -20,6 +21,8 @@ class Server {
 public:
   explicit Server(
     boost::asio::io_context& inputIoContext,
+    std::vector<std::thread>& inputThreadPool,
+    int inputThreadPoolSizeLimit,
     ContentsStorage& inputContentsStorage,
     const std::string &inputStorage,
     SntpRefTimeProvider& inputSntpRefTimeProvider,
@@ -42,6 +45,8 @@ private:
 
   std::shared_ptr<Logger> logger;
   boost::asio::io_context& io_context;
+  std::vector<std::thread>& threadPool;
+  int threadPoolSizeLimit;
   std::string projectRootPath;
   // used shared_ptr for better ownership management
   std::unordered_map<std::string, std::shared_ptr<Session>> sessions;

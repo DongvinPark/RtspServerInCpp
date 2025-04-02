@@ -13,6 +13,8 @@ using boost::asio::ip::tcp;
 
 Server::Server(
   boost::asio::io_context& inputIoContext,
+  std::vector<std::thread>& inputThreadPool,
+  int inputThreadPoolSizeLimit,
   ContentsStorage& inputContentsStorage,
   const std::string &inputStorage,
   SntpRefTimeProvider& inputSntpRefTimeProvider,
@@ -20,6 +22,8 @@ Server::Server(
   std::chrono::milliseconds inputIntervalMs
 ) : logger(Logger::getLogger(C::SERVER)),
     io_context(inputIoContext),
+    threadPool(inputThreadPool),
+    threadPoolSizeLimit(inputThreadPoolSizeLimit),
     contentsStorage(inputContentsStorage),
     storage(inputStorage),
     sntpTimeProvider(inputSntpRefTimeProvider),
@@ -53,6 +57,23 @@ void Server::start() {
       auto socketPtr = std::make_shared<tcp::socket>(io_context);
       acceptor.accept(*socketPtr);
       std::string sessionId = getSessionId();
+
+      int threadPoolSize = threadPool.size();
+      int clientCnt = sessions.size();
+
+      // increase thread pool size to prevent 'Insufficient Threading'.
+      // when number of client increases, io_context.run thread pool's size must increase too.
+      if (
+        threadPoolSize < threadPoolSizeLimit &&
+        static_cast<float>(threadPoolSize) < static_cast<float>(clientCnt)/C::THREAD_GENERATION_FACTOR
+      ) {
+          threadPool.emplace_back(
+          [&](){
+            Util::set_thread_priority();
+            io_context.run();
+          }
+        );
+      }
 
       // makes session and starts it.
       std::chrono::milliseconds zeroInterval(C::ZERO);
@@ -118,7 +139,6 @@ void Server::afterTerminatingSession(const std::string& sessionId) {
 
     sessions.erase(sessionId);
     shutdownSessions.insert({sessionId, std::move(sessionPtr)});
-
     logger->warning(
         "Dongvin, " + sessionId + " shuts down. Remaining session cnt : "
             + std::to_string(sessions.size())

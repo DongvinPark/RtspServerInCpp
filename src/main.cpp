@@ -31,22 +31,6 @@
 
 using boost::asio::ip::tcp;
 
-void set_thread_priority() {
-#ifdef _WIN32
-    // on Windows: set thread priority to highest
-    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
-#elif defined(__linux__) || defined(__APPLE__)
-    // on Linux & macOS: set priority using pthreads
-    sched_param sch_params{};
-    sch_params.sched_priority = 10; // Adjust priority value as needed
-
-    int policy = SCHED_RR;  // SCHED_FIFO (real-time) or SCHED_RR (round-robin)
-    if (pthread_setschedparam(pthread_self(), policy, &sch_params) != 0) {
-        std::cerr << "Failed to set thread priority\n";
-    }
-#endif
-}
-
 std::string getExecutablePath() {
     char path[1024];
 
@@ -103,11 +87,11 @@ int main() {
     boost::asio::io_context io_context;
     auto workGuard = boost::asio::make_work_guard(io_context);
     std::vector<std::thread> threadVec;
-    auto threadCnt = std::thread::hardware_concurrency();
+    int threadCnt = static_cast<int>(std::thread::hardware_concurrency());
     for (auto i = 0; i < threadCnt; ++i) {
         threadVec.emplace_back(
             [&io_context]() {
-                set_thread_priority();
+                Util::set_thread_priority();
                 io_context.run();
             }
         );
@@ -153,6 +137,8 @@ int main() {
     std::chrono::milliseconds inputIntervalMsForSessionRemoval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
     Server server(
         io_context,
+        threadVec,
+        threadCnt*C::MAX_THREAD_POOL_SIZE_FACTOR,
         contentsStorage,
         contentsRootPath,
         sntpRefTimeProvider,

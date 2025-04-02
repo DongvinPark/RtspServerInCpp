@@ -23,6 +23,12 @@ namespace C {
     constexpr char ACS_HANDLER[] = "AcsHandler";
     constexpr char RTP_HANDLER[] = "RtpHandler";
 
+    // boost::asio::io_context thread pool
+    // 1 CPU core can generate 10 threads. each thread calls io_context.run();
+    // if 2 CPU cores are in server machine, max size of worker thread pool is 2*10.
+    constexpr int MAX_THREAD_POOL_SIZE_FACTOR = 10;
+    constexpr float THREAD_GENERATION_FACTOR = 8.0f;
+
     // General constants
     constexpr char MY_NAME[] = "alphaStreamer-3.1/1.0.0";
     constexpr int FRONT_VIDEO_VID = 0;

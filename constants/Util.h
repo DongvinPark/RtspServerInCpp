@@ -34,6 +34,22 @@ using HybridMetaMapType
 
 namespace Util {
 
+	inline void set_thread_priority() {
+#ifdef _WIN32
+		// on Windows: set thread priority to highest
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+#elif defined(__linux__) || defined(__APPLE__)
+		// on Linux & macOS: set priority using pthreads
+		sched_param sch_params{};
+		sch_params.sched_priority = 10; // Adjust priority value as needed
+
+		int policy = SCHED_RR;  // SCHED_FIFO (real-time) or SCHED_RR (round-robin)
+		if (pthread_setschedparam(pthread_self(), policy, &sch_params) != 0) {
+			std::cerr << "Failed to set thread priority\n";
+		}
+#endif
+	}
+
 	inline std::string getRandomKey(int bitLength) {
 		const std::vector<int> allowedBits = {32, 64, 128, 192, 256};
 		if (std::find(allowedBits.begin(), allowedBits.end(), bitLength) == allowedBits.end()) {
