@@ -87,7 +87,7 @@ int main() {
     boost::asio::io_context io_context;
     auto workGuard = boost::asio::make_work_guard(io_context);
     std::vector<std::thread> threadVec;
-    int threadCnt = static_cast<int>(std::thread::hardware_concurrency());
+    int threadCnt = 8;//static_cast<int>(std::thread::hardware_concurrency());
     for (auto i = 0; i < threadCnt; ++i) {
         threadVec.emplace_back(
             [&io_context]() {
