@@ -2,6 +2,7 @@
 
 #include <boost/asio/bind_executor.hpp>
 #include <iostream>
+#include <thread>
 
 #include "../../constants/Util.h"
 #include "../../include/PeriodicTask.h"
@@ -330,7 +331,7 @@ void Session::onCameraChange(
   startPlayForCamSwitching();
 }
 
-void Session::onPlayStart() {
+void Session::onPlayStart(){
   // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
   int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
   int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
@@ -354,6 +355,7 @@ void Session::onPlayStart() {
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
+    std::cout << "!!! A reading \n";
     if (!isPaused){
       acsHandlerPtr->getNextAudioSample();
     }
@@ -521,6 +523,27 @@ void Session::updateIsInCamSwitching(bool newState) {
   isInCamSwitching = newState;
 }
 
+void Session::deleteDanglingRtps() {
+  std::cout << "!!!delete rtp called\n";
+  while (true) {
+    std::cout << "!!! while enter \n";
+    if (rtpMemoryQueue.empty()) {
+      std::cout << "!!! empty break\n";
+      break;
+    }
+    auto rtp = rtpMemoryQueue.front();
+    if (rtp == nullptr || rtp->samplePtr == nullptr) {
+      rtpMemoryQueue.pop();
+    } else if (rtp->samplePtr->refCount == 0) {
+      rtpMemoryQueue.pop();
+      std::cout << "!!! popped\n";
+    } else {
+      std::cout << "!!! else break\n";
+      break;
+    }
+  }
+}
+
 void Session::stopAllPeriodicTasks() {
   try {
     bitrateRecodeTask.stop();
@@ -562,14 +585,13 @@ void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
   sentBitsSize += (bufPtr->len * 8);
 }
 
-boost::object_pool<RtpPacketInfo>& Session::getRtpPacketInfoPool(){
-  rtpPacketPool.set_next_size(1);
-  return   rtpPacketPool;
-}
-
 void Session::enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr) {
   // repeat until success
   while (!rtpQueuePtr->push(rtpPacketInfoPtr)) {}
+}
+
+void Session::enqueueRtpForMemoryMgmt(std::shared_ptr<RtpPacketInfo> rtpPacketPtr) {
+  rtpMemoryQueue.push(std::move(rtpPacketPtr));
 }
 
 void Session::updateReadLastVideoSample(){
@@ -615,10 +637,10 @@ void Session::transmitRtp() {
           boost::asio::buffer(rtpPacketInfoPtr->samplePtr->buf.data(), rtpPacketInfoPtr->length),
           ignored_error
         );
+        rtpPacketInfoPtr->samplePtr->refCount -= 1;
       }
       sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
     }// end of length check if
-    rtpPacketPool.destroy(rtpPacketInfoPtr);
   }
 }
 

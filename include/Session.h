@@ -1,12 +1,12 @@
 #ifndef SESSION_H
 #define SESSION_H
 #include <boost/asio.hpp>
-#include <boost/pool/object_pool.hpp>
-#include <boost/pool/pool.hpp>
 #include <boost/lockfree/queue.hpp>
 #include <atomic>
 #include <cstdint> // For int64_t
 #include <unordered_map>
+#include <queue>
+#include <mutex>
 
 #include "../include/Logger.h"
 #include "../include/Server.h"
@@ -45,7 +45,9 @@ struct Sample {
   }
 
   explicit Sample ()
-    : refCount(0) {}
+    : refCount(0) {
+    std::cout << "!!! sample destructed !!!\n";
+  }
 
   ~Sample() {}
 };
@@ -160,8 +162,8 @@ class Session : public std::enable_shared_from_this<Session> {
   void updateIsInCamSwitching(bool newState);
 
   // rtp queue control
-  boost::object_pool<RtpPacketInfo>& getRtpPacketInfoPool();
   void enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr);
+  void enqueueRtpForMemoryMgmt(std::shared_ptr<RtpPacketInfo> rtpPacketPtr);
   void clearRtpQueue();
   void updateReadLastVideoSample();
   void updateReadLastAudioSample();
@@ -170,6 +172,7 @@ class Session : public std::enable_shared_from_this<Session> {
   void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);
 
   private:
+  void deleteDanglingRtps();
   void stopAllPeriodicTasks();
   void closeSocket();
 
@@ -207,9 +210,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
   // tx queue for rtp.
   std::unique_ptr<boost::lockfree::queue<RtpPacketInfo*>> rtpQueuePtr;
-
-  // memory pools for RTP packets
-  boost::object_pool<RtpPacketInfo> rtpPacketPool{1};
+  std::queue<std::shared_ptr<RtpPacketInfo>> rtpMemoryQueue;
 
   std::vector<bool> readingEndSampleStatusVec = {false, false};
 

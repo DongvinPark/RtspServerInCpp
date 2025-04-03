@@ -154,13 +154,14 @@ void RtpHandler::readVideoSample(
       }
       frontVHybridPtr->refCount = 1;
 
-      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
+      auto rtpInfo = std::make_shared<RtpPacketInfo>();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->samplePtr = frontVHybridPtr;
       rtpInfo->offset = 0;
       rtpInfo->length = metaData.size();
       rtpInfo->isHybridMeta = true;
-      sessionPtr->enqueueRtpInfo(rtpInfo);
+      sessionPtr->enqueueRtpInfo(rtpInfo.get());
+      sessionPtr->enqueueRtpForMemoryMgmt(rtpInfo);
     } else {
       // no front V sample meta for hybrid D & S. read sample from file stream.
       frontVideoFileReadingStream.seekg(curFrontVideoSampleInfo.getOffset(), std::ios::beg);
@@ -177,14 +178,15 @@ void RtpHandler::readVideoSample(
         for (int i=0; i<frontRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curFrontVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue front v's all rtp
-          auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
+          auto rtpInfo = std::make_shared<RtpPacketInfo>();
           rtpInfo->flag = C::VIDEO_ID;
           rtpInfo->samplePtr = frontVSamplePtr;
           rtpInfo->offset = offsetForFrontVRtp;
           rtpInfo->length = rtpMeta.len;
           rtpInfo->isHybridMeta = false;
           offsetForFrontVRtp += rtpMeta.len;
-          sessionPtr->enqueueRtpInfo(rtpInfo);
+          sessionPtr->enqueueRtpInfo(rtpInfo.get());
+          sessionPtr->enqueueRtpForMemoryMgmt(rtpInfo);
         }
       }
     }
@@ -199,13 +201,14 @@ void RtpHandler::readVideoSample(
         rearVHybridPtr->buf.push_back(c);
       }
       rearVHybridPtr->refCount = 1;
-      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
+      auto rtpInfo = std::shared_ptr<RtpPacketInfo>();
       rtpInfo->flag = C::VIDEO_ID;
       rtpInfo->samplePtr = rearVHybridPtr;
       rtpInfo->offset = 0;
       rtpInfo->length = metaData.size();
       rtpInfo->isHybridMeta = true;
-      sessionPtr->enqueueRtpInfo(rtpInfo);
+      sessionPtr->enqueueRtpInfo(rtpInfo.get());
+      sessionPtr->enqueueRtpForMemoryMgmt(rtpInfo);
     } else {
       // no rear V sample meta for hybrid D & S. read sample from file stream.
 
@@ -240,14 +243,15 @@ void RtpHandler::readVideoSample(
         for (int i=0; i<rearRtpMetaVec.size(); ++i) {
           const auto& rtpMeta = curRearVideoSampleInfo.getConstMetaInfoList()[i];
           // enqueue rear v's all rtp
-          auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
+          auto rtpInfo = std::shared_ptr<RtpPacketInfo>();
           rtpInfo->flag = C::VIDEO_ID;
           rtpInfo->samplePtr = rearVSamplePtr;
           rtpInfo->offset = offsetForRearVRtp;
           rtpInfo->length = rtpMeta.len;
           rtpInfo->isHybridMeta = false;
           offsetForRearVRtp += rtpMeta.len;
-          sessionPtr->enqueueRtpInfo(rtpInfo);
+          sessionPtr->enqueueRtpInfo(rtpInfo.get());
+          sessionPtr->enqueueRtpForMemoryMgmt(rtpInfo);
         }
       }
     }
@@ -298,13 +302,14 @@ void RtpHandler::readAudioSample(
       return;
     } else if (auto sessionPtr = parentSessionPtr.lock()) {
       (audioSamplePtr->refCount) = 1;
-      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
+      auto rtpInfo = std::shared_ptr<RtpPacketInfo>();
       rtpInfo->flag = C::AUDIO_ID;
       rtpInfo->samplePtr = audioSamplePtr;
       rtpInfo->offset = 0;
       rtpInfo->length = len;
       rtpInfo->isHybridMeta = false;
-      sessionPtr->enqueueRtpInfo(rtpInfo);
+      sessionPtr->enqueueRtpInfo(rtpInfo.get());
+      sessionPtr->enqueueRtpForMemoryMgmt(rtpInfo);
     } else {
       logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
       return;
@@ -326,13 +331,14 @@ void RtpHandler::readAudioSample(
 
     (audioSampleHybridPtr->refCount) = 1;
     if (auto sessionPtr = parentSessionPtr.lock()) {
-      auto* rtpInfo = sessionPtr->getRtpPacketInfoPool().construct();
+      auto rtpInfo = std::shared_ptr<RtpPacketInfo>();
       rtpInfo->flag = C::AUDIO_ID;
       rtpInfo->samplePtr = audioSampleHybridPtr;
       rtpInfo->offset = 0;
       rtpInfo->length = metaData.size();
       rtpInfo->isHybridMeta = true;
-      sessionPtr->enqueueRtpInfo(rtpInfo);
+      sessionPtr->enqueueRtpInfo(rtpInfo.get());
+      sessionPtr->enqueueRtpForMemoryMgmt(rtpInfo);
     } else {
       logger->severe("Dongvin, failed to get session ptr! RtpHandler::readAudioSample");
       return;
