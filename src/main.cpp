@@ -83,12 +83,12 @@ int main() {
     logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server STARTS. ver: " + std::string{C::VER});
     logger->warning("=================================================================");
 
-    // make worker thread pool for boost.asio io_context
+    // make worker thread pool for main boost.asio io_context
     boost::asio::io_context io_context;
     auto workGuard = boost::asio::make_work_guard(io_context);
     std::vector<std::thread> threadVec;
-    int threadCnt = static_cast<int>(std::thread::hardware_concurrency());
-    for (auto i = 0; i < threadCnt; ++i) {
+    int cpuCoreCnt = static_cast<int>(std::thread::hardware_concurrency());
+    for (auto i = 0; i < cpuCoreCnt; ++i) {
         threadVec.emplace_back(
             [&io_context]() {
                 Util::set_thread_priority();
@@ -96,7 +96,30 @@ int main() {
             }
         );
     }
-    logger->warning("Made io_cotext.run() worker thread pool with thread cnt: " + std::to_string(threadCnt));
+
+    // make threads pool for worker io_context pool
+    std::vector<std::shared_ptr<boost::asio::io_context>> ioContextPool;
+    std::vector<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> workGuardVec;
+    for (int i = 0; i < cpuCoreCnt; ++i) {
+        auto workerIoContextPtr = std::make_shared<boost::asio::io_context>();
+        ioContextPool.emplace_back(workerIoContextPtr);
+
+        // create a work guard to prevent io_context from stopping
+        workGuardVec.emplace_back(boost::asio::make_work_guard(*workerIoContextPtr));
+
+        // create worker threads for this io_context
+        for (int j = 0; j < C::THREAD_CNT_PER_WORKER_IO_CONTEXT; ++j) {
+            threadVec.emplace_back([workerIoContextPtr]() {
+                Util::set_thread_priority();
+                workerIoContextPtr->run();
+            });
+        }
+    }
+
+    logger->warning(
+        "Made io_cotext.run() worker thread pool with thread cnt: "
+        + std::to_string(cpuCoreCnt + (cpuCoreCnt*C::THREAD_CNT_PER_WORKER_IO_CONTEXT))
+    );
 
     // used std::promise to synchronize the shutdown process
     std::promise<void> shutdownPromise;
@@ -109,10 +132,22 @@ int main() {
             if (!ec) {
                 std::cout << "\n\t>>> Received signal: " << signal << ". Stopping server...\n";
                 workGuard.reset();
+
+                for (int i = 0; i < cpuCoreCnt; ++i){
+                    workGuardVec[i].reset();
+                }
+
                 if (!io_context.stopped()) {
                     io_context.stop();
-                    std::cout << "\t>>> io_context stopped.\n";
                 }
+
+                for (int i = 0; i < cpuCoreCnt; ++i){
+                    if (!ioContextPool[i]->stopped()){
+                        ioContextPool[i]->stop();
+                    }
+                }
+
+                std::cout << "\t>>> all io_context stopped.\n";
                 shutdownPromise.set_value();
             }
         } catch (const std::exception& e) {
@@ -137,8 +172,7 @@ int main() {
     std::chrono::milliseconds inputIntervalMsForSessionRemoval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
     Server server(
         io_context,
-        threadVec,
-        threadCnt*C::MAX_THREAD_POOL_SIZE_FACTOR,
+        ioContextPool,
         contentsStorage,
         contentsRootPath,
         sntpRefTimeProvider,

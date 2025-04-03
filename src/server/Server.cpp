@@ -13,8 +13,7 @@ using boost::asio::ip::tcp;
 
 Server::Server(
   boost::asio::io_context& inputIoContext,
-  std::vector<std::thread>& inputThreadPool,
-  int inputThreadPoolSizeLimit,
+  std::vector<std::shared_ptr<boost::asio::io_context>>& inputIoContextPool,
   ContentsStorage& inputContentsStorage,
   const std::string &inputStorage,
   SntpRefTimeProvider& inputSntpRefTimeProvider,
@@ -22,8 +21,7 @@ Server::Server(
   std::chrono::milliseconds inputIntervalMs
 ) : logger(Logger::getLogger(C::SERVER)),
     io_context(inputIoContext),
-    threadPool(inputThreadPool),
-    threadPoolSizeLimit(inputThreadPoolSizeLimit),
+    ioContextPool(inputIoContextPool),
     contentsStorage(inputContentsStorage),
     storage(inputStorage),
     sntpTimeProvider(inputSntpRefTimeProvider),
@@ -58,27 +56,12 @@ void Server::start() {
       acceptor.accept(*socketPtr);
       std::string sessionId = getSessionId();
 
-      int threadPoolSize = threadPool.size();
-      int clientCnt = sessions.size();
-
-      // increase thread pool size to prevent 'Insufficient Threading'.
-      // when number of client increases, io_context.run thread pool's size must increase too.
-      if (
-        threadPoolSize < threadPoolSizeLimit &&
-        static_cast<float>(threadPoolSize) < static_cast<float>(clientCnt)/C::THREAD_GENERATION_FACTOR
-      ) {
-          threadPool.emplace_back(
-          [&](){
-            Util::set_thread_priority();
-            io_context.run();
-          }
-        );
-      }
+      auto workerIoContextPtr = getNextWorkerIoContextPtr();
 
       // makes session and starts it.
       std::chrono::milliseconds zeroInterval(C::ZERO);
       std::shared_ptr<Session> sessionPtr = std::make_shared<Session>(
-        io_context, socketPtr, sessionId,
+        io_context, workerIoContextPtr, socketPtr, sessionId,
         *this, contentsStorage, sntpTimeProvider, zeroInterval
       );
 
@@ -150,4 +133,10 @@ std::string Server::getSessionId() {
   connectionCnt++;
   return std::to_string(connectionCnt) + "_"
   + Util::getRandomKey(C::SESSION_KEY_BIT_SIZE);
+}
+
+std::shared_ptr<boost::asio::io_context> Server::getNextWorkerIoContextPtr(){
+  ioContextIdx = (ioContextIdx + 1)%ioContextPool.size();
+  std::shared_ptr<boost::asio::io_context> ioContextPtr = ioContextPool[static_cast<int>(ioContextIdx)];
+  return ioContextPtr;
 }

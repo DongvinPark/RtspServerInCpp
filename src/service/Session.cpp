@@ -9,6 +9,7 @@
 
 Session::Session(
   boost::asio::io_context & inputIoContext,
+  std::shared_ptr<boost::asio::io_context> inputWorkerIoContextPtr,
   std::shared_ptr<boost::asio::ip::tcp::socket> inputSocketPtr,
   std::string inputSessionId,
   Server & inputServer,
@@ -18,13 +19,14 @@ Session::Session(
 )
   : logger(Logger::getLogger(C::SESSION)),
     io_context(inputIoContext),
+    workerIoContextPtr(inputWorkerIoContextPtr),
+    strand(boost::asio::make_strand(*inputWorkerIoContextPtr)),
     socketPtr(std::move(inputSocketPtr)),
     sessionId(inputSessionId),
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    strand(boost::asio::make_strand(inputIoContext)),
-    rtpTransportTask(inputIoContext, strand, inputZeroIntervalMs),
+    rtpTransportTask(*inputWorkerIoContextPtr, strand, inputZeroIntervalMs),
     bitrateRecodeTask(inputIoContext, strand, inputZeroIntervalMs),
     rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
@@ -74,7 +76,9 @@ void Session::start() {
   asyncReceive();
 
   auto rtpTxTask = [&](){
-    if (!isPaused) transmitRtp();
+    if (!isPaused){
+      transmitRtp();
+    }
   };
   rtpTransportTask.setTask(rtpTxTask);
   rtpTransportTask.start();
@@ -345,7 +349,7 @@ void Session::onPlayStart() {
       acsHandlerPtr->getNextVideoSample();
     }
   };
-  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
+  auto videoTaskPtr = std::make_shared<PeriodicTask>(*workerIoContextPtr, strand, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
 
   std::chrono::milliseconds aInterval(audioInterval);
@@ -354,7 +358,7 @@ void Session::onPlayStart() {
       acsHandlerPtr->getNextAudioSample();
     }
   };
-  auto audioTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, aInterval, audioSampleReadingTask);
+  auto audioTaskPtr = std::make_shared<PeriodicTask>(*workerIoContextPtr, strand, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
 
   if (!videoReadingTaskVec.empty() && !audioReadingTaskVec.empty()){
@@ -384,7 +388,7 @@ void Session::startPlayForCamSwitching() {
       acsHandlerPtr->getNextVideoSample();
     }
   };
-  auto videoTaskPtr = std::make_shared<PeriodicTask>(io_context, strand, vInterval, videoSampleReadingTask);
+  auto videoTaskPtr = std::make_shared<PeriodicTask>(*workerIoContextPtr, strand, vInterval, videoSampleReadingTask);
   videoReadingTaskVec.emplace_back(std::move(videoTaskPtr));
   logger->info2("Dongvin, video reading task for cam switching started!");
   if (!videoReadingTaskVec.empty()){

@@ -21,8 +21,7 @@ class Server {
 public:
   explicit Server(
     boost::asio::io_context& inputIoContext,
-    std::vector<std::thread>& inputThreadPool,
-    int inputThreadPoolSizeLimit,
+    std::vector<std::shared_ptr<boost::asio::io_context>>& inputIoContextPool,
     ContentsStorage& inputContentsStorage,
     const std::string &inputStorage,
     SntpRefTimeProvider& inputSntpRefTimeProvider,
@@ -42,11 +41,12 @@ public:
 
 private:
   std::string getSessionId();
+  std::shared_ptr<boost::asio::io_context> getNextWorkerIoContextPtr();
+  long ioContextIdx{C::INVALID};
 
   std::shared_ptr<Logger> logger;
   boost::asio::io_context& io_context;
-  std::vector<std::thread>& threadPool;
-  int threadPoolSizeLimit;
+  std::vector<std::shared_ptr<boost::asio::io_context>>& ioContextPool;
   std::string projectRootPath;
   // used shared_ptr for better ownership management
   std::unordered_map<std::string, std::shared_ptr<Session>> sessions;

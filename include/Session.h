@@ -74,6 +74,7 @@ class Session : public std::enable_shared_from_this<Session> {
   public:
   explicit Session(
     boost::asio::io_context& inputIoContext,
+    std::shared_ptr<boost::asio::io_context> inputWorkerIoContextPtr,
     std::shared_ptr<boost::asio::ip::tcp::socket> inputSocketPtr,
     std::string inputSessionId,
     Server& inputServer,
@@ -179,6 +180,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
   std::shared_ptr<Logger> logger;
   boost::asio::io_context& io_context;
+  std::shared_ptr<boost::asio::io_context> workerIoContextPtr;
   std::shared_ptr<boost::asio::ip::tcp::socket> socketPtr;
   std::string sessionId;
   Server& parentServer;
