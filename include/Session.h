@@ -233,7 +233,6 @@ class Session : public std::enable_shared_from_this<Session> {
   std::vector<int> mbpsPossibleTypeList{};
   HybridMetaMapType hybridMeta;
 
-  PeriodicTask rtpTransportTask;
   PeriodicTask bitrateRecodeTask;
   std::vector<std::shared_ptr<PeriodicTask>> videoReadingTaskVec;
   std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;

@@ -27,7 +27,6 @@ Session::Session(
     parentServer(inputServer),
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
-    rtpTransportTask(*inputWorkerIoContextPtr, strand, inputZeroIntervalMs),
     bitrateRecodeTask(inputIoContext, strand, inputZeroIntervalMs),
     rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE)){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
@@ -40,7 +39,6 @@ Session::Session(
 Session::~Session(){
   // cleanup and release resources one more time before object destruction.
   try {
-    rtpTransportTask.stop();
     bitrateRecodeTask.stop();
     for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
     for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
@@ -76,13 +74,7 @@ void Session::start() {
 
   asyncReceive();
 
-  /*auto rtpTxTask = [&](){
-    if (!isPaused){
-      transmitRtp();
-    }
-  };
-  rtpTransportTask.setTask(rtpTxTask);
-  rtpTransportTask.start();*/
+  // allocate rtp tx only thread
   std::thread([&](){
     while (true){
       if (rtspHandlerPtr == nullptr || isToreDown){
@@ -557,9 +549,6 @@ void Session::stopAllPeriodicTasks() {
     // stop the sample reading tasks first.
     for (const auto& taskPtr : videoReadingTaskVec) taskPtr->stop();
     for (const auto& taskPtr : audioReadingTaskVec) taskPtr->stop();
-
-    // stop the rtp sending timer task.
-    rtpTransportTask.stop();
 
     // discard all rtp packets in the queue.
     // this makes all std::shared_ptrs of Sample to be deleted from memory.
