@@ -355,10 +355,10 @@ void Session::onPlayStart(){
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
-    std::cout << "!!! A reading \n";
     if (!isPaused){
       acsHandlerPtr->getNextAudioSample();
     }
+    deleteDanglingRtps();
   };
   auto audioTaskPtr = std::make_shared<PeriodicTask>(*workerIoContextPtr, strand, aInterval, audioSampleReadingTask);
   audioReadingTaskVec.emplace_back(std::move(audioTaskPtr));
@@ -524,11 +524,8 @@ void Session::updateIsInCamSwitching(bool newState) {
 }
 
 void Session::deleteDanglingRtps() {
-  std::cout << "!!!delete rtp called\n";
   while (true) {
-    std::cout << "!!! while enter \n";
     if (rtpMemoryQueue.empty()) {
-      std::cout << "!!! empty break\n";
       break;
     }
     auto rtp = rtpMemoryQueue.front();
@@ -536,9 +533,7 @@ void Session::deleteDanglingRtps() {
       rtpMemoryQueue.pop();
     } else if (rtp->samplePtr->refCount == 0) {
       rtpMemoryQueue.pop();
-      std::cout << "!!! popped\n";
     } else {
-      std::cout << "!!! else break\n";
       break;
     }
   }
@@ -591,7 +586,7 @@ void Session::enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr) {
 }
 
 void Session::enqueueRtpForMemoryMgmt(std::shared_ptr<RtpPacketInfo> rtpPacketPtr) {
-  rtpMemoryQueue.push(std::move(rtpPacketPtr));
+  rtpMemoryQueue.push(rtpPacketPtr);
 }
 
 void Session::updateReadLastVideoSample(){
@@ -614,6 +609,9 @@ void Session::updateOptionsReqTimeMillis(const int64_t inputOptionsReqTimeMillis
 }
 
 void Session::transmitRtp() {
+  if (rtpQueuePtr->empty()) {
+    return;
+  }
   RtpPacketInfo* rtpPacketInfoPtr = nullptr;
   if (rtpQueuePtr->pop(rtpPacketInfoPtr) && rtpPacketInfoPtr) {
     boost::system::error_code ignored_error;

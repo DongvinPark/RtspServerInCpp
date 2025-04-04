@@ -45,11 +45,9 @@ struct Sample {
   }
 
   explicit Sample ()
-    : refCount(0) {
-    std::cout << "!!! sample destructed !!!\n";
-  }
+    : refCount(0) {}
 
-  ~Sample() {}
+  ~Sample(){}
 };
 
 struct RtpPacketInfo {
