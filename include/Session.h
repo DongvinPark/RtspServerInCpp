@@ -238,6 +238,7 @@ class Session : public std::enable_shared_from_this<Session> {
   std::vector<std::shared_ptr<PeriodicTask>> videoReadingTaskVec;
   std::vector<std::shared_ptr<PeriodicTask>> audioReadingTaskVec;
 
+  bool isToreDown = false;
   bool isRecordSaved = false;
 };
 

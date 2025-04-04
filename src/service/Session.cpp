@@ -76,13 +76,23 @@ void Session::start() {
 
   asyncReceive();
 
-  auto rtpTxTask = [&](){
+  /*auto rtpTxTask = [&](){
     if (!isPaused){
       transmitRtp();
     }
   };
   rtpTransportTask.setTask(rtpTxTask);
-  rtpTransportTask.start();
+  rtpTransportTask.start();*/
+  std::thread([&](){
+    while (true){
+      if (rtspHandlerPtr == nullptr || isToreDown){
+        break;
+      }
+      if (!isPaused){
+        transmitRtp();
+      }
+    }
+  }).detach();
 
   auto txBitrateTask = [&]() {
     // shutdown session when client connection was lost
@@ -401,6 +411,7 @@ void Session::startPlayForCamSwitching() {
 }
 
 void Session::onTeardown() {
+  isToreDown = true;
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   stopAllPeriodicTasks();
