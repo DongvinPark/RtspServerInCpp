@@ -1154,7 +1154,7 @@ Undefined symbols for architecture arm64:
     <br> 이건 주로 invalid memory access 상황에서 발생하는 에러 메시지다.
     <br> 이게 뜰 경우, exception을 던지거나 로그를 남기기도 전에 프로그램이 죽기 때문에 디버깅 하기가 매우 까다롭고, 정확히 어디에서 에러가 난 것인지 표시조차 되지를 않는다;;
 ```c++
-// 주로 아래의 3 가지 상황 중 하나에 해당할 때 발생한다.
+// 주로 아래의 상황에서 발생한다.
 
 1. 특정 루프 또는 함수의 범위를 벗어나서 삭제된 객체에 접근할 때.
 >> 예를 들어서 while(true) 루프 안에서 만든 소켓을 std::shared_ptr에 저장하지 않고
@@ -1176,15 +1176,20 @@ Undefined symbols for architecture arm64:
 >> 이때는 boost asio steady timer 객체를 바로 삭제하는 것이 아니라, std::sharad_ptr 같은 걸로 다른 곳에 임시로
     옮겨놓은 후 일정 시간이 지나고 나서 삭제해야 한다.
 >> io_context 내에서 특정 task를 실행하려고 하는데, 그 task가 속해 있는 부모 객체(본 프로젝의 경우, PeriodicTask)가
-    이미 삭제돼 버려서 invalid memory access가 발생한 경우다.  
+    이미 삭제돼 버려서 invalid memory access가 발생한 경우다.
+    
+7. boost asio의 소켓에서 특정 버퍼를 이용해서 데이터를 전송하고 있는데, 해당 데이터가 갑자기 dangling pointer가 되거나 삭제될 때.
+>>> 버퍼에는 주로 std::array, std::vecotr, raw array 등이 사용될 수 있다.
+>>> 이 때는 전송이 완전히 끝난 후 해당 객체들이 삭제될 수 있도록 수동으로 메모리 관리를 해줘야 한다.
+>>> std::unique_ptr, std::shared_ptr 등의 스마트 포인터를 사용해도 이러한 문제는 발생할 수 있다.
 ```
 <br><br/>
 32. unique_ptr를 요소로서 가지고 있는 BlockingQueue를 설계하는 것.
 ```text
-    - 이런 자료구조는 thread safe하게 디자인하기가 매우 까다롭다.
+    - 이런 자료구조는 multi pub/sub 환경에서 thread safe하게 디자인하기가 매우 까다롭다.
     - 최대한 단일 스레드에서 처리할 수 있게 설계하거나, 아니면 boost.asio의 io_context를 쓰거나,
     - boost 라이브러리 내의 Lock-Free, concurrent 등의 라이브러리에서 제공하는 자료구조를 쓰자.
-    - 다시 한 번 강조하지만, 성능 문제가 없는 한 웬만하면 단일 스레드로 처리하는게 좋다.
+    - 다시 한 번 강조하지만, 성능 문제가 없는 한 웬만하면 단일 스레드에서 mutex 없이 처리하는게 좋다.
 ```
 <br><br/>
 33. java의 str.startsWith("..")는 C++17에서는 rfind()를 이용해서 대체할 수 있다.
@@ -1221,7 +1226,7 @@ inline int64_t getElapsedTimeNanoSec(){
 35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
     <br> Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
     <br> 예를 들어서, 내가 '지금' boost asio steady timer를 .cancel() 시켰다고 해서 '즉시' 해당 타이머 태스크가 중단되고 바로 소멸되는 것이 아니다.
-    <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 운영체제에 의해서 SIGSEGV 같은 segmentation falt 오류 관련 에러 메시지를 받으면서 서버가 죽는다.
+    <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 운영체제에 의해서 SIGSEGV 같은 segmentation falt 관련 에러 메시지를 받으면서 서버가 죽는다.
     <br> boost asio 라이브러리가 OS와 긴밀하게 상호작용하면서 처리하고 있는 async 태스크들이 어떻게 처리되고 있는지를 전허 고려하지 않고 해당 태스크들이 참고하고 있는 세션 객체를 삭제해버렸기 때문이다.
     <br> 핵심은 먼저 모든 자원들을 완전히 회수한 다음, async task 들이 완전히 종료될 때까지 기다렸다가 세션 객체를 실제로 삭제시켜야 한다는 점이다.  
 ```c++
