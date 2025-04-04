@@ -1,21 +1,19 @@
 # Alpha Streamer 3.1
 <br>
 
-## C++ Rewrite of Alpha Streamer 3.0 with Boost Library
-<br>
-
 ### C++17 또는 그 이후 버전에서 작동합니다.
 ### boost library 1.71.0 또는 그 이상 버전을 권장합니다.
 <br>
 
 ## 버전 정보
 - 1.0.0(2025.Feb.25) : Play, Pause, Seek, Cam Switching, Hybrid D & S, Looking Sample Control 지원
+- 1.1.0(2025.April.4) : 성능 테스트 완료. RTP 패킷 전송 및 메모리 관리 아키텍처 수정.
 <br><br/><br><br/>
 
 ## 개발 정책
-- Java로 작성된 Alpha Streamer 3.0을 C++로 재작성 합니다. 
-  - Alpha Streamer에서는 클라이언트 1 명당 스레드 7 개를 만들어야 했습니다.
-  - [감당 가능한 동시 접속자 수를 최대치로 늘리는 것을 목표로 개발했습니다.]()
+- Java로 작성된 Alpha Streamer 3.0을 C++로 재작성 합니다.
+  - Alpha Streame 3.0에서는 클라이언트 1 명당 스레드 7 개를 만들어야 했습니다.
+  - [동시 접속 클라이언트들에게 최대한 동일한 성능의 스트리밍을 제공하는 것을 목표로 구현했습니다.]()
 - ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
   - 특정 컴파일러에서만 지원하는 기능은 사용하지 않았습니다(Variable Length Array 등).
 - 멀티 플랫폼에서의 실행을 지원합니다.
@@ -30,7 +28,7 @@
 ## Why C++17 and Boost Libray?
 ### [C++17](https://www.iso.org/standard/68564.html)
   - 고수준의 가독성 높은 코드와 기능들(class, smart pointer, iterator ...)을 이용하면서도 성능에서 손해가 발생하지 않습니다.
-  - std::filesystem 을 지원하는 최초의 모던 C++ 입니다.
+  - std::filesystem, std::optional 을 지원하는 최초의 모던 C++ 입니다.
 ### [Boost Library](https://www.boost.org/)
   - 1999 년 출시 후 현재까지 널리 사용되고 있으며 안정성이 확보된 라이브러리
     - Google, Microsoft, Amazon, Meta, Bloomberg, Goldman Sachs 등에서 사용합니다.
@@ -40,13 +38,13 @@
       - ex : Bjarne Stroustrup, Herb Sutter, Howard Hinnant, Peter Dimov, Thomas Witt, Andrei Alexandrescu ... 
 ### [Boost Library Used in This RTSP Server Implementation](https://github.com/boostorg)
   - [Boost Asio](https://www.boost.org/doc/libs/1_87_0/doc/html/boost_asio/overview/basics.html) : 고성능 Async-Nonblocking 네트워킹 제공
-    - io_context : 새로운 클라이언트가 와도 새로운 스레드를 생성할 필요가 없습니다.
+    - C++ 를 위한 socket을 제공합니다. 
+    - 별도의 스레드 생성 없이, 주기적인 작업을 수행하는 Timer 객체를 만들 수 있습니다.
   - [Boost Strand](https://www.boost.org/doc/libs/1_87_0/doc/html/boost_asio/overview/core/strands.html) : io_context 내 task 간 동기화 수단 제공
     - CPU core 간의 context switching과 cache miss를 줄입니다.
-  - [Boost Pool](https://www.boost.org/doc/libs/1_87_0/libs/pool/doc/html/boost_pool/pool/introduction.html) : 안전한 메모리 관리 수단 제공
-    - object pool : 메모리 누수와 힙 공간 파편화를 방지합니다.
-  - [Boost Lockfree](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html) : 효율적인 thread-safe queue & stack 제공
+  - [Boost Lockfree](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html) : 효율적인 multi pub/sub thread-safe queue 제공
     - non-blocking queue : mutex locking & unlocking 동작이 없습니다.
+    - multi consumers and producers : 다수의 pub/sub 주체들을 지원할 수 있습니다.
 <br><br/><br><br/>
 
 ## 개발환경 셋팅

@@ -9,7 +9,7 @@
 
 namespace C {
     // version
-    constexpr char VER[] = "2.0.0";
+    constexpr char VER[] = "1.1.0";
 
     // class names
     constexpr char MAIN[] = "main";
@@ -31,7 +31,7 @@ namespace C {
     constexpr int THREAD_CNT_PER_WORKER_IO_CONTEXT = 3;
 
     // General constants
-    constexpr char MY_NAME[] = "alphaStreamer-3.1/1.0.0";
+    constexpr char MY_NAME[] = "alphaStreamer-3.1/1.1.0";
     constexpr int FRONT_VIDEO_VID = 0;
     constexpr int REAR_VIDEO_VID = 1;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
