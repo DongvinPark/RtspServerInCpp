@@ -76,6 +76,7 @@ void Session::start() {
 
   // allocate rtp tx only thread
   std::thread([&](){
+    Util::set_thread_priority();
     while (true){
       if (rtspHandlerPtr == nullptr || isToreDown){
         break;
