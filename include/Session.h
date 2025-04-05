@@ -165,7 +165,7 @@ class Session : public std::enable_shared_from_this<Session> {
   void clearRtpQueue();
   void updateReadLastVideoSample();
   void updateReadLastAudioSample();
-  void delaySampleReading();
+  bool isNewSampleAllocatable();
 
   // client aliveness check
   void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);

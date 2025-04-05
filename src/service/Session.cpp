@@ -353,8 +353,7 @@ void Session::onPlayStart(){
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    if (!isPaused && !isToreDown){
-      delaySampleReading();
+    if (!isPaused && !isToreDown && isNewSampleAllocatable()){
       acsHandlerPtr->getNextVideoSample();
     }
   };
@@ -363,8 +362,7 @@ void Session::onPlayStart(){
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
-    if (!isPaused && !isToreDown){
-      delaySampleReading();
+    if (!isPaused && !isToreDown && isNewSampleAllocatable()){
       acsHandlerPtr->getNextAudioSample();
     }
     deleteDanglingRtps();
@@ -386,8 +384,7 @@ void Session::startPlayForCamSwitching() {
 
   // fast transport video frames.
   for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
-    if (!isPaused && !isToreDown){
-      delaySampleReading();
+    if (!isPaused && !isToreDown && isNewSampleAllocatable()){
       acsHandlerPtr->getNextVideoSample();
     }
   }
@@ -396,8 +393,7 @@ void Session::startPlayForCamSwitching() {
   // start normal video tx task.
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    if (!isPaused && !isToreDown){
-      delaySampleReading();
+    if (!isPaused && !isToreDown && isNewSampleAllocatable()){
       acsHandlerPtr->getNextVideoSample();
     }
   };
@@ -608,17 +604,11 @@ void Session::updateReadLastAudioSample(){
   if(readingEndSampleStatusVec.size() == 2) readingEndSampleStatusVec[1] = true;
 }
 
-void Session::delaySampleReading() {
-  // delays sample reading when client's allocated bytes size reaches the limit.
-  // this can delay the OOM(Out Of Memory) kill by OS kernel.
-  while (true) {
-    if (
-      allocatedBytesForSample.load(std::memory_order_relaxed) < C::MAX_CLIENT_BUFFER_SIZE ||
-      isToreDown
-      ) {
-      break;
-    }
+bool Session::isNewSampleAllocatable() {
+  if (allocatedBytesForSample.load(std::memory_order_relaxed) < C::MAX_CLIENT_BUFFER_SIZE) {
+    return true;
   }
+  return false;
 }
 
 void Session::clearRtpQueue() {
