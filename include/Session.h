@@ -165,6 +165,7 @@ class Session : public std::enable_shared_from_this<Session> {
   void clearRtpQueue();
   void updateReadLastVideoSample();
   void updateReadLastAudioSample();
+  void delaySampleReading();
 
   // client aliveness check
   void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);
@@ -239,6 +240,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
   bool isToreDown = false;
   bool isRecordSaved = false;
+  std::atomic<int64_t> allocatedBytesForSample = 0;
 };
 
 #endif //SESSION_H
