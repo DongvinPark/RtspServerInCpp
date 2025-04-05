@@ -12,7 +12,6 @@
 
 ## 개발 정책
 - Java로 작성된 Alpha Streamer 3.0을 C++로 재작성 합니다.
-  - Alpha Streame 3.0에서는 클라이언트 1 명당 스레드 7 개를 만들어야 했습니다.
   - [동시 접속 클라이언트들에게 최대한 동일한 성능의 스트리밍을 제공하는 것을 목표로 구현했습니다.]()
 - ISO C++17 표준(ISO/IEC 14882:2017)을 준수 합니다.
   - 특정 컴파일러에서만 지원하는 기능은 사용하지 않았습니다(Variable Length Array 등).
@@ -194,3 +193,15 @@ sudo chmod +x delete_build_and_run_on_Mchip_macOS.sh
     "version": 4
 }
 ```
+<br><br/><br><br/>
+
+## 성능 테스트 결과
+- 다수의 동시접속자들이 23 Mbps, 30 sec playtime, fps 30의 컨텐츠를 재생했을 때, 각 클라이언트들이 수신한 비디오 샘플 개수의 평균과 표준편차를 비교했습니다.
+- 사용된 EC2는 t2.medium 입니다.
+- 클라이언트 별로 수신한 비디오 샘플의 개수가 많고, 표준편차가 작을수록 좋습니다.
+- 높은 부하가 가해질 때, C++ 버전이 성능의 감소가 Java 버전 대비 천천히 진행되는 것을 알 수 있습니다.
+    - 동시접속 클라이언트 수 별 비디오 샘플 수신 횟수 평균
+    ![Image](https://github.com/user-attachments/assets/59a44c7b-f18a-4748-9048-3b0ea8c7da3f)
+    - 동시접속 클라이언트 수 별 비디오 샘플 수신 횟수의 표준편차
+    ![Image](https://github.com/user-attachments/assets/04fd8540-1973-4c23-ab09-f79a347361eb)
+<br><br/><br><br/>
