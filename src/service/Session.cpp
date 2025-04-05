@@ -81,6 +81,7 @@ void Session::start() {
         break;
       }
       if (rtpQueuePtr->empty()) {
+        // to prevent CPU overuse.
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         continue;
       }
