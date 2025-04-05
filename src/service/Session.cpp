@@ -353,7 +353,7 @@ void Session::onPlayStart(){
 
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    if (!isPaused){
+    if (!isPaused && !isToreDown){
       delaySampleReading();
       acsHandlerPtr->getNextVideoSample();
     }
@@ -363,7 +363,7 @@ void Session::onPlayStart(){
 
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
-    if (!isPaused){
+    if (!isPaused && !isToreDown){
       delaySampleReading();
       acsHandlerPtr->getNextAudioSample();
     }
@@ -386,7 +386,7 @@ void Session::startPlayForCamSwitching() {
 
   // fast transport video frames.
   for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
-    if (!isPaused){
+    if (!isPaused && !isToreDown){
       delaySampleReading();
       acsHandlerPtr->getNextVideoSample();
     }
@@ -396,7 +396,7 @@ void Session::startPlayForCamSwitching() {
   // start normal video tx task.
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
-    if (!isPaused){
+    if (!isPaused && !isToreDown){
       delaySampleReading();
       acsHandlerPtr->getNextVideoSample();
     }
@@ -412,6 +412,7 @@ void Session::startPlayForCamSwitching() {
 }
 
 void Session::onTeardown() {
+  allocatedBytesForSample.store(0);
   isToreDown = true;
   logger->severe("Dongvin, teardown current session. session id : " + sessionId);
   sessionDestroyTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
