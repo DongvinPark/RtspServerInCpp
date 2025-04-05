@@ -100,15 +100,14 @@ void Session::start() {
       logger->severe("Dongvin, sent last video and audio sample. session id : " + sessionId);
       return;
     }
-    // do not close session while testing is in progress.
-    /*if (
+    if (
       Util::getCurrentTimeMillis() - latestOptionsReqTimeMillis
         > C::CLIENT_CONNECTION_LOSS_THRESHOLD_DURATION_MS
     ){
       logger->severe("Dongvin, client connection was lost. shutdown session. id : " + sessionId);
-      onTeardown();
+      Util::delayedExecutorAsyncByThread(C::TEARDOWN_DELAY_MS, [this](){onTeardown();});
       return;
-    }*/
+    }
 
     int32_t sentBit = sentBitsSize;
     sentBitsSize = 0;
@@ -710,7 +709,7 @@ void Session::asyncReceive() {
         std::cout << "\n";
         transmitRtspRes(std::move(bufferPtr));
         if (isTearRes || isErrorRes) {
-          Util::delayedExecutorAsyncByThread(1000, [this](){onTeardown();});
+          Util::delayedExecutorAsyncByThread(C::TEARDOWN_DELAY_MS, [this](){onTeardown();});
           return; // stop receiving rtsp req after shutting down session
         }
       }

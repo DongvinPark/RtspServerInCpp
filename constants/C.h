@@ -48,6 +48,7 @@ namespace C {
     constexpr int SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS = 30000;
     constexpr int SESSION_OBJECT_DELETE_INTERVAL_SEC = 20;
     constexpr int STOPPED_TASK_DELETE_DELAY_MS = 3000;
+    constexpr int TEARDOWN_DELAY_MS = 1000;
 
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
     constexpr int RTP_HEADER_LEN = 12; // Refer to https://datatracker.ietf.org/doc/html/rfc7798

@@ -67,7 +67,7 @@ std::string getContentsRootPath() {
     if (std::getenv("WSL_DISTRO_NAME")) {
         return "/mnt/c/dev/streaming-contents";
     } else {
-        return "/home/ec2-user/streaming-contents"; // for AWS EC2 Linux mounted with AWS Elastic File System.
+        return "/mnt/efs/fs1"; // for AWS EC2 Linux mounted with AWS Elastic File System.
     }
 #elif _WIN32
     return "C:\\dev\\streaming-contents";
