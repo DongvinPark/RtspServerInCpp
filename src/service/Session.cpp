@@ -76,10 +76,13 @@ void Session::start() {
 
   // allocate rtp tx only thread
   std::thread([&](){
-    Util::set_thread_priority();
     while (true){
-      if (rtspHandlerPtr == nullptr || isToreDown){
+      if (rtpQueuePtr == nullptr || isToreDown){
         break;
+      }
+      if (rtpQueuePtr->empty()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        continue;
       }
       if (!isPaused){
         transmitRtp();
