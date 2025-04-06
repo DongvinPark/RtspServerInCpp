@@ -1647,7 +1647,7 @@ acceptor(== server socket의 역할)와 socket은 기존의 메인 io_context에
 
 io_context.run(); 함수는 boost asio work_guard 없이는 작업이 없을 때 곧장 종료돼
 버리므로, io_context.run();을 호출하기 전에 work_guard를 모든 io_context 인스턴스 각각에
-대해서 1 번씩 다 초기하 해줘야 한다. 
+대해서 1 번씩 다 초기화 해줘야 한다. 
 ```
 
 <br><br/>
