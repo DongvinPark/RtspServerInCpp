@@ -1,0 +1,59 @@
+--------------------------------------------------- t2.medium/Java/12C
+Client cnt : 12
+Average: 900.00
+Standard Deviation: 0.00
+
+--------------------------------------------------- t2.medium/C++/12C
+Client cnt : 12
+Average: 900.00
+Standard Deviation: 0.00
+
+--------------------------------------------------- t2.medium/Java/24C
+Client cnt : 24
+Average: 900.00
+Standard Deviation: 0.00
+
+--------------------------------------------------- t2.medium/C++/24C
+Client cnt : 24
+Average: 900.00
+Standard Deviation: 0.00
+
+--------------------------------------------------- t2.medium/Java/36C
+Client cnt : 36
+Average: 900.00
+Standard Deviation: 0.00
+
+--------------------------------------------------- t2.medium/C++/36C
+Client cnt : 36
+Average: 900.00
+Standard Deviation: 0.00
+
+--------------------------------------------------- t2.medium/Java/48C
+Client cnt : 48
+Average: 723.50
+Standard Deviation: 78.52
+
+--------------------------------------------------- t2.medium/C++/48C
+Client cnt : 48
+Average: 782.60
+Standard Deviation: 54.64
+
+--------------------------------------------------- t2.medium/Java/60C
+Client cnt : 60
+Average: 543.28
+Standard Deviation: 71.68
+
+--------------------------------------------------- t2.medium/C++/60C
+Client cnt : 60
+Average: 625.78
+Standard Deviation: 60.62
+
+--------------------------------------------------- t2.medium/Java/72C
+Client cnt : 72
+Average: 479.28
+Standard Deviation: 79.29
+
+--------------------------------------------------- t2.medium/C++/72C
+Client cnt : 72
+Average: 520.47
+Standard Deviation: 64.27
