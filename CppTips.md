@@ -1492,17 +1492,194 @@ int main() {
 | Memory usage      | ✅ Often optimized | ✅ Explicit, but requires careful management |
 | Required for function parameter modification | ✅ Yes | ✅ Yes | 
 
+<br><br/>
+42. boost::pool과 boost::object_pool의 위험성 : Out Of Memory 발생 가능
+    <br> 부스트 라이브러리의 pool과 object_pool은 Bad Access(Segmentation Fault)를 방지해준다.
+    <br> 그러나, 정확하게 사용하지 않으면 메모리 공간의 엄청난 낭비를 초래할 수도 있다.
+    <br> 본 프로젝트에서는 비디오 샘플을 읽어들이기 위한 공간을 3MB로 설정하고 계속 재활용하게 만들려고 했으나, pool의 동작을 정확하게 테스트하지 않고 사용했기에 엄청난 메모리 낭비가 발생했었다.
+    <br> 분명 동시접속 사용자 수가 겨우 36명 정도밖에 안 되는데, Linux kernel에 의한 Out Of Memory 이슈로 자꾸 서버가 강제 종료됐던 것이다. 조사 결과, 1 명당 약 100 MB 씩이나 잡아먹고 있었다.
+    <br> 이 문제는 결국 boost pool과 object_pool을 전혀 사용하지 않고, std::shared_ptr로 할당한 비디오/오디오 샘플을 현재 참조하고 있는 RTP 패킷 객체의 개수를 일일이 추적해서 해결했다. 참조 중인 RTP 패킷의 개수가 0이 된 비디오/오디오 샘플이 표준 라이브러리에 의해 자동으로 회수되게끔 코드를 전면 수정한 것이다.
+    <br> 그 결과, 클라이언트 1 명당 메모리 사용량을 약 4 MB 정도로 대폭 낮출 수 있었다.
+```c++
+boost pool과 object_pool은 Segmentation Fault 예방에는 좋지만,
+충분히 테스트 하지 않고 사용할 경우 매우 많은 메모리 공간을 낭비하게 만들 수 있다. 
+
+boost pool와 object_pool의 기본 동작은 다음과 같다.
+
+pool 과 object pool은 기본적으로 생성 직후 1 개의 chunk를 할당하며,
+1 개의 chunk 안에는 32개의 object가 들어갈 수 있는 공간이 할당된다.
+
+1 개의 chuck에 32개의 객체가 있고, 1 객체당 3MB를 할당했으니 
+클라이언트 1 명당 당연하게도 100 MB 가까운 메모리를 잡아먹은 것이다.
+
+pool.set_next_size(1);
+이렇게 할당하는 것은 pool 생성 이후에 공간이 부족해질 경우, object 1 개에 해당하는
+사이즈만큼만 추가 할당하게 만드는 것이다.
+처음 pool, object_pool이 생성될 때 32개의 객체들이 들어갈 공간을 할당하는 것을
+막아주는 것이 아니다.
+
+그리고 이것을 고려해서 pool, object_pool이 생성된 직후
+
+최초의 pool.construct();가 호출되기 이전에 pool.set_next_size(1);를 호출하고,
+
+최초의 object_pool.construct();가 호출되지 이전에 object_pool.set_next_size(1);를
+호출하더라도,
+아래의 43. 번 팁에서 설명할 valgrind를 사용해서 검사했을 때,
+클라이언트 1 명당 메모리 소모량이 30~40 MB로 여전히 매우 높았다.
+
+pool, object_pool이 최초 생성 직후부터 오직 1개의 chunk만을 할당하고,
+각 chunk 별로 1 개의 객체만 할당하게 만들기 위해서는 최초의 .construt();가
+호출되기 이전에
+boost::object_pool<MyObject> pool(boost::default_user_allocator_new_delete(), 1);
+이런 식으로 초기화 해야 한다.
+
+추가로, pool과 object_pool에서는 .destroy()를 명시적으로 호출해주지 않으면
+할당된 메모리가 회수되지 않으며,
+.free() 함수는 할당했던 메모리를 실제로 회수하는 것이 아니라, 단지 '사용 가능하다'라고
+마킹만 해두는 함수다.
+```
+
+<br><br/>
+43. C/C++ 프로그램의 메모리 사용량을 추적하고, 관련 이슈를 진단하는 방법
+    <br> valgrind를 사용하면 C/C++ 프로그램의 메모리 사용량을 시간의 흐름에 따라서 추적할 수 있다.
+    <br> 그리고 이것을 그래프로 나타낼 수 있다.
+    <br> 본 프로젝트를 Amazon Linux EC2에서 성능테스트를 진행하면서 실시한 메모리 검사 방법을 소개한다.
+```shell
+valgrind를 설치해야 한다. Chat GPT에게 물어보면 된다.
+메모리 검사를 진행하기 전에, /tmp 디렉토리에 대한 쓰기 권한을 허용해 줘야 한다.
+그후, 아래의 두 가지 명령어를 실행한다.
+sudo chmod 777 .
+sudo chmod 777 /tmp
+
+./fast_build_and_run_for_dev_linux_foreground.sh
+명령어로 본 프로잭트를 실행했다가 Ctrl + C 키로 종료시킨 후,
+build 디렉토리로 이동한다. 해당 디렉토리 안에는
+AlphaStreamer3.1cpp 라는 executable binary 파일이 생성돼 있을 것이다.
+
+그 후,
+valgrind --tool=massif --massif-out-file=/tmp/massif_output_1client2.txt ./AlphaStreamer3.1Cpp
+명령어를 실행한후, 성능 테스트를 진행하고 Ctrl + C 키를 눌러서 테스트를 종료한다.
+
+그 다음,
+ms_print /tmp/massif_output_1client2.txt | less > result.txt
+명령어를 실행해서 그래프 데이터를 .txt 형태로 저장한다.
+
+메모리 사용량 그래프를 출력해본다.
+cat result.txt
+```
+```text
+>>> 아래의 result.txt 출력 결과는클라이언트가 1 명일 때, AlphaStreamer 3.1 서버 전체의
+ 메모리 사용량을 그래프로 나타낸 것이다.
+Y축은 MB 단위로 표현한 메모리 사용량이고,
+X축은 실행된 CPU 명령어의 개수를 (1백만 개) 단위로 표시한 '시간축'이다.
+#,@,: 등의 기호가 보이는데, 각각이 의미하는 바는 GPT에게 물어본 결과, 다음과 같다.
+# (sharp):
+Total memory allocated on the heap including heap overhead
+(actual malloc'd + allocator metadata).
+
+@ (at):
+Memory allocated directly by the user
+(i.e., what your code requested via new, malloc, etc.).
+>>> std::make_shared<T>를 사용했다면, 여기에 기록된다.
+
+: (colon):
+Represents memory allocations from individual call stacks.
+Each colon corresponds to a specific allocation stack.
+More colons = more contributing call stacks.
+
+* (asterisk) [not shown in your graph but sometimes appears]:
+If memory grows rapidly or peaks sharply, * can represent overflowed/condensed graph points (compression).
+
+[root@ip-172-31-1-183 build]# cat result.txt
+--------------------------------------------------------------------------------
+Command:            ./AlphaStreamer3.1Cpp
+Massif arguments:   --massif-out-file=/tmp/massif_output_1client2.txt
+ms_print arguments: /tmp/massif_output_1client2.txt
+--------------------------------------------------------------------------------
 
 
+    MB
+4.017^                  #
+     |                  #                                @   :
+     |                  #                                @   :            :
+     |                  #       :                        @   :   :    :   :
+     |             @    #       :       :       ::  ::   @   :   :    :  ::
+     |             @    #       :    :  :       :   :    @   :   :    :  ::
+     |             @    #       :    :  :       :   :    @   :   :   ::  ::
+     |             @    #   :   :    :  :   :   :   :    @   :   ::  ::  ::
+     |         @@  @    #   :   :    :  :   :   :   :    @   :   ::  ::  ::
+     |         @   @    #  :: : :    :  :   :   :   :    @   :   ::  ::  ::  :
+     |         @ ::@::::#:@::@::::::::::::::::::: ::: :::@::::@:::@::::@::::@:
+     |         @ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |        :@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |       @:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |     : @:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |    @::@:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |    @::@:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |   :@::@:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     |  @:@::@:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+     | :@:@::@:@ ::@::: #:@::@::::::::::::::::::: ::: : :@::::@:::@::::@::::@:
+   0 +----------------------------------------------------------------------->Mi
+     0                                                                   653.6
 
+Number of snapshots: 97
+ Detailed snapshots: [2, 4, 7, 9, 12, 16 (peak), 19, 22, 52, 62, 72, 82, 92]
+ 
+ ... 후략
+```
 
+<br><br/>
+44. boost::asio::io_context pool 도입의 필요성과 방법
+    <br> io_context는 boost::asio의 핵심이다. 네트워킹(read, write, async_read, async_write), steady timer, strand, work guard 등이 전부 여기에 의존한다.
+    <br> 그렇기 때문에 모든 task들을 전부 io_context에 의존할 경우 오히려 성능이 급격하게 하락하는 문제가 발생한다. io_context는 task 큐이자, scheculer이자, dispatcher이기 때문에 과도하게 task들이 몰릴 경우 task 큐가 쌓이면서 딜레이가 발생할 수밖에 없기 때문이다.
+    <br> 성능 테스트 이전에는 모든 task들을 전부 1 개의 단일한 io_context에서 처리하는 구조였는데, 이 경우 동시접속자 수가 t2.medium ec2에서 36명을 초과하자 성능이 급격하게 낮아졌다.
+    <br> 이 문제는 단순히 io_conext.run()을 돌리는 스레드의 개수를 늘린다고 해서 해결되지 않는다.
+    <br> io_context 인스턴스의 숫자 자체를 늘려서 io_context pool을 만들고, 각종 task들을 이 pool에 균등하게 분배시켜야 하며,
+    <br> rtp 패킷 전송과 같이 매우 많은 회수로 실행시켜야 하는 task는 io_context가 아니라 아예 별도의 detached while loop 스레드에서 실행되게 만들어서 io_context의 부하를 줄여야 해결된다.
+```c++
+자세한 구현은 main.cpp, Server.cpp, Session.cpp 코드를 참조한다.
+이때 중요한 것은, acceptor, socket을 만드는 것에 사용되는 '메인 io_context'는
+절대 건드리지 말고 새로운 io_context pool만을 추가로 생성자에 전달해야 한다.
 
+acceptor(== server socket의 역할)와 socket은 기존의 메인 io_context에서 만들게
+놔두고, socket 생성 후 해당 소켓 또는 다른 steady timer(본 프로젝트에서는 PeriodicTask)
+를 이용하는 task들을 메인 io_context가 아니라, io_context pool에게 전달하는 것이다.
 
+io_context.run(); 함수는 boost asio work_guard 없이는 작업이 없을 때 곧장 종료돼
+버리므로, io_context.run();을 호출하기 전에 work_guard를 모든 io_context 인스턴스 각각에
+대해서 1 번씩 다 초기하 해줘야 한다. 
+```
 
+<br><br/>
+45. while(true){transmitRtp();} 루프의 위험성
+    <br> 이런 루프를 busy-wait loop 또는 spin loop라고 한다.
+    <br> 이 루프에서는 blocking, 또는 sleep 동작이 없다.
+    <br> 즉, 이 루프를 실행시키는 CPU core가 다른 일을 할 수 있도록 놔주는 시간이 전혀 없다는 뜻이다.
+    <br> 그 결과, 다른 일을 해야 하는 CPU가 현재의 루프에 묶이게 되면서 다은 일들의 실행이 죄다 뒤려 밀려나는 극도로 비효율적인 상황이 발생한다.
+    <br> 이러한 상황을 막기 위해서는 C++의 경우 condition variable과 mutex를 이용해서 blocking을 구현하거나, 이 프로젝트에서와 같이 queue가 비어 있을 경우 의도적으로 while 루프를 실행시키는 스레드를 잠들게 만들어야 한다.
+    <br> 결론적으로, 'blocking 동작'이 무조건 비효율적인 동작은 아닌 것이다.
+```c++
+자세한 구현은 Session.cpp 내의
+void Session::start() {...} 함수 내부의 detached 된 while loop 를 참고한다.
+```
 
+<br><br/>
+46. 스트리밍 서버에서 근본적으로 OOM(Out Of Memory) 문제를 예방하는 방법
+    <br> 결론적으로, 비디오/오디오 샘플을 std::shared_ptr 등의 방법으로 할당을 했다면, 할당한 byte 수를 기록해놨다가 일정 기준을 넘어가면 할당을 금지키시는 것이다.
+    <br> 물론, 할당한 byte 숫자 값은 RTP 패킷을 전송완료 했다면 그만큼 감소시켜야 한다.
+```c++
+Session.h 내의 
+  std::atomic<int64_t> allocatedBytesForSample = 0;
+라는 멤버 변수가 사용되고 있는 코드들을 추적해보면 된다.
 
+해당 allocatedBytesForSample 값이 일정 기준을 초과할 경우, 비디오/오디오 샘플 리딩 작업을
+시작하지 않게 구현하였다.
 
+이러한 제한 사항이 없을 경우, 동시접속자들이 급증해서 서버가 rtp 패킷들을 전송하는 속도가 
+느려지고, rtp 패킷들을 만들기 위해서 할당한 비디오/오디오 샘플 데이터가 전송되기를
+대기하면서 메모리에 점점 쌓이게 된다. 한번 할당한 비디오/오디오 샘플은 세션이 종료되거나,
+전송이 완료될 때까지 메모리에서 회수해서는 안 되기 때문이다.
 
-
-
-
+다수의 클랑이언트 각각에 대해서 이러한 '메모리 누적 현상'이 지속될 경우, 서버는 결국
+Out Of Memory 이슈로 OS kernel에 의해서 강제종료 된다.
+```
