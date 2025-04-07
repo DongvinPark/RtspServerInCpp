@@ -1497,8 +1497,8 @@ int main() {
     <br> 부스트 라이브러리의 pool과 object_pool은 Bad Access(Segmentation Fault)를 방지해준다.
     <br> 그러나, 정확하게 사용하지 않으면 메모리 공간의 엄청난 낭비를 초래할 수도 있다.
     <br> 본 프로젝트에서는 비디오 샘플을 읽어들이기 위한 공간을 3MB로 설정하고 계속 재활용하게 만들려고 했으나, pool의 동작을 정확하게 테스트하지 않고 사용했기에 엄청난 메모리 낭비가 발생했었다.
-    <br> 분명 동시접속 사용자 수가 겨우 36명 정도밖에 안 되는데, Linux kernel에 의한 Out Of Memory 이슈로 자꾸 서버가 강제 종료됐던 것이다. 조사 결과, 1 명당 약 100 MB 씩이나 잡아먹고 있었다.
-    <br> 이 문제는 결국 boost pool과 object_pool을 전혀 사용하지 않고, std::shared_ptr로 할당한 비디오/오디오 샘플을 현재 참조하고 있는 RTP 패킷 객체의 개수를 일일이 추적해서 해결했다. 참조 중인 RTP 패킷의 개수가 0이 된 비디오/오디오 샘플이 표준 라이브러리에 의해 자동으로 회수되게끔 코드를 전면 수정한 것이다.
+    <br> 분명 동시접속 사용자 수가 겨우 36명 정도밖에 안 되는데, Out Of Memory 이슈로 Linux kernel에 의해서 자꾸 서버가 강제 종료됐던 것이다. 조사 결과, 1 명당 약 100 MB 씩이나 잡아먹고 있었다.
+    <br> 이 문제는 결국 boost pool과 object_pool을 전혀 사용하지 않고, std::shared_ptr로 할당한 비디오/오디오 샘플을 참조하고 있는 RTP 패킷 객체의 개수를 일일이 추적해서 해결했다. 참조 중인 RTP 패킷의 개수가 0이 된 비디오/오디오 샘플이 표준 라이브러리에 의해 자동으로 회수되게끔 코드를 전면 수정한 것이다.
     <br> 그 결과, 클라이언트 1 명당 메모리 사용량을 약 4 MB 정도로 대폭 낮출 수 있었다.
 ```c++
 boost pool과 object_pool은 Segmentation Fault 예방에는 좋지만,
@@ -1631,7 +1631,7 @@ Number of snapshots: 97
 <br><br/>
 44. boost::asio::io_context pool 도입의 필요성과 방법
     <br> io_context는 boost::asio의 핵심이다. 네트워킹(read, write, async_read, async_write), steady timer, strand, work guard 등이 전부 여기에 의존한다.
-    <br> 그렇기 때문에 모든 task들을 전부 io_context에 의존할 경우 오히려 성능이 급격하게 하락하는 문제가 발생한다. io_context는 task 큐이자, scheculer이자, dispatcher이기 때문에 과도하게 task들이 몰릴 경우 task 큐가 쌓이면서 딜레이가 발생할 수밖에 없기 때문이다.
+    <br> 그렇기 때문에 모든 task들이 전부 io_context에 의존할 경우 오히려 성능이 급격하게 하락하는 문제가 발생한다. io_context는 task 큐이자, scheculer이자, dispatcher이기 때문에 과도하게 task들이 몰릴 경우 task 큐가 쌓이면서 딜레이가 발생할 수밖에 없기 때문이다.
     <br> 성능 테스트 이전에는 모든 task들을 전부 1 개의 단일한 io_context에서 처리하는 구조였는데, 이 경우 동시접속자 수가 t2.medium ec2에서 36명을 초과하자 성능이 급격하게 낮아졌다.
     <br> 이 문제는 단순히 io_conext.run()을 돌리는 스레드의 개수를 늘린다고 해서 해결되지 않는다.
     <br> io_context 인스턴스의 숫자 자체를 늘려서 io_context pool을 만들고, 각종 task들을 이 pool에 균등하게 분배시켜야 하며,
@@ -1665,8 +1665,8 @@ void Session::start() {...} 함수 내부의 detached 된 while loop 를 참고�
 
 <br><br/>
 46. 스트리밍 서버에서 근본적으로 OOM(Out Of Memory) 문제를 예방하는 방법
-    <br> 결론적으로, 비디오/오디오 샘플을 std::shared_ptr 등의 방법으로 할당을 했다면, 할당한 byte 수를 기록해놨다가 일정 기준을 넘어가면 할당을 금지키시는 것이다.
-    <br> 물론, 할당한 byte 숫자 값은 RTP 패킷을 전송완료 했다면 그만큼 감소시켜야 한다.
+    <br> 결론적으로, 비디오/오디오 샘플을 std::shared_ptr 등의 방법으로 할당하면서 byte 수를 기록해놨다가 일정 기준을 넘어가면 할당을 금지키시는 것이다.
+    <br> 물론, RTP 패킷을 전송완료 했다면 byte 숫자 값을 그만큼 감소시켜야 한다.
 ```c++
 Session.h 내의 
   std::atomic<int64_t> allocatedBytesForSample = 0;
@@ -1675,11 +1675,12 @@ Session.h 내의
 해당 allocatedBytesForSample 값이 일정 기준을 초과할 경우, 비디오/오디오 샘플 리딩 작업을
 시작하지 않게 구현하였다.
 
-이러한 제한 사항이 없을 경우, 동시접속자들이 급증해서 서버가 rtp 패킷들을 전송하는 속도가 
-느려지고, rtp 패킷들을 만들기 위해서 할당한 비디오/오디오 샘플 데이터가 전송되기를
-대기하면서 메모리에 점점 쌓이게 된다. 한번 할당한 비디오/오디오 샘플은 세션이 종료되거나,
-전송이 완료될 때까지 메모리에서 회수해서는 안 되기 때문이다.
+이러한 제한 사항이 없을 경우,
+동시접속자들이 급증해서 서버가 rtp 패킷들을 전송하는 속도가  느려지고,
+rtp 패킷들을 만들기 위해서 할당한 비디오/오디오 샘플 데이터가 전송되기를 대기하면서
+메모리에 비디오/오디오 데이터가 점점 쌓이게 된다.
+한번 할당한 비디오/오디오 샘플은 세션이 종료되거나, 전송이 완료될 때까지 메모리에서 회수해서는 안 되기 때문이다.
 
 다수의 클랑이언트 각각에 대해서 이러한 '메모리 누적 현상'이 지속될 경우, 서버는 결국
-Out Of Memory 이슈로 OS kernel에 의해서 강제종료 된다.
+Out Of Memory 이슈를 감지한 OS kernel에 의해서 강제종료 된다.
 ```
