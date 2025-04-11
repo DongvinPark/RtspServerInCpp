@@ -57,6 +57,13 @@
     - multi consumers and producers : 다수의 pub/sub 주체들을 지원할 수 있습니다.
 <br><br/><br><br/>
 
+## 재생 아키텍처
+<img width="820" alt="Image" src="https://github.com/user-attachments/assets/5322692b-84c3-4ac0-9414-2684d15267a6" /><br>
+- 원본 컨텐츠를 Transcoder로 변환하여 AWS EFS(Elastic File System)에 업로드 합니다.
+- EFS와 마운트된 EC2에서 AlphaStreamer 3.1 RTSP 스트리밍 서버가 동작합니다.
+- 클라이언트 디바이스 내부에서 작동하는 VR Player 인 AVPT 6.1이 RTSP 서버와 통신하면서 RTP 패킷을 수신합니다.
+<br><br/><br><br/>
+
 ## 개발환경 셋팅
 - 각자의 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
   - Windows
