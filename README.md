@@ -77,7 +77,7 @@
 
 ## 개발환경 셋팅
 - 각자의 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
-- 각 운영체제 & IDE 종류별 해당 프로젝트 실행 방법은 [이 문서]()를 참조합니다.
+- 각 운영체제 & IDE 종류별 해당 프로젝트 실행 방법은 [SetUp.md](https://github.com/DongvinPark/RtspServerInCpp/blob/main/SetUp.md) 문서를 참조합니다.
   - Windows
     - Visual Studio 커뮤니티 에디션을 설치한 후, vcpkg로 boost 라이브러리를 설치하고 둘을 링크 해줍니다.
   - macOS
