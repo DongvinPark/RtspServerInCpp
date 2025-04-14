@@ -826,7 +826,7 @@ int main() {
     }
 
     logger->warning("=================================================================");
-    logger->warning("Dongvin, C++ AlphaStreamer3.1 RTSP Server SHUTS DOWN gracefully.");
+    logger->warning("Dongvin, C++ RTSP Server SHUTS DOWN gracefully.");
     logger->warning("=================================================================");
     return 0;
 }
@@ -1554,10 +1554,10 @@ sudo chmod 777 /tmp
 ./fast_build_and_run_for_dev_linux_foreground.sh
 명령어로 본 프로잭트를 실행했다가 Ctrl + C 키로 종료시킨 후,
 build 디렉토리로 이동한다. 해당 디렉토리 안에는
-AlphaStreamer3.1cpp 라는 executable binary 파일이 생성돼 있을 것이다.
+RtspServerInCpp 라는 executable binary 파일이 생성돼 있을 것이다.
 
 그 후,
-valgrind --tool=massif --massif-out-file=/tmp/massif_output_1client2.txt ./AlphaStreamer3.1Cpp
+valgrind --tool=massif --massif-out-file=/tmp/massif_output_1client2.txt ./RtspServerInCpp
 명령어를 실행한후, 성능 테스트를 진행하고 Ctrl + C 키를 눌러서 테스트를 종료한다.
 
 그 다음,
@@ -1568,7 +1568,7 @@ ms_print /tmp/massif_output_1client2.txt | less > result.txt
 cat result.txt
 ```
 ```text
->>> 아래의 result.txt 출력 결과는클라이언트가 1 명일 때, AlphaStreamer 3.1 서버 전체의
+>>> 아래의 result.txt 출력 결과는클라이언트가 1 명일 때, RtspServerInCpp 서버 전체의
  메모리 사용량을 그래프로 나타낸 것이다.
 Y축은 MB 단위로 표현한 메모리 사용량이고,
 X축은 실행된 CPU 명령어의 개수를 (1백만 개) 단위로 표시한 '시간축'이다.
@@ -1592,7 +1592,7 @@ If memory grows rapidly or peaks sharply, * can represent overflowed/condensed g
 
 [root@ip-172-31-1-183 build]# cat result.txt
 --------------------------------------------------------------------------------
-Command:            ./AlphaStreamer3.1Cpp
+Command:            ./RtspServerInCpp
 Massif arguments:   --massif-out-file=/tmp/massif_output_1client2.txt
 ms_print arguments: /tmp/massif_output_1client2.txt
 --------------------------------------------------------------------------------

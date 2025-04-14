@@ -36,7 +36,7 @@ Server::~Server() {
 }
 
 void Server::start() {
-  logger->info3("Dongvin C++ AlphaStreamer3.1 starts!");
+  logger->info3("Dongvin C++ Rtsp Server starts!");
   sntpTimeProvider.start();
 
   removeClosedSessionTask.setTask([&](){

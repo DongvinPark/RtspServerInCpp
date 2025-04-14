@@ -20,4 +20,4 @@ cmake ..
 make
 
 # Run the compiled executable
-./AlphaStreamer3.1Cpp
+./RtspServerInCpp

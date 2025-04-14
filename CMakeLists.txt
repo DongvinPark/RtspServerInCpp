@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Project name and version
-project(AlphaStreamer3.1Cpp VERSION 1.0)
+project(RtspServerInCpp VERSION 1.0)
 
 # Set C++ standard to 17.
 set(CMAKE_CXX_STANDARD 17)
@@ -37,7 +37,7 @@ endif()
 include_directories(${Boost_INCLUDE_DIRS} src)
 
 # Add the executable
-add_executable(AlphaStreamer3.1Cpp
+add_executable(RtspServerInCpp
         src/main.cpp
         include/Logger.h
         src/util/Logger.cpp
@@ -85,4 +85,4 @@ add_executable(AlphaStreamer3.1Cpp
 )
 
 # Link Boost libraries and platform-specific libraries
-target_link_libraries(AlphaStreamer3.1Cpp ${Boost_LIBRARIES} ${PLATFORM_LIBS})
+target_link_libraries(RtspServerInCpp ${Boost_LIBRARIES} ${PLATFORM_LIBS})

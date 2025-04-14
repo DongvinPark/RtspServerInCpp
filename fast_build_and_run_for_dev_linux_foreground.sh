@@ -2,7 +2,7 @@
 
 # Define variables
 BUILD_DIR="build"
-EXECUTABLE_NAME="AlphaStreamer3.1Cpp"  # Replace with your actual executable name
+EXECUTABLE_NAME="RtspServerInCpp"  # Replace with your actual executable name
 
 # Step 1: Ensure the build directory exists
 if [ ! -d "$BUILD_DIR" ]; then
