@@ -58,7 +58,7 @@
 <br><br/><br><br/>
 
 ## 재생 아키텍처
-<img width="820" alt="Image" src="https://github.com/user-attachments/assets/5322692b-84c3-4ac0-9414-2684d15267a6" /><br>
+<img width="815" alt="Image" src="https://github.com/user-attachments/assets/4461a3a1-63eb-4460-ac8e-18662e1d49b0" /><br>
 - 원본 컨텐츠를 Transcoder로 변환하여 AWS EFS(Elastic File System)에 업로드 합니다.
 - EFS와 마운트된 EC2에서 RTSP 스트리밍 서버가 동작합니다.
 - 클라이언트 디바이스 내부에서 작동하는 VR Player 인 AVPT 6.1이 RTSP 서버와 통신하면서 RTP 패킷을 수신합니다.
