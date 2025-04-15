@@ -75,7 +75,7 @@
       ![Image](https://github.com/user-attachments/assets/04fd8540-1973-4c23-ab09-f79a347361eb)
 <br><br/><br><br/>
 
-## 개발환경 셋팅
+## Install Dependencies
 - 각자의 컴퓨터에 맞는 C++ 컴파일러, boost 라이브러리가 설치돼 있어야 합니다.
 - 각 운영체제 & IDE 종류별 해당 프로젝트 실행 방법은 [SetUp.md](https://github.com/DongvinPark/RtspServerInCpp/blob/main/SetUp.md) 문서를 참조합니다.
   - Windows
