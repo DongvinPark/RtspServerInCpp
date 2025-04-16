@@ -65,7 +65,7 @@
 <br><br/><br><br/>
 
 ## 프로젝트 내부 구조
-- 이미지 첨부 예정
+<img width="879" alt="Image" src="https://github.com/user-attachments/assets/31875ef2-fb14-4586-af59-937aa6142564" />
 <br><br/><br><br/>
 
 ## 성능 테스트 결과
