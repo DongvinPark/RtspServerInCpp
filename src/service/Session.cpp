@@ -580,8 +580,15 @@ void Session::closeSocket() {
 }
 
 void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
-  boost::system::error_code ignored_error;
-  boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
+  boost::asio::async_write(
+    *socketPtr,
+    boost::asio::buffer(bufPtr->buf),
+    [](const boost::system::error_code& ec, std::size_t bytes_transferred){
+      if (ec){
+        std::cerr << "fail to send rtsp res!";
+      }
+    }
+  );
   sentBitsSize += (bufPtr->len * 8);
 }
 
