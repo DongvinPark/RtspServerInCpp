@@ -104,9 +104,9 @@ void Session::start() {
       Util::getCurrentTimeMillis() - latestOptionsReqTimeMillis
         > C::CLIENT_CONNECTION_LOSS_THRESHOLD_DURATION_MS
     ){
-      logger->severe("Dongvin, client connection was lost. shutdown session. id : " + sessionId);
+      /*logger->severe("Dongvin, client connection was lost. shutdown session. id : " + sessionId);
       Util::delayedExecutorAsyncByThread(C::TEARDOWN_DELAY_MS, [this](){onTeardown();});
-      return;
+      return;*/
     }
 
     int32_t sentBit = sentBitsSize;
