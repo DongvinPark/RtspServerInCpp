@@ -5,7 +5,7 @@
 
 #include "../constants/Util.h"
 #include "../constants/C.h"
-#include "../include/AcsHandler.h"
+#include "../include/StreamHandler.h"
 #include "../include/RtspHandler.h"
 #include "../include/RtpHandler.h"
 
@@ -66,11 +66,11 @@ void Server::start() {
       );
 
       // used weak pointer to break the circular dependencies
-      auto inputAcsHandlerPtr = std::make_shared<AcsHandler>(sessionId, sessionPtr, contentsStorage);
-      auto rtspHandlerPtr = std::make_shared<RtspHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
-      auto rtpHandlerPtr = std::make_shared<RtpHandler>(sessionId, sessionPtr, inputAcsHandlerPtr);
+      auto inputStreamHandlerPtr = std::make_shared<StreamHandler>(sessionId, sessionPtr, contentsStorage);
+      auto rtspHandlerPtr = std::make_shared<RtspHandler>(sessionId, sessionPtr, inputStreamHandlerPtr);
+      auto rtpHandlerPtr = std::make_shared<RtpHandler>(sessionId, sessionPtr, inputStreamHandlerPtr);
 
-      sessionPtr->setAcsHandlerPtr(inputAcsHandlerPtr);
+      sessionPtr->setStreamHandlerPtr(inputStreamHandlerPtr);
       sessionPtr->setRtspHandlerPtr(rtspHandlerPtr);
       sessionPtr->setRtpHandlerPtr(rtpHandlerPtr);
       sessionPtr->start();

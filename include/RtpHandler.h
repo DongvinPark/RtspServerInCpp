@@ -8,7 +8,7 @@
 #include "../include/VideoAccess.h"
 
 class Session;
-class AcsHandler;
+class StreamHandler;
 
 struct Sample;
 
@@ -20,7 +20,7 @@ public:
   explicit RtpHandler(
     std::string inputSessionId,
     std::weak_ptr<Session> inputParentSessionPtr,
-    std::weak_ptr<AcsHandler> inputAcsHandlerPtr
+    std::weak_ptr<StreamHandler> inputStreamHandlerPtr
   );
   ~RtpHandler();
 
@@ -47,7 +47,7 @@ private:
   std::shared_ptr<Logger> logger;
   std::string sessionId;
   std::weak_ptr<Session> parentSessionPtr;
-  std::weak_ptr<AcsHandler> acsHandlerPtr;
+  std::weak_ptr<StreamHandler> streamHandlerPtr;
 
   // usage example
   // std::ifstream& cam0FrontVFileStream = map.at(0).at(0);

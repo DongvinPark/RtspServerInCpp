@@ -49,9 +49,9 @@ Session::~Session(){
       rtspHandlerPtr.reset();
       rtspHandlerPtr = nullptr;
     }
-    if (acsHandlerPtr != nullptr){
-      acsHandlerPtr.reset();
-      acsHandlerPtr = nullptr;
+    if (streamHandlerPtr != nullptr){
+      streamHandlerPtr.reset();
+      streamHandlerPtr = nullptr;
     }
     if (rtpHandlerPtr != nullptr){
       rtpHandlerPtr.reset();
@@ -130,8 +130,8 @@ boost::asio::io_context& Session::getIoContext(){
   return io_context;
 }
 
-void Session::setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr){
-  this->acsHandlerPtr = std::move(inputAcsHandlerPtr);
+void Session::setStreamHandlerPtr(std::shared_ptr<StreamHandler> inputStreamHandlerPtr){
+  this->streamHandlerPtr = std::move(inputStreamHandlerPtr);
 }
 
 void Session::setRtspHandlerPtr(std::shared_ptr<RtspHandler> inputRtspHandlerPtr){
@@ -298,15 +298,15 @@ void Session::handleRtspRequest(Buffer& buf) {
 bool Session::onCid(std::string inputCid) {
   logger->warning("Dongvin, requested content : " + inputCid + ", session id : " + sessionId);
   ContentFileMeta& fileReader = contentsStorage.getCid(inputCid);
-  return acsHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
+  return streamHandlerPtr->setReaderAndContentTitle(fileReader, inputCid);
 }
 
 
 void Session::onChannel(int trackId, std::vector<int> channels) {
-  if (acsHandlerPtr) {
-    acsHandlerPtr->setChannel(trackId, channels);
+  if (streamHandlerPtr) {
+    streamHandlerPtr->setChannel(trackId, channels);
   } else {
-    logger->severe("Dongvin, No acs handler found!");
+    logger->severe("Dongvin, No stream handler found!");
   }
 }
 
@@ -315,7 +315,7 @@ void Session::onUserRequestingPlayTime(std::vector<float> playTimeSec) {
     "Dongvin, cid: " + cid + ", play starting point : "
     + std::to_string(playTimeSec[0]) + "," + std::to_string(playTimeSec[1]) + " (sec)"
   );
-  acsHandlerPtr->initUserRequestingPlaytime(playTimeSec);
+  streamHandlerPtr->initUserRequestingPlaytime(playTimeSec);
 }
 
 void Session::onCameraChange(
@@ -328,19 +328,19 @@ void Session::onCameraChange(
     return;
   }
   // stop sending rtp and restart with the new position of rtp
-  acsHandlerPtr->setCamId(nextCam);
+  streamHandlerPtr->setCamId(nextCam);
   int taIdx = static_cast<int>(switchingTimeInfo[1]);
   bool needToStopAudio{taIdx != C::INVALID};
 
   stopCurrentMediaReadingTasks(needToStopAudio);
-  acsHandlerPtr->findNextSampleForSwitching(nextId, switchingTimeInfo);
+  streamHandlerPtr->findNextSampleForSwitching(nextId, switchingTimeInfo);
   startPlayForCamSwitching();
 }
 
 void Session::onPlayStart(){
   // need to adjust sample reading and tx interval. if didn't, video stuttering occurs.
-  int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
-  int64_t audioInterval = acsHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
+  int64_t videoInterval = streamHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+  int64_t audioInterval = streamHandlerPtr->getUnitFrameTimeUs(C::AUDIO_ID)/1000;
 
   if (videoInterval == C::INVALID || audioInterval == C::INVALID) {
     logger->severe(
@@ -353,7 +353,7 @@ void Session::onPlayStart(){
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused && !isToreDown && isNewSampleAllocatable()){
-      acsHandlerPtr->getNextVideoSample();
+      streamHandlerPtr->getNextVideoSample();
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(*workerIoContextPtr, strand, vInterval, videoSampleReadingTask);
@@ -362,7 +362,7 @@ void Session::onPlayStart(){
   std::chrono::milliseconds aInterval(audioInterval);
   auto audioSampleReadingTask = [&](){
     if (!isPaused && !isToreDown && isNewSampleAllocatable()){
-      acsHandlerPtr->getNextAudioSample();
+      streamHandlerPtr->getNextAudioSample();
     }
     deleteDanglingRtps();
   };
@@ -379,12 +379,12 @@ void Session::onPlayStart(){
 
 void Session::startPlayForCamSwitching() {
   logger->info("Dongvin, start cam switching!");
-  int64_t videoInterval = acsHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
+  int64_t videoInterval = streamHandlerPtr->getUnitFrameTimeUs(C::VIDEO_ID)/1000;
 
   // fast transport video frames.
   for (int i = 0; i < C::FAST_TX_FACTOR_FOR_CAM_SWITCHING; ++i){
     if (!isPaused && !isToreDown && isNewSampleAllocatable()){
-      acsHandlerPtr->getNextVideoSample();
+      streamHandlerPtr->getNextVideoSample();
     }
   }
   logger->info2("Dongvin, fast transported video samples. cnt : " + std::to_string(C::FAST_TX_FACTOR_FOR_CAM_SWITCHING));
@@ -393,7 +393,7 @@ void Session::startPlayForCamSwitching() {
   std::chrono::milliseconds vInterval(videoInterval);
   auto videoSampleReadingTask = [&](){
     if (!isPaused && !isToreDown && isNewSampleAllocatable()){
-      acsHandlerPtr->getNextVideoSample();
+      streamHandlerPtr->getNextVideoSample();
     }
   };
   auto videoTaskPtr = std::make_shared<PeriodicTask>(*workerIoContextPtr, strand, vInterval, videoSampleReadingTask);

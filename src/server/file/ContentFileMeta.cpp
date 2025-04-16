@@ -144,7 +144,7 @@ bool ContentFileMeta::handleCamDirectories(const std::filesystem::path &inputCid
   for (std::filesystem::path camDirectory : camDirectoryList) {
     if (!is_directory(camDirectory)) continue;
     if (camDirectory.filename() == C::HYBRID_META_DIR) continue;
-    bool result = loadAcsFilesInCamDirectories(camDirectory);
+    bool result = loadStreamFilesInCamDirectories(camDirectory);
     if (!result) {
       return false;
     }
@@ -172,24 +172,24 @@ bool ContentFileMeta::handleV0Images(const std::filesystem::path &inputCidDirect
   return !v0Images.empty();
 }
 
-bool ContentFileMeta::loadAcsFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
+bool ContentFileMeta::loadStreamFilesInCamDirectories(const std::filesystem::path &inputCidDirectory) {
   std::string camDirectoryName = inputCidDirectory.filename().string();
   bool isRefCam = (
       camDirectoryName == C::REF_CAM ||
       C::ADAPTIVE_BITRATE_REF_CAM_LIST.at(0).find(camDirectoryName) != std::string::npos
     );
 
-  std::vector<std::filesystem::path> acsFileList;
+  std::vector<std::filesystem::path> streamingFileList;
   for (std::filesystem::path camDirectory : std::filesystem::directory_iterator(inputCidDirectory)) {
-    acsFileList.push_back(camDirectory);
+    streamingFileList.push_back(camDirectory);
   }
 
-  if (acsFileList.empty()) {
-    logger->severe("Dongvin, no acs file available in " + inputCidDirectory.string());
+  if (streamingFileList.empty()) {
+    logger->severe("Dongvin, no streaming(.asv, .asa, ...) file available in " + inputCidDirectory.string());
   }
 
   int fileCnt = 0;
-  for (std::filesystem::path file : acsFileList) {
+  for (std::filesystem::path file : streamingFileList) {
     if (!is_directory(file)) fileCnt++;
   }
   if (fileCnt > C::FILE_NUM_LIMIT) {
@@ -200,7 +200,7 @@ bool ContentFileMeta::loadAcsFilesInCamDirectories(const std::filesystem::path &
   std::filesystem::path config; // default value of config.filename().string() is "" empty string!
   std::filesystem::path audio;
   std::vector<std::filesystem::path> videos;
-  for (std::filesystem::path f : acsFileList) {
+  for (std::filesystem::path f : streamingFileList) {
     if (f.filename().string().find(C::ASC) != std::string::npos) {
       if (!config.filename().string().empty()) {
         logger->warning("Dongvin, multiple asc detected. init by last one.");
@@ -221,7 +221,7 @@ bool ContentFileMeta::loadAcsFilesInCamDirectories(const std::filesystem::path &
       (isRefCam && (config.filename().string().empty() || audio.filename().string().empty())) ||
       (!isRefCam && (!config.filename().string().empty() || !audio.filename().string().empty()))
     ) {
-    logger->severe("No acs file or wrong place in " + inputCidDirectory.filename().string());
+    logger->severe("No .asv file or wrong place in " + inputCidDirectory.filename().string());
     return false;
   }
 
@@ -379,7 +379,7 @@ void ContentFileMeta::loadRtpMemberVideoMetaData(
   std::vector<int64_t> gops = rtpInfo.kv[C::GOP_KEY];
   int gop = static_cast<int>(gops[0]);
 
-  for (const int16_t size : sizes) { // size must start with -1, refer to acs_maker.
+  for (const int16_t size : sizes) { // size must start with -1, refer to transcoder app.
     if (size == C::INVALID) {
       VideoSampleInfo newVSampleInfo{};
       newVSampleInfo.setOffset(offset);

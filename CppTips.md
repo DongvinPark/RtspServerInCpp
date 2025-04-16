@@ -400,7 +400,7 @@ void FileReader::loadRtpMemberVideoMetaData(
 
   // ...
 
-  for (const int16_t size : sizes) { // size must start with -1, refer to acs_maker.
+  for (const int16_t size : sizes) { // size must start with -1, refer to stream_maker.
     if (size == C::INVALID) {
       VideoSampleInfo newVSampleInfo{};
       newVSampleInfo.setOffset(offset);
@@ -840,14 +840,14 @@ int main() {
     <br> 그리고 포인터를 이용해서 참조 관계를 설정할 때는, .h 파일에 대응하는 .cpp 파일도 만들어서 구현을 마무리 지어 놔야 한다. 그렇지 않을 경우, 'undefined reference to ...'라는 컴파일 타임 에러 메시지를 마주치게 된다.
     <br> 마지막으로, 포인터 멤버를 초기화 할 때는 생성자 내부에서 하기보다는 다른 곳에서 하는 것을 추천한다. 직접 해보니 this 포인터를 가지고 std::make_shared를 호출하는 것이 허용되지 않았기 때문이다.
 ```c++
-// 본 프로젝트의 Session, AcsHandler, RtspHandler, RtpHandler가 이러한 관계에 있다.
-// Session은 AcsHandler, RtspHandler, RtpHandler를 멤버 클래스로 두고 있고,
-// AcsHandler, RtspHandler, RtpHandler는 Session의 포인터를 가지고 Session 내의 함수들을 호출해야 한다.
+// 본 프로젝트의 Session, StreamHandler, RtspHandler, RtpHandler가 이러한 관계에 있다.
+// Session은 StreamHandler, RtspHandler, RtpHandler를 멤버 클래스로 두고 있고,
+// StreamHandler, RtspHandler, RtpHandler는 Session의 포인터를 가지고 Session 내의 함수들을 호출해야 한다.
 // 결과적으로 멤버 클래스가 부모 클래스를 참조해야 하는 상황인데, 이때는 멤버 클래스가 부모 포인터를 std::weak_ptr로서 참조해야 한다.
 // std::weak_ptr는 소유권이 없기 때문에 reference count를 증가시키지 않고, 결과적으로 memory leak을 예방할 수 있다.
 // std::weak_ptr는 circular dependencies를 끊고, memory leack를 예방하기 위한 용도로 사용한다.
 
-// 구체적인 코드 구현은 Server.cpp의 start() 함수 내부, AcsHandler의 생성자, RtspHandler의 생성자, RtpHandler의 생성자를 참고한다.
+// 구체적인 코드 구현은 Server.cpp의 start() 함수 내부, StreamHandler의 생성자, RtspHandler의 생성자, RtpHandler의 생성자를 참고한다.
 
 // 일반적으로 상위 클래스는 멤버 클래스들에 대한 std::sharead_ptr를 가지고 있고, 멤버 클래스들은 상위 클래스에 대한 std::weak_ptr를 가지고 있게 구현한다. 
 
@@ -1304,7 +1304,7 @@ void bad(){
     >> 관련 내용이 Session.h 의 데이터 멤버 필드에 구현돼 있다.
     
 2. 샘플을 파일 스트림에서 읽어들인 후 바로 전송하는 것이 아니라, rtp 단위로 쪼개서 txQueue에 저장해 놓는다.
-    >> 관련 내용이 Session.cpp, AcsHandler.cpp, RtpHandler.cpp 에 구현 돼 있다.
+    >> 관련 내용이 Session.cpp, StreamHandler.cpp, RtpHandler.cpp 에 구현 돼 있다.
     
 3. txQueue에 저장된 RTP 패킷들을 전송하는 일만을 담당하는 전용 PeriodicTask를 정의하여 송신 bitrate가 급등하는 것을 막는다.
     >> 즉, 샘플을 한 번에 전부 전송하는 것이 아니라, rtp 단위로 쪼개서 송신 큐에 답고, 송신 큐에서 rtp를 하나씩 꺼내서 전송하는 것이다.
@@ -1445,7 +1445,7 @@ case 2 : "falling off the end of a function" or "implicit return undefined behav
     <br> 좀 더 간단하게는, '참조는 포인터 dereferencing이 완료된 상태'다.
     <br> 아래의 표를 보면 이 의문에도 답 할 수 있게 된다. "참조 타입 멤버 변수는 왜 반드시 생성자에서 초기화 해줘야 하는가?"
 ```c++
-// 그래서 AcsHandler 에서 이런 동작이 허용된다.
+// 그래서 StreamHandler 에서 이런 동작이 허용된다.
 // getConstVideoSampleInfoList()는 const std::vector<std::vector<VideoSampleInfo>>& 를 리턴하기 때문이다. 
 // cachedCam0frontVSampleMetaListPtr 의 타입은 const std::vector<VideoSampleInfo>* 이다.
     if (cam0Iter != contentMeta.end()) {

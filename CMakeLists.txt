@@ -78,8 +78,8 @@ add_executable(RtspServerInCpp
         src/service/RtspHandler.cpp
         include/RtpHandler.h
         src/service/RtpHandler.cpp
-        include/AcsHandler.h
-        src/service/AcsHandler.cpp
+        include/StreamHandler.h
+        src/service/StreamHandler.cpp
         include/ReadInfo.h
         src/service/ReadInfo.cpp
 )

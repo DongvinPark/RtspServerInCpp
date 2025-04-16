@@ -44,7 +44,7 @@ private:
     bool handleCamDirectories(const std::filesystem::path& inputCidDirectory);
     bool handleConfigFile(const std::filesystem::path& inputCidDirectory);
     bool handleV0Images(const std::filesystem::path& inputCidDirectory);
-    bool loadAcsFilesInCamDirectories(const std::filesystem::path& inputCidDirectory);
+    bool loadStreamFilesInCamDirectories(const std::filesystem::path& inputCidDirectory);
     void loadRtspRtpConfig(const std::filesystem::path& rtspConfig);
     // to mimic java's int64_t type in multiplatform.
     std::vector<int64_t> getValues(std::string inputMsg, std::string inputKey);

@@ -11,10 +11,10 @@
 RtspHandler::RtspHandler(
   std::string inputSessionId,
   std::weak_ptr<Session> inputParentSessionPtr,
-  std::weak_ptr<AcsHandler> inputAcsHandlerPtr
+  std::weak_ptr<StreamHandler> inputStreamHandlerPtr
 ) : logger(Logger::getLogger(C::RTSP_HANDLER)),
     parentSessionPtr(inputParentSessionPtr),
-    acsHandlerPtr(inputAcsHandlerPtr),
+    streamHandlerPtr(inputStreamHandlerPtr),
     sessionId(inputSessionId) {}
 
 RtspHandler::~RtspHandler() = default;
@@ -57,7 +57,7 @@ void RtspHandler::handleRtspRequest(
   }
 
   if (auto sessionPtr = parentSessionPtr.lock()) {
-    if (auto ptrForAcsHandler = acsHandlerPtr.lock()) {
+    if (auto ptrForStreamHandler = streamHandlerPtr.lock()) {
       // do not allowed proceeding without session id once session is set up.
       // Once session id is given to a client, all the following requests must
       // include the session id in the request.
@@ -164,13 +164,13 @@ void RtspHandler::handleRtspRequest(
 
           // dongvin : record content's title at Session object.
           if (sessionPtr->getContentTitle() == C::EMPTY_STRING) {
-            std::string contentTitle = getContentsTitle(ptrForAcsHandler->getStreamUrls());
+            std::string contentTitle = getContentsTitle(ptrForStreamHandler->getStreamUrls());
             if (contentTitle != C::EMPTY_STRING) {
               sessionPtr->updateContentTitleOfCurSession(contentTitle);
             }
           }
 
-          std::vector<int64_t> ssrc = ptrForAcsHandler->getSsrc();
+          std::vector<int64_t> ssrc = ptrForStreamHandler->getSsrc();
           respondSetup(
             inputBuffer, transport, sessionId, ssrc[ssrcIdx], trackId,
             sessionPtr->getRefVideoSampleCnt(), sessionPtr->getNumberOfCamDirectories()
@@ -197,15 +197,15 @@ void RtspHandler::handleRtspRequest(
 
             // video & audio readInfo 내의 curSampeNo를 초기화 한다.
             // received idx 들은 클라이언트가 이미 수신 완료한 것이므로, 이것 바로 다음 샘플부터 보내게 만든다.
-            if(receivedVideoSampleIdx != -1) ptrForAcsHandler->updateCurSampleNo(
+            if(receivedVideoSampleIdx != -1) ptrForStreamHandler->updateCurSampleNo(
               C::VIDEO_ID, receivedVideoSampleIdx + 1
             );
-            if(receivedAudioSampleIdx != -1) ptrForAcsHandler->updateCurSampleNo(
+            if(receivedAudioSampleIdx != -1) ptrForStreamHandler->updateCurSampleNo(
               C::AUDIO_ID, receivedAudioSampleIdx + 1
             );
 
             if (receivedVideoRtpIdx > 0) {
-              ptrForAcsHandler->updateRtpRemoteCnt(receivedVideoRtpIdx);
+              ptrForStreamHandler->updateRtpRemoteCnt(receivedVideoRtpIdx);
             }
           }
           respondPlayAfterPause(inputBuffer);
@@ -231,7 +231,7 @@ void RtspHandler::handleRtspRequest(
           // valid npt
           sessionPtr->onUserRequestingPlayTime(npt);
 
-          std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
+          std::vector<int64_t> timestamp0 = ptrForStreamHandler->getTimestamp();
           respondPlay(inputBuffer, timestamp0, sessionId);
 
           Util::delayedExecutorAsyncByIoContext(
@@ -244,8 +244,8 @@ void RtspHandler::handleRtspRequest(
           // dongvin, process initial play req.
           sessionPtr->updatePlayTimeDurationMillis(
             std::max(
-              ptrForAcsHandler->getPlayTimeUs(C::VIDEO_ID)/1000,
-              ptrForAcsHandler->getPlayTimeUs(C::AUDIO_ID)/1000
+              ptrForStreamHandler->getPlayTimeUs(C::VIDEO_ID)/1000,
+              ptrForStreamHandler->getPlayTimeUs(C::AUDIO_ID)/1000
             )
           );
 
@@ -295,7 +295,7 @@ void RtspHandler::handleRtspRequest(
               return;
             }
 
-            if (auto handlePtr = acsHandlerPtr.lock()){
+            if (auto handlePtr = streamHandlerPtr.lock()){
               if (
                 bool cacheResult = handlePtr->setVideoAudioSampleMetaDataCache(sessionPtr->getContentTitle());
                 !cacheResult
@@ -305,15 +305,15 @@ void RtspHandler::handleRtspRequest(
                 return;
               }
             } else{
-              logger->severe("Dongvin, failed to get acsHandler ptr!");
+              logger->severe("Dongvin, failed to get streamHandler ptr!");
               respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
               return;
             }
 
-            ptrForAcsHandler->setCamId(0);
+            ptrForStreamHandler->setCamId(0);
             sessionPtr->onUserRequestingPlayTime(npt);
 
-            std::vector<int64_t> timestamp0 = ptrForAcsHandler->getTimestamp();
+            std::vector<int64_t> timestamp0 = ptrForStreamHandler->getTimestamp();
             respondPlay(inputBuffer, timestamp0, sessionId);
 
             Util::delayedExecutorAsyncByIoContext(
@@ -384,8 +384,8 @@ void RtspHandler::handleRtspRequest(
         bool isValid = false;
         if (info.find(C::CAM_CHANG_KEY) != std::string::npos) {
           sessionPtr->updateIsInCamSwitching(true);
-          int maxCam = ptrForAcsHandler->getMaxCamNumber();
-          int maxVnum = ptrForAcsHandler->getMainVideoNumber();
+          int maxCam = ptrForStreamHandler->getMaxCamNumber();
+          int maxVnum = ptrForStreamHandler->getMainVideoNumber();
           isValid = cam < maxCam && nextVid < maxVnum;
           if (!isValid) {
             logger->info("Dongvin, invalid next id or video id for cam change!");
@@ -425,7 +425,7 @@ void RtspHandler::handleRtspRequest(
       }
       return;
     }
-    logger->severe("Dongvin, failed to get weak acs handler ptr!");
+    logger->severe("Dongvin, failed to get weak StreamHandler ptr!");
     respondError(inputBuffer, C::INTERNAL_SERVER_ERROR, method);
     return;
   }
@@ -517,9 +517,9 @@ void RtspHandler::respondPlay(
   int lastAudioSampleNo = C::UNSET;
   std::string supportingBitrateType = C::EMPTY_STRING;
   int numberOfCamDirectories = C::UNSET;
-  if (auto acsHandler = acsHandlerPtr.lock()) {
-    lastVideoSampleNo = acsHandler->getLastVideoSampleNumber();
-    lastAudioSampleNo = acsHandler->getLastAudioSampleNumber();
+  if (auto streamHandler = streamHandlerPtr.lock()) {
+    lastVideoSampleNo = streamHandler->getLastVideoSampleNumber();
+    lastAudioSampleNo = streamHandler->getLastAudioSampleNumber();
     if (lastVideoSampleNo > C::ZERO && lastAudioSampleNo > C::ZERO) initResult = true;
     else {
       logger->severe("Dongvin, sample meta init failed!");
@@ -667,7 +667,7 @@ std::string RtspHandler::findContents(const std::string& line0) {
 }
 
 std::string RtspHandler::getMediaInfo(const std::string& fullCid) {
-  if (auto handlerPtr = acsHandlerPtr.lock()) {
+  if (auto handlerPtr = streamHandlerPtr.lock()) {
 
     const std::vector<int64_t> unitCnt = handlerPtr->getUnitFrameCount();
     const std::vector<int64_t> gop = handlerPtr->getGop();
@@ -722,7 +722,7 @@ std::string RtspHandler::getMediaInfo(const std::string& fullCid) {
 
     return result;
   }
-  logger->severe("Dongvin, failed to get AcsHandler weak ptr lock!");
+  logger->severe("Dongvin, failed to get StreamHandler weak ptr lock!");
   return C::EMPTY_STRING;
 }
 
@@ -857,8 +857,8 @@ bool RtspHandler::isSeekRequest(const std::vector<std::string>& strings) {
 }
 
 bool RtspHandler::isValidPlayTime(const std::vector<float>& ntpSec) {
-  if (auto acsHandler = acsHandlerPtr.lock()) {
-    std::vector<int64_t> playTimeUs = acsHandler->getPlayTimeUs();
+  if (auto streamHandler = streamHandlerPtr.lock()) {
+    std::vector<int64_t> playTimeUs = streamHandler->getPlayTimeUs();
     int mediaPlayTimeMs = static_cast<int>(std::max(playTimeUs[0], playTimeUs[1])/1000);
 
     return (static_cast<int>(ntpSec[0]*1000) < mediaPlayTimeMs) &&
@@ -932,7 +932,7 @@ Map : hybridMeta<camId, val>
   using HybridMetaMapType
     = std::unordered_map<int, std::unordered_map<std::string, std::unordered_map<int, HybridSampleMeta>>>;
   if (auto sessionPtr = parentSessionPtr.lock()) {
-    if (auto handlerPtr = acsHandlerPtr.lock()) {
+    if (auto handlerPtr = streamHandlerPtr.lock()) {
       HybridMetaMapType& hybridMetaMap = sessionPtr->getHybridMetaMap();
       int gop = handlerPtr->getGop()[0];
 
@@ -965,6 +965,6 @@ Map : hybridMeta<camId, val>
         }
 
       }//for
-    } else logger->severe("Dongvin, RtspHandler: failed to get weak AcsHandlerPtr!");
+    } else logger->severe("Dongvin, RtspHandler: failed to get weak StreamHandlerPtr!");
   } else logger->severe("Dongvin, RtspHandler: failed to get weak SessionPtr!");
 }

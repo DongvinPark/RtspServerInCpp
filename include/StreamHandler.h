@@ -1,5 +1,5 @@
-#ifndef ACSHANDLER_H
-#define ACSHANDLER_H
+#ifndef STREAMHANDLER_H
+#define STREAMHANDLER_H
 
 #include <unordered_set>
 
@@ -15,14 +15,14 @@ class RtpHandler;
 
 struct Sample;
 
-class AcsHandler {
+class StreamHandler {
 public:
-  explicit AcsHandler(
+  explicit StreamHandler(
     std::string sessionId,
     std::weak_ptr<Session> parentSessionPtr,
     ContentsStorage& parentContentsStorage
   );
-  ~AcsHandler();
+  ~StreamHandler();
 
   void updateRtpRemoteCnt(int cnt);
   void updateCurSampleNo(int mediaType, int idx);
@@ -101,4 +101,4 @@ private:
   int videoRtpRemoveCnt = C::ZERO;
 };
 
-#endif //ACSHANDLER_H
+#endif //STREAMHANDLER_H

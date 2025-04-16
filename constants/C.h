@@ -20,7 +20,7 @@ namespace C {
     constexpr char SERVER[] = "Server";
     constexpr char SESSION[] = "Session";
     constexpr char RTSP_HANDLER[] = "RtspHandler";
-    constexpr char ACS_HANDLER[] = "AcsHandler";
+    constexpr char STREAM_HANDLER[] = "StreamHandler";
     constexpr char RTP_HANDLER[] = "RtpHandler";
 
     // boost::asio::io_context thread pool

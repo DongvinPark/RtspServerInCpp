@@ -3,11 +3,11 @@
 RtpHandler::RtpHandler(
   std::string inputSessionId,
   std::weak_ptr<Session> inputParentSessionPtr,
-  std::weak_ptr<AcsHandler> inputAcsHandlerPtr
+  std::weak_ptr<StreamHandler> inputStreamHandlerPtr
   ) : logger(Logger::getLogger(C::RTP_HANDLER)),
       sessionId(inputSessionId),
       parentSessionPtr(inputParentSessionPtr),
-      acsHandlerPtr(inputAcsHandlerPtr){}
+      streamHandlerPtr(inputStreamHandlerPtr){}
 
 RtpHandler::~RtpHandler() {
   // close all video and audio std::ifstream.
@@ -116,7 +116,7 @@ void RtpHandler::readVideoSample(
   std::ifstream& rearVideoFileReadingStream = camIt->second[1];
 
   int gop = C::INVALID;
-  if (auto handlerPtr = acsHandlerPtr.lock()) {
+  if (auto handlerPtr = streamHandlerPtr.lock()) {
     if (const std::vector<int64_t> gopVec = handlerPtr->getGop(); gopVec.empty()) {
       logger->severe("Dongvin, fail to get gop value vector!");
       return;
@@ -124,7 +124,7 @@ void RtpHandler::readVideoSample(
       gop = static_cast<int>(gopVec[0]);
     }
   } else {
-    logger->severe("Dongvin, fail to get acsHandlerPtr! RtpHandler::readVideoSample");
+    logger->severe("Dongvin, fail to get streamHandlerPtr! RtpHandler::readVideoSample");
     return;
   }
 
@@ -213,17 +213,17 @@ void RtpHandler::readVideoSample(
       // no rear V sample meta for hybrid D & S. read sample from file stream.
 
       // if it is not the time to send P frames, just return.
-      if (auto acsHandle = acsHandlerPtr.lock()) {
+      if (auto streamHandle = streamHandlerPtr.lock()) {
         if (
           !sessionPtr->getIsInCamSwitching()
           && !sessionPtr->getPFrameTxStatus()
-          && sampleNo < (sessionPtr->getRefVideoSampleCnt() - acsHandle->getGop()[0])
-          && sampleNo%acsHandle->getGop()[0] > 1
+          && sampleNo < (sessionPtr->getRefVideoSampleCnt() - streamHandle->getGop()[0])
+          && sampleNo%streamHandle->getGop()[0] > 1
         ){
           return;
         }
       } else {
-        logger->severe("Dongvin, failed to get AcsHandler ptr! RtpHander::readVideoSample()");
+        logger->severe("Dongvin, failed to get StreamHandler ptr! RtpHander::readVideoSample()");
         return;
       }
 

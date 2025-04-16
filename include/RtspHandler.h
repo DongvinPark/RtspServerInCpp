@@ -6,12 +6,14 @@
 #include "../include/Buffer.h"
 
 class Session;
-class AcsHandler;
+class StreamHandler;
 
 class RtspHandler {
 public:
   explicit RtspHandler(
-    std::string sessionId, std::weak_ptr<Session> inputParentSessionPtr, std::weak_ptr<AcsHandler> inputAcsHandlerPtr
+    std::string sessionId,
+    std::weak_ptr<Session> inputParentSessionPtr,
+    std::weak_ptr<StreamHandler> inputStreamHandlerPtr
   );
   ~RtspHandler();
 
@@ -65,7 +67,7 @@ private:
 
   std::shared_ptr<Logger> logger;
   std::weak_ptr<Session> parentSessionPtr;
-  std::weak_ptr<AcsHandler> acsHandlerPtr;
+  std::weak_ptr<StreamHandler> streamHandlerPtr;
 
   std::string userName = C::EMPTY_STRING;
   std::string watingReq = C::EMPTY_STRING;

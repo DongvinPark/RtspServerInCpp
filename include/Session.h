@@ -14,7 +14,7 @@
 #include "../include/SntpRefTimeProvider.h"
 #include "../include/Buffer.h"
 #include "../constants/C.h"
-#include "../include/AcsHandler.h"
+#include "../include/StreamHandler.h"
 #include "../include/RtspHandler.h"
 #include "../include/RtpHandler.h"
 #include "../include/RxBitrate.h"
@@ -26,7 +26,7 @@ class Server;
 class ContentsStorage;
 class SntpRefTimeProvider;
 
-class AcsHandler;
+class StreamHandler;
 class RtspHandler;
 class RtpHandler;
 
@@ -94,7 +94,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
   boost::asio::io_context& getIoContext();
 
-  void setAcsHandlerPtr(std::shared_ptr<AcsHandler> inputAcsHandlerPtr);
+  void setStreamHandlerPtr(std::shared_ptr<StreamHandler> inputStreamHandlerPtr);
   void setRtspHandlerPtr(std::shared_ptr<RtspHandler> inputRtspHandlerPtr);
   void setRtpHandlerPtr(std::shared_ptr<RtpHandler> inputRtpHandlerPtr);
 
@@ -190,7 +190,7 @@ class Session : public std::enable_shared_from_this<Session> {
   SntpRefTimeProvider& sntpRefTimeProvider;
   std::string cid = C::EMPTY_STRING;
 
-  std::shared_ptr<AcsHandler> acsHandlerPtr = nullptr;
+  std::shared_ptr<StreamHandler> streamHandlerPtr = nullptr;
   std::shared_ptr<RtspHandler> rtspHandlerPtr = nullptr;
   std::shared_ptr<RtpHandler> rtpHandlerPtr = nullptr;
 
