@@ -632,13 +632,11 @@ void Session::startRtpAsyncLoop() {
     return;
   }
 
-  // Check if valid RTP
   if (rtpPacketInfoPtr->length == C::INVALID) {
     startRtpAsyncLoop();
     return;
   }
 
-  // Create buffer
   auto buffer = (rtpPacketInfoPtr->flag == C::VIDEO_ID)
     ? boost::asio::buffer(
         rtpPacketInfoPtr->samplePtr->buf.data() + rtpPacketInfoPtr->offset,
