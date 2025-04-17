@@ -170,6 +170,9 @@ class Session : public std::enable_shared_from_this<Session> {
   // client aliveness check
   void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);
 
+  // 어거지
+  void startRtpAsyncLoop();
+
   private:
   void deleteDanglingRtps();
   void stopAllPeriodicTasks();
@@ -210,6 +213,7 @@ class Session : public std::enable_shared_from_this<Session> {
   // tx queue for rtp.
   std::unique_ptr<boost::lockfree::queue<RtpPacketInfo*>> rtpQueuePtr;
   std::queue<std::shared_ptr<RtpPacketInfo>> rtpMemoryQueue;
+  boost::asio::steady_timer rtpTimer;
 
   std::vector<bool> readingEndSampleStatusVec = {false, false};
 

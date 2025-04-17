@@ -28,7 +28,8 @@ Session::Session(
     contentsStorage(inputContentsStorage),
     sntpRefTimeProvider(inputSntpRefTimeProvider),
     bitrateRecodeTask(inputIoContext, strand, inputZeroIntervalMs),
-    rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE)){
+    rtpQueuePtr(std::make_unique<boost::lockfree::queue<RtpPacketInfo*>>(C::RTP_TX_QUEUE_SIZE)),
+    rtpTimer(*inputWorkerIoContextPtr){
   const int64_t sessionInitTime = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
   sessionInitTimeSecUtc = sessionInitTime;
 
@@ -73,9 +74,11 @@ void Session::start() {
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
   asyncReceive();
+  // 어거지
+  startRtpAsyncLoop();
 
   // allocate rtp tx only thread
-  std::thread([&](){
+  /*std::thread([&](){
     while (true){
       if (rtpQueuePtr == nullptr || isToreDown){
         break;
@@ -89,7 +92,7 @@ void Session::start() {
         transmitRtp();
       }
     }
-  }).detach();
+  }).detach();*/
 
   auto txBitrateTask = [&]() {
     // shutdown session when client connection was lost
@@ -628,40 +631,57 @@ void Session::updateOptionsReqTimeMillis(const int64_t inputOptionsReqTimeMillis
   latestOptionsReqTimeMillis = inputOptionsReqTimeMillis;
 }
 
-void Session::transmitRtp() {
-  if (rtpQueuePtr->empty()) {
+void Session::startRtpAsyncLoop() {
+  if (isToreDown || !socketPtr || !rtpQueuePtr) return;
+  if (isPaused || rtpQueuePtr->empty()) {
+    // Wait 1ms before checking again.
+    rtpTimer.expires_after(std::chrono::microseconds(10));
+    rtpTimer.async_wait([this](const boost::system::error_code& ec) {
+      if (!ec) startRtpAsyncLoop();
+    });
     return;
   }
+
   RtpPacketInfo* rtpPacketInfoPtr = nullptr;
-  if (rtpQueuePtr->pop(rtpPacketInfoPtr) && rtpPacketInfoPtr) {
-    boost::system::error_code ignored_error;
-    // send only valid rtps
-    if (rtpPacketInfoPtr->length != C::INVALID){
-      if (rtpPacketInfoPtr->flag == C::VIDEO_ID) {
-        // tx video rtp
-        boost::asio::write(
-            *socketPtr,
-            boost::asio::buffer(
-                rtpPacketInfoPtr->samplePtr->buf.data() + rtpPacketInfoPtr->offset,
-                rtpPacketInfoPtr->length
-                ),
-            ignored_error
-        );
-        rtpPacketInfoPtr->samplePtr->refCount -= 1;
-        allocatedBytesForSample.fetch_sub(rtpPacketInfoPtr->length);
-      } else {
-        // tx audio rtp
-        boost::asio::write(
-          *socketPtr,
-          boost::asio::buffer(rtpPacketInfoPtr->samplePtr->buf.data(), rtpPacketInfoPtr->length),
-          ignored_error
-        );
-        rtpPacketInfoPtr->samplePtr->refCount -= 1;
-        allocatedBytesForSample.fetch_sub(rtpPacketInfoPtr->length);
-      }
-      sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
-    }// end of length check if
+  if (!rtpQueuePtr->pop(rtpPacketInfoPtr) || !rtpPacketInfoPtr) {
+    // Nothing to send, check again shortly
+    rtpTimer.expires_after(std::chrono::microseconds(10));
+    rtpTimer.async_wait([this](const boost::system::error_code& ec) {
+      if (!ec) startRtpAsyncLoop();
+    });
+    return;
   }
+
+  // Check if valid RTP
+  if (rtpPacketInfoPtr->length == C::INVALID) {
+    startRtpAsyncLoop();  // skip invalid
+    return;
+  }
+
+  // Create buffer
+  auto buffer = (rtpPacketInfoPtr->flag == C::VIDEO_ID)
+    ? boost::asio::buffer(
+        rtpPacketInfoPtr->samplePtr->buf.data() + rtpPacketInfoPtr->offset,
+        rtpPacketInfoPtr->length)
+    : boost::asio::buffer(
+        rtpPacketInfoPtr->samplePtr->buf.data(),
+        rtpPacketInfoPtr->length);
+
+  // Use shared_ptr to keep the RTP packet alive until write is done
+  auto self = shared_from_this(); // assuming Session inherits std::enable_shared_from_this<Session>
+  //std::shared_ptr<RtpPacketInfo> rtpPtr(rtpPacketInfoPtr, [](RtpPacketInfo* ptr) {});
+
+  boost::asio::async_write(*socketPtr, buffer,
+    [this, self, rtpPacketInfoPtr](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+      if (!ec) {
+        rtpPacketInfoPtr->samplePtr->refCount -= 1;
+        allocatedBytesForSample.fetch_sub(static_cast<int64_t>(rtpPacketInfoPtr->length));
+        sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
+      }
+      // continue the chain
+      startRtpAsyncLoop();
+    }
+  );
 }
 
 void Session::asyncReceive() {
