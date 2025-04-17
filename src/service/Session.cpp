@@ -74,25 +74,7 @@ void Session::start() {
   sessionInitTimeSecUtc = sntpRefTimeProvider.getRefTimeSecForCurrentTask();
 
   asyncReceive();
-  // 어거지
   startRtpAsyncLoop();
-
-  // allocate rtp tx only thread
-  /*std::thread([&](){
-    while (true){
-      if (rtpQueuePtr == nullptr || isToreDown){
-        break;
-      }
-      if (rtpQueuePtr->empty()) {
-        // to prevent CPU overuse.
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        continue;
-      }
-      if (!isPaused){
-        transmitRtp();
-      }
-    }
-  }).detach();*/
 
   auto txBitrateTask = [&]() {
     // shutdown session when client connection was lost
@@ -634,7 +616,6 @@ void Session::updateOptionsReqTimeMillis(const int64_t inputOptionsReqTimeMillis
 void Session::startRtpAsyncLoop() {
   if (isToreDown || !socketPtr || !rtpQueuePtr) return;
   if (isPaused || rtpQueuePtr->empty()) {
-    // Wait 1ms before checking again.
     rtpTimer.expires_after(std::chrono::microseconds(10));
     rtpTimer.async_wait([this](const boost::system::error_code& ec) {
       if (!ec) startRtpAsyncLoop();
@@ -644,7 +625,6 @@ void Session::startRtpAsyncLoop() {
 
   RtpPacketInfo* rtpPacketInfoPtr = nullptr;
   if (!rtpQueuePtr->pop(rtpPacketInfoPtr) || !rtpPacketInfoPtr) {
-    // Nothing to send, check again shortly
     rtpTimer.expires_after(std::chrono::microseconds(10));
     rtpTimer.async_wait([this](const boost::system::error_code& ec) {
       if (!ec) startRtpAsyncLoop();
@@ -654,7 +634,7 @@ void Session::startRtpAsyncLoop() {
 
   // Check if valid RTP
   if (rtpPacketInfoPtr->length == C::INVALID) {
-    startRtpAsyncLoop();  // skip invalid
+    startRtpAsyncLoop();
     return;
   }
 
@@ -667,9 +647,7 @@ void Session::startRtpAsyncLoop() {
         rtpPacketInfoPtr->samplePtr->buf.data(),
         rtpPacketInfoPtr->length);
 
-  // Use shared_ptr to keep the RTP packet alive until write is done
-  auto self = shared_from_this(); // assuming Session inherits std::enable_shared_from_this<Session>
-  //std::shared_ptr<RtpPacketInfo> rtpPtr(rtpPacketInfoPtr, [](RtpPacketInfo* ptr) {});
+  auto self = shared_from_this();
 
   boost::asio::async_write(*socketPtr, buffer,
     [this, self, rtpPacketInfoPtr](const boost::system::error_code& ec, std::size_t bytes_transferred) {

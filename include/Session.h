@@ -160,6 +160,7 @@ class Session : public std::enable_shared_from_this<Session> {
   void updateIsInCamSwitching(bool newState);
 
   // rtp queue control
+  void startRtpAsyncLoop();
   void enqueueRtpInfo(RtpPacketInfo* rtpPacketInfoPtr);
   void enqueueRtpForMemoryMgmt(std::shared_ptr<RtpPacketInfo> rtpPacketPtr);
   void clearRtpQueue();
@@ -169,9 +170,6 @@ class Session : public std::enable_shared_from_this<Session> {
 
   // client aliveness check
   void updateOptionsReqTimeMillis(int64_t inputOptionsReqTimeMillis);
-
-  // 어거지
-  void startRtpAsyncLoop();
 
   private:
   void deleteDanglingRtps();
