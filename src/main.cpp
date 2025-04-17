@@ -89,7 +89,7 @@ int main() {
     auto workGuard = boost::asio::make_work_guard(io_context);
     std::vector<std::thread> threadVec;
     int cpuCoreCnt = static_cast<int>(std::thread::hardware_concurrency());
-    for (auto i = 0; i < cpuCoreCnt; ++i) {
+    for (auto i = 0; i < C::THREAD_CNT_PER_WORKER_IO_CONTEXT; ++i) {
         threadVec.emplace_back(
             [&io_context]() {
                 Util::set_thread_priority();

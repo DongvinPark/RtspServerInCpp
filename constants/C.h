@@ -24,7 +24,7 @@ namespace C {
     constexpr char RTP_HANDLER[] = "RtpHandler";
 
     // boost::asio::io_context thread pool
-    constexpr int THREAD_CNT_PER_WORKER_IO_CONTEXT = 3;
+    constexpr int THREAD_CNT_PER_WORKER_IO_CONTEXT = 4;
 
     // General constants
     constexpr char MY_NAME[] = "RtspServerInCpp/1.1.0";
