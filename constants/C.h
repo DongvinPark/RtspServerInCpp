@@ -32,7 +32,7 @@ namespace C {
 
     // General constants
     constexpr char MY_NAME[] = "alphaStreamer-3.1/1.1.0";
-    constexpr int64_t MAX_CLIENT_BUFFER_SIZE = 30 * 1024 * 1024; // 30MB
+    constexpr int64_t MAX_CLIENT_BUFFER_SIZE = 10 * 1024 * 1024; // 10MB
     constexpr int FRONT_VIDEO_VID = 0;
     constexpr int REAR_VIDEO_VID = 1;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
