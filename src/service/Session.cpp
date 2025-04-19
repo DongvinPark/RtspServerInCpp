@@ -614,17 +614,11 @@ void Session::updateOptionsReqTimeMillis(const int64_t inputOptionsReqTimeMillis
 }
 
 void Session::startRtpAsyncLoop() {
-  if (isToreDown || !socketPtr || !rtpQueuePtr) return;
-  if (isPaused || rtpQueuePtr->empty()) {
-    rtpTimer.expires_after(std::chrono::microseconds(10));
-    rtpTimer.async_wait([this](const boost::system::error_code& ec) {
-      if (!ec) startRtpAsyncLoop();
-    });
-    return;
-  }
+  if (isToreDown || !socketPtr || !rtpQueuePtr || inflightWrites >= maxInflight) return;
 
+  // Pop next RTP packet
   RtpPacketInfo* rtpPacketInfoPtr = nullptr;
-  if (!rtpQueuePtr->pop(rtpPacketInfoPtr) || !rtpPacketInfoPtr) {
+  if (!rtpQueuePtr->pop(rtpPacketInfoPtr) || !rtpPacketInfoPtr || rtpPacketInfoPtr->length == C::INVALID) {
     rtpTimer.expires_after(std::chrono::microseconds(10));
     rtpTimer.async_wait([this](const boost::system::error_code& ec) {
       if (!ec) startRtpAsyncLoop();
@@ -632,32 +626,27 @@ void Session::startRtpAsyncLoop() {
     return;
   }
 
-  if (rtpPacketInfoPtr->length == C::INVALID) {
-    startRtpAsyncLoop();
-    return;
-  }
-
-  auto buffer = (rtpPacketInfoPtr->flag == C::VIDEO_ID)
-    ? boost::asio::buffer(
-        rtpPacketInfoPtr->samplePtr->buf.data() + rtpPacketInfoPtr->offset,
-        rtpPacketInfoPtr->length)
-    : boost::asio::buffer(
-        rtpPacketInfoPtr->samplePtr->buf.data(),
-        rtpPacketInfoPtr->length);
-
+  auto buffer = boost::asio::buffer(rtpPacketInfoPtr->samplePtr->buf.data() + rtpPacketInfoPtr->offset, rtpPacketInfoPtr->length);
   auto self = shared_from_this();
+
+  inflightWrites++;
 
   boost::asio::async_write(*socketPtr, buffer,
     [this, self, rtpPacketInfoPtr](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+      inflightWrites--;
       if (!ec) {
         rtpPacketInfoPtr->samplePtr->refCount -= 1;
         allocatedBytesForSample.fetch_sub(static_cast<int64_t>(rtpPacketInfoPtr->length));
         sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
       }
-      // continue the chain
+      // Start next one right away
       startRtpAsyncLoop();
-    }
-  );
+    });
+
+  // Launch the next loop ASAP (but only if under limit)
+  if (inflightWrites < maxInflight) {
+    startRtpAsyncLoop();
+  }
 }
 
 void Session::asyncReceive() {

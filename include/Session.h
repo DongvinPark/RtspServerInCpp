@@ -243,6 +243,10 @@ class Session : public std::enable_shared_from_this<Session> {
   bool isToreDown = false;
   bool isRecordSaved = false;
   std::atomic<int64_t> allocatedBytesForSample = 0;
+
+  // 어거지
+  int inflightWrites = 0;
+  const int maxInflight = 3;
 };
 
 #endif //SESSION_H
