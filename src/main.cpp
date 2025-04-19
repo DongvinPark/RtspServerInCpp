@@ -70,7 +70,7 @@ std::string getContentsRootPath() {
         return "/home/ec2-user/streaming-contents"; // for AWS EC2 Linux mounted with AWS Elastic File System.
     }
 #elif _WIN32
-    return "C:\\dev\\streaming-contents";
+    return "C:\\dev\\streaming_contents";
 #elif __APPLE__
     return "/Users/dongvin99/Documents/for Mac Studio Dev Contents BackUP/streaming_contents_3.0";
 #else
