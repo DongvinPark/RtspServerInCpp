@@ -1,59 +1,59 @@
 --------------------------------------------------- c6i.xlarge/Java/50C
-Client cnt = 200
+Concurrent Client cnt = 200
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/C++/50C
-Client cnt = 50
+Concurrent Client cnt = 50
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/Java/100C
-Client cnt = 100
+Concurrent Client cnt = 100
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/C++/100C
-Client cnt = 100
+Concurrent Client cnt = 100
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/Java/150C
-Client cnt = 150
+Concurrent Client cnt = 150
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/C++/150C
-Client cnt = 150
+Concurrent Client cnt = 150
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/Java/200C
-Client cnt = 200
+Concurrent Client cnt = 200
 Average Received Video Sample Cnt per client = 866.62
 Standard Deviation = 43.78
 
 --------------------------------------------------- c6i.xlarge/C++/200C
-Client cnt = 200
+Concurrent Client cnt = 200
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
 --------------------------------------------------- c6i.xlarge/Java/250C
-Client cnt = 250
+Concurrent Client cnt = 250
 Average Received Video Sample Cnt per client = 779.13
 Standard Deviation = 42.44
 
 --------------------------------------------------- c6i.xlarge/C++/250C
-Client cnt = 250
+Concurrent Client cnt = 250
 Average Received Video Sample Cnt per client = 798.28
 Standard Deviation = 32.28
 
 --------------------------------------------------- c6i.xlarge/Java/300C
-Client cnt = 300
+Concurrent Client cnt = 300
 Average Received Video Sample Cnt per client = 496.50
 Standard Deviation = 94.10
 
 --------------------------------------------------- c6i.xlarge/C++/300C
-Client cnt = 300
+Concurrent Client cnt = 300
 Average Received Video Sample Cnt per client = 655.43
 Standard Deviation = 26.16
