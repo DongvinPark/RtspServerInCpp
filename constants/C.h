@@ -28,7 +28,7 @@ namespace C {
 
     // General constants
     constexpr char MY_NAME[] = "RtspServerInCpp/1.1.0";
-    constexpr int64_t MAX_CLIENT_BUFFER_SIZE = 30 * 1024 * 1024; // 30MB
+    constexpr int64_t MAX_CLIENT_BUFFER_SIZE = 5 * 1024 * 1024; // 5MB
     constexpr int FRONT_VIDEO_VID = 0;
     constexpr int REAR_VIDEO_VID = 1;
     constexpr int SESSION_KEY_BIT_SIZE = 64;
@@ -44,7 +44,7 @@ namespace C {
     constexpr int SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS = 30000;
     constexpr int SESSION_OBJECT_DELETE_INTERVAL_SEC = 20;
     constexpr int STOPPED_TASK_DELETE_DELAY_MS = 3000;
-    constexpr int TEARDOWN_DELAY_MS = 1000;
+    constexpr int TEARDOWN_DELAY_MS = 5000;
 
     constexpr int TCP_RTP_HEAD_LEN = 4; // $+(ch 1) + (len 2)
     constexpr int RTP_HEADER_LEN = 12; // Refer to https://datatracker.ietf.org/doc/html/rfc7798
