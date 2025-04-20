@@ -7,7 +7,8 @@
 
 ## 버전 정보
 - 1.0.0(2025.Feb.25) : Play, Pause, Seek, Cam Switching, Hybrid D & S, Looking Sample Control 지원
-- 1.1.0(2025.April.4) : 성능 테스트 완료. RTP 패킷 전송 및 메모리 관리 아키텍처 수정.
+- 1.1.0(2025.April.4) : 1차 성능 테스트 완료. RTP 패킷 전송 및 메모리 관리 아키텍처 수정.
+- 1.1.1(2025.April.20) : 2차 성능 테스트 완료. 클라이언트 별 RTP 버퍼 사이즈 제한 조정.
 <br><br/><br><br/>
 
 ## 개발 정책

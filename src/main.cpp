@@ -28,7 +28,8 @@
 // Version History
 // VER          Date            Changes
 // 1.0.0        2025.02.25.     PLAY, PAUSE, SEEK, Paused-SEEK, Cam Switching, Hybrid D&S, Looking Sample Control
-// 1.1.0        2025.04.4.      Performance test done. RTP packet sending and memory management architecture were updated.
+// 1.1.0        2025.04.4.      1st Performance test done. RTP packet sending and memory management architecture were updated.
+// 1.1.1        2025.04.20      2nd Performance test done. Updated client's rtp buffer limit size.
 
 using boost::asio::ip::tcp;
 

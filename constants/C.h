@@ -9,7 +9,7 @@
 
 namespace C {
     // version
-    constexpr char VER[] = "1.1.0";
+    constexpr char VER[] = "1.1.1";
 
     // class names
     constexpr char MAIN[] = "main";
@@ -27,7 +27,7 @@ namespace C {
     constexpr int THREAD_CNT_PER_WORKER_IO_CONTEXT = 3;
 
     // General constants
-    constexpr char MY_NAME[] = "RtspServerInCpp/1.1.0";
+    constexpr char MY_NAME[] = "RtspServerInCpp/1.1.1";
     constexpr int64_t MAX_CLIENT_BUFFER_SIZE = 5 * 1024 * 1024; // 5MB
     constexpr int FRONT_VIDEO_VID = 0;
     constexpr int REAR_VIDEO_VID = 1;
