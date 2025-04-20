@@ -69,7 +69,8 @@
 <br><br/><br><br/>
 
 ## 성능 테스트 결과
-- 다음의 [문서](https://github.com/DongvinPark/RtspServerInCpp/blob/main/PerformanceTestResult.md)에처 찾아볼 수 있습니다.
+- ***[테스트 결과 보고서](https://github.com/DongvinPark/RtspServerInCpp/blob/main/PerformanceTestResult.md)***
+- ***[테스트 원본 데이터](https://github.com/DongvinPark/RtspServerInCpp/tree/main/originnal-test-results)***
 <br><br/><br><br/>
 
 ## Install Dependencies
