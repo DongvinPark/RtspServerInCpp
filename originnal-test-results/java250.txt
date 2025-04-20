@@ -1,0 +1,2000 @@
+Received Front Video Sample Cnt = 838
+Min: 0
+Max: 1109
+Average: 39.98088410991637
+Standard Deviation: 87.41775239541394
+Over 33 ms Cnt : 252
+
+
+Received Front Video Sample Cnt = 764
+Min: 0
+Max: 791
+Average: 43.862385321100916
+Standard Deviation: 85.4796700091537
+Over 33 ms Cnt : 222
+
+
+Received Front Video Sample Cnt = 808
+Min: 0
+Max: 1143
+Average: 41.43370508054523
+Standard Deviation: 87.16129135293966
+Over 33 ms Cnt : 266
+
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 856
+Average: 39.8891537544696
+Standard Deviation: 77.03082592178338
+Over 33 ms Cnt : 245
+
+
+Received Front Video Sample Cnt = 787
+Min: 0
+Max: 1177
+Average: 42.2735368956743
+Standard Deviation: 104.62242904120863
+Over 33 ms Cnt : 246
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 891
+Average: 43.292367399741266
+Standard Deviation: 90.6873845364341
+Over 33 ms Cnt : 250
+
+
+Received Front Video Sample Cnt = 815
+Min: 0
+Max: 925
+Average: 41.1007371007371
+Standard Deviation: 82.31041607264099
+Over 33 ms Cnt : 240
+
+Received Front Video Sample Cnt = 802
+Min: 0
+Max: 1573
+Average: 41.51810237203495
+Standard Deviation: 106.6691595420052
+Over 33 ms Cnt : 230
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1573
+Average: 46.524339360222534
+Standard Deviation: 100.24122035758414
+Over 33 ms Cnt : 236
+
+
+
+Received Front Video Sample Cnt = 812
+Min: 0
+Max: 706
+Average: 40.94327990135635
+Standard Deviation: 81.12929346144323
+Over 33 ms Cnt : 255
+
+
+Received Front Video Sample Cnt = 763
+Min: 0
+Max: 1050
+Average: 43.94619422572178
+Standard Deviation: 83.72570195543767
+Over 33 ms Cnt : 252
+
+
+Received Front Video Sample Cnt = 762
+Min: 0
+Max: 1779
+Average: 43.97897503285151
+Standard Deviation: 103.7406529747753
+Over 33 ms Cnt : 266
+
+
+Received Front Video Sample Cnt = 821
+Min: 0
+Max: 941
+Average: 40.81219512195122
+Standard Deviation: 83.0041952954479
+Over 33 ms Cnt : 266
+
+
+Received Front Video Sample Cnt = 791
+Min: 0
+Max: 1537
+Average: 42.37848101265823
+Standard Deviation: 105.92434507092945
+Over 33 ms Cnt : 238
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1128
+Average: 46.05424200278164
+Standard Deviation: 101.61199268691237
+Over 33 ms Cnt : 256
+
+
+Received Front Video Sample Cnt = 753
+Min: 0
+Max: 974
+Average: 44.589095744680854
+Standard Deviation: 90.4240014635035
+Over 33 ms Cnt : 277
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1169
+Average: 42.825641025641026
+Standard Deviation: 85.89800367206152
+Over 33 ms Cnt : 239
+
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 766
+Average: 38.7103694874851
+Standard Deviation: 75.8926113808162
+Over 33 ms Cnt : 273
+
+
+Received Front Video Sample Cnt = 831
+Min: 0
+Max: 742
+Average: 40.32168674698795
+Standard Deviation: 79.85231179095383
+Over 33 ms Cnt : 268
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 774
+Average: 42.80487804878049
+Standard Deviation: 78.27054182064819
+Over 33 ms Cnt : 247
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1606
+Average: 46.29346314325452
+Standard Deviation: 103.13650756312327
+Over 33 ms Cnt : 238
+
+
+Received Front Video Sample Cnt = 744
+Min: 0
+Max: 1200
+Average: 45.01749663526245
+Standard Deviation: 99.45435775590882
+Over 33 ms Cnt : 239
+
+
+Received Front Video Sample Cnt = 788
+Min: 0
+Max: 1122
+Average: 42.30749682337992
+Standard Deviation: 93.98877697856933
+Over 33 ms Cnt : 251
+
+
+Received Front Video Sample Cnt = 784
+Min: 0
+Max: 766
+Average: 42.710089399744575
+Standard Deviation: 84.0225384095472
+Over 33 ms Cnt : 246
+
+
+Received Front Video Sample Cnt = 762
+Min: 0
+Max: 979
+Average: 43.97109067017083
+Standard Deviation: 93.06652957814516
+Over 33 ms Cnt : 239
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 967
+Average: 40.81666666666667
+Standard Deviation: 81.14094087650689
+Over 33 ms Cnt : 266
+
+
+Received Front Video Sample Cnt = 827
+Min: 0
+Max: 1273
+Average: 40.48426150121065
+Standard Deviation: 84.2126351096197
+Over 33 ms Cnt : 245
+
+
+Received Front Video Sample Cnt = 756
+Min: 0
+Max: 1097
+Average: 44.272847682119206
+Standard Deviation: 86.16257383749223
+Over 33 ms Cnt : 270
+
+
+Received Front Video Sample Cnt = 728
+Min: 0
+Max: 1354
+Average: 45.7414030261348
+Standard Deviation: 108.81785308309185
+Over 33 ms Cnt : 254
+
+
+Received Front Video Sample Cnt = 773
+Min: 0
+Max: 1011
+Average: 43.32383419689119
+Standard Deviation: 84.97703927504055
+Over 33 ms Cnt : 238
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 752
+Average: 42.74711168164313
+Standard Deviation: 76.05177937657417
+Over 33 ms Cnt : 259
+
+
+Received Front Video Sample Cnt = 778
+Min: 0
+Max: 624
+Average: 42.44015444015444
+Standard Deviation: 71.25000365491618
+Over 33 ms Cnt : 252
+
+
+Received Front Video Sample Cnt = 744
+Min: 0
+Max: 1591
+Average: 44.88694481830417
+Standard Deviation: 105.51117960683227
+Over 33 ms Cnt : 242
+
+
+Received Front Video Sample Cnt = 752
+Min: 0
+Max: 1594
+Average: 44.55126498002663
+Standard Deviation: 109.94948468647134
+Over 33 ms Cnt : 260
+
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 957
+Average: 46.37083333333333
+Standard Deviation: 95.88681107532175
+Over 33 ms Cnt : 228
+
+
+Received Front Video Sample Cnt = 716
+Min: 0
+Max: 2772
+Average: 46.48111888111888
+Standard Deviation: 143.39923483964012
+Over 33 ms Cnt : 236
+
+
+Received Front Video Sample Cnt = 767
+Min: 0
+Max: 941
+Average: 43.6644908616188
+Standard Deviation: 97.54968456341743
+Over 33 ms Cnt : 221
+
+
+Received Front Video Sample Cnt = 660
+Min: 0
+Max: 947
+Average: 45.4051593323217
+Standard Deviation: 86.35840219942375
+Over 33 ms Cnt : 232
+
+Received Front Video Sample Cnt = 821
+Min: 0
+Max: 1253
+Average: 40.80731707317073
+Standard Deviation: 76.26757739101582
+Over 33 ms Cnt : 260
+
+
+
+Received Front Video Sample Cnt = 793
+Min: 0
+Max: 1097
+Average: 42.22979797979798
+Standard Deviation: 98.37550570229061
+Over 33 ms Cnt : 239
+
+
+Received Front Video Sample Cnt = 772
+Min: 0
+Max: 772
+Average: 43.33463035019455
+Standard Deviation: 74.27511925468623
+Over 33 ms Cnt : 266
+
+
+Received Front Video Sample Cnt = 719
+Min: 0
+Max: 1107
+Average: 46.56685236768802
+Standard Deviation: 108.17348010566363
+Over 33 ms Cnt : 247
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 733
+Average: 42.83589743589744
+Standard Deviation: 76.82748735926614
+Over 33 ms Cnt : 270
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1619
+Average: 42.9
+Standard Deviation: 115.03932549461688
+Over 33 ms Cnt : 242
+
+
+Received Front Video Sample Cnt = 764
+Min: 0
+Max: 1229
+Average: 43.876802096985585
+Standard Deviation: 97.7949711483659
+Over 33 ms Cnt : 237
+
+
+Received Front Video Sample Cnt = 730
+Min: 0
+Max: 1193
+Average: 45.908093278463646
+Standard Deviation: 99.02812255406992
+Over 33 ms Cnt : 265
+
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 1158
+Average: 39.80810488676996
+Standard Deviation: 83.60600677080943
+Over 33 ms Cnt : 251
+
+
+Received Front Video Sample Cnt = 775
+Min: 0
+Max: 1555
+Average: 43.2312661498708
+Standard Deviation: 114.1464312025479
+Over 33 ms Cnt : 234
+
+
+Received Front Video Sample Cnt = 777
+Min: 0
+Max: 571
+Average: 42.79896907216495
+Standard Deviation: 66.37944113294985
+Over 33 ms Cnt : 267
+
+
+Received Front Video Sample Cnt = 769
+Min: 0
+Max: 1948
+Average: 43.196614583333336
+Standard Deviation: 104.00616788099134
+Over 33 ms Cnt : 257
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1744
+Average: 46.182197496522946
+Standard Deviation: 114.48884484550602
+Over 33 ms Cnt : 222
+
+Received Front Video Sample Cnt = 810
+Min: 0
+Max: 1269
+Average: 41.485784919653895
+Standard Deviation: 89.9937512356648
+Over 33 ms Cnt : 262
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1534
+Average: 42.88333333333333
+Standard Deviation: 94.27785165120072
+Over 33 ms Cnt : 230
+
+
+Received Front Video Sample Cnt = 728
+Min: 0
+Max: 986
+Average: 45.73039889958734
+Standard Deviation: 88.88363997693428
+Over 33 ms Cnt : 262
+
+
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 766
+Average: 39.9284862932062
+Standard Deviation: 79.83194288690737
+Over 33 ms Cnt : 268
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1022
+Average: 43.42280945757997
+Standard Deviation: 89.60180390349646
+Over 33 ms Cnt : 240
+
+
+Received Front Video Sample Cnt = 684
+Min: 0
+Max: 961
+Average: 48.98389458272328
+Standard Deviation: 100.44819635300382
+Over 33 ms Cnt : 250
+
+
+Received Front Video Sample Cnt = 770
+Min: 0
+Max: 1001
+Average: 43.52795838751626
+Standard Deviation: 98.10422557303868
+Over 33 ms Cnt : 227
+
+
+Received Front Video Sample Cnt = 794
+Min: 0
+Max: 682
+Average: 42.19167717528373
+Standard Deviation: 71.40558599514932
+Over 33 ms Cnt : 254
+
+
+Received Front Video Sample Cnt = 794
+Min: 0
+Max: 1236
+Average: 41.96343001261034
+Standard Deviation: 90.72457341467143
+Over 33 ms Cnt : 259
+
+Received Front Video Sample Cnt = 809
+Min: 0
+Max: 947
+Average: 41.56559405940594
+Standard Deviation: 86.47717981127992
+Over 33 ms Cnt : 258
+
+
+
+Received Front Video Sample Cnt = 823
+Min: 0
+Max: 955
+Average: 40.50608272506083
+Standard Deviation: 80.12535396133161
+Over 33 ms Cnt : 260
+
+
+Received Front Video Sample Cnt = 770
+Min: 0
+Max: 1091
+Average: 43.518855656697006
+Standard Deviation: 90.06024552441575
+Over 33 ms Cnt : 250
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 966
+Average: 42.777920410783054
+Standard Deviation: 85.8977851848042
+Over 33 ms Cnt : 243
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1154
+Average: 42.94094993581515
+Standard Deviation: 97.01584166986734
+Over 33 ms Cnt : 221
+
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 1109
+Average: 39.82002383790226
+Standard Deviation: 81.71835861909315
+Over 33 ms Cnt : 248
+
+
+Received Front Video Sample Cnt = 791
+Min: 0
+Max: 799
+Average: 42.278481012658226
+Standard Deviation: 86.1460985560394
+Over 33 ms Cnt : 247
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1484
+Average: 42.43260590500642
+Standard Deviation: 95.64412544146887
+Over 33 ms Cnt : 251
+
+
+Received Front Video Sample Cnt = 778
+Min: 0
+Max: 1730
+Average: 43.102960102960104
+Standard Deviation: 100.48505118908639
+Over 33 ms Cnt : 258
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 1356
+Average: 42.940491591203106
+Standard Deviation: 97.30369671990829
+Over 33 ms Cnt : 228
+
+
+Received Front Video Sample Cnt = 742
+Min: 0
+Max: 731
+Average: 44.95006747638327
+Standard Deviation: 78.44331572573108
+Over 33 ms Cnt : 253
+
+
+Received Front Video Sample Cnt = 703
+Min: 0
+Max: 1122
+Average: 46.8988603988604
+Standard Deviation: 101.09332391978934
+Over 33 ms Cnt : 242
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 888
+Average: 43.245795601552395
+Standard Deviation: 79.46842554285908
+Over 33 ms Cnt : 264
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1376
+Average: 42.8408215661104
+Standard Deviation: 103.47926970104503
+Over 33 ms Cnt : 248
+
+
+Received Front Video Sample Cnt = 803
+Min: 0
+Max: 917
+Average: 41.80299251870324
+Standard Deviation: 76.81789257376018
+Over 33 ms Cnt : 258
+
+
+Received Front Video Sample Cnt = 746
+Min: 0
+Max: 841
+Average: 43.210738255033554
+Standard Deviation: 90.01289925527833
+Over 33 ms Cnt : 233
+
+
+Received Front Video Sample Cnt = 777
+Min: 0
+Max: 1099
+Average: 43.016752577319586
+Standard Deviation: 88.02726837226696
+Over 33 ms Cnt : 232
+
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 1328
+Average: 44.8875
+Standard Deviation: 98.81985495151714
+Over 33 ms Cnt : 270
+
+
+Received Front Video Sample Cnt = 836
+Min: 0
+Max: 1230
+Average: 40.06107784431138
+Standard Deviation: 94.04846428712378
+Over 33 ms Cnt : 243
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 929
+Average: 42.62179487179487
+Standard Deviation: 89.69489186986996
+Over 33 ms Cnt : 248
+
+
+Received Front Video Sample Cnt = 790
+Min: 0
+Max: 1366
+Average: 41.82002534854246
+Standard Deviation: 97.12528620957642
+Over 33 ms Cnt : 250
+
+Received Front Video Sample Cnt = 771
+Min: 0
+Max: 1037
+Average: 43.41038961038961
+Standard Deviation: 91.7779669459469
+Over 33 ms Cnt : 231
+
+
+
+Received Front Video Sample Cnt = 772
+Min: 0
+Max: 1032
+Average: 42.9935149156939
+Standard Deviation: 88.46410285314403
+Over 33 ms Cnt : 251
+
+
+Received Front Video Sample Cnt = 757
+Min: 0
+Max: 1795
+Average: 44.26190476190476
+Standard Deviation: 99.77953304871446
+Over 33 ms Cnt : 252
+
+
+Received Front Video Sample Cnt = 726
+Min: 0
+Max: 1621
+Average: 46.15862068965517
+Standard Deviation: 100.37273127849217
+Over 33 ms Cnt : 264
+
+Received Front Video Sample Cnt = 728
+Min: 0
+Max: 931
+Average: 45.6808803301238
+Standard Deviation: 89.85632704847112
+Over 33 ms Cnt : 251
+
+Received Front Video Sample Cnt = 900
+Min: 0
+Max: 829
+Average: 37.09788654060067
+Standard Deviation: 84.5200108996345
+Over 33 ms Cnt : 243
+
+Received Front Video Sample Cnt = 839
+Min: 0
+Max: 1074
+Average: 39.982100238663485
+Standard Deviation: 88.25419413389848
+Over 33 ms Cnt : 256
+
+
+
+
+
+Received Front Video Sample Cnt = 797
+Min: 0
+Max: 1566
+Average: 41.62814070351759
+Standard Deviation: 98.32994867328445
+Over 33 ms Cnt : 247
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 742
+Average: 43.16946959896507
+Standard Deviation: 84.05564595199363
+Over 33 ms Cnt : 227
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 1574
+Average: 46.391666666666666
+Standard Deviation: 115.90653292631956
+Over 33 ms Cnt : 247
+
+
+
+Received Front Video Sample Cnt = 737
+Min: 0
+Max: 1191
+Average: 45.203804347826086
+Standard Deviation: 98.76503345492789
+Over 33 ms Cnt : 265
+
+
+Received Front Video Sample Cnt = 813
+Min: 0
+Max: 967
+Average: 40.99014778325123
+Standard Deviation: 89.8565901839456
+Over 33 ms Cnt : 254
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 1571
+Average: 43.067270375161705
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1141
+Average: 42.89987163029525
+Standard Deviation: 101.49903526222283
+Over 33 ms Cnt : 227
+
+Standard Deviation: 91.13280545552564
+Over 33 ms Cnt : 240
+
+
+
+Received Front Video Sample Cnt = 796
+Min: 0
+Max: 706
+Average: 42.09056603773585
+Standard Deviation: 73.00844682108209
+Over 33 ms Cnt : 253
+
+Received Front Video Sample Cnt = 868
+Min: 0
+Max: 1035
+Average: 38.562860438292965
+Standard Deviation: 90.00767187669162
+Over 33 ms Cnt : 236
+
+
+
+Received Front Video Sample Cnt = 794
+Min: 0
+Max: 779
+Average: 42.182849936948294
+Standard Deviation: 76.22862081576925
+Over 33 ms Cnt : 261
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1039
+Average: 44.963838664812236
+Standard Deviation: 93.3565186930351
+Over 33 ms Cnt : 250
+
+
+Received Front Video Sample Cnt = 748
+Min: 0
+Max: 956
+Average: 44.809906291834004
+Standard Deviation: 100.7103219704755
+Over 33 ms Cnt : 235
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1119
+Average: 42.84980744544288
+Standard Deviation: 87.41822092544763
+Over 33 ms Cnt : 254
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 970
+Average: 41.74487179487179
+Standard Deviation: 90.04510429243139
+Over 33 ms Cnt : 267
+
+
+Received Front Video Sample Cnt = 776
+Min: 0
+Max: 1117
+Average: 43.05806451612903
+Standard Deviation: 85.08678216667798
+Over 33 ms Cnt : 240
+
+
+Received Front Video Sample Cnt = 719
+Min: 0
+Max: 1290
+Average: 46.137883008356546
+Standard Deviation: 91.18435632200394
+Over 33 ms Cnt : 256
+
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 1619
+Average: 46.154381084840054
+Standard Deviation: 98.26849954265006
+Over 33 ms Cnt : 244
+
+Received Front Video Sample Cnt = 815
+Min: 0
+Max: 644
+Average: 41.06879606879607
+Standard Deviation: 62.82677862432359
+Over 33 ms Cnt : 286
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1259
+Average: 42.709884467265724
+Standard Deviation: 86.22178192854761
+Over 33 ms Cnt : 248
+
+
+Received Front Video Sample Cnt = 660
+Min: 0
+Max: 1627
+Average: 47.943854324734446
+Standard Deviation: 116.13530726806935
+Over 33 ms Cnt : 223
+
+
+Received Front Video Sample Cnt = 828
+Min: 0
+Max: 932
+Average: 40.4546553808948
+Standard Deviation: 81.06255552096678
+Over 33 ms Cnt : 269
+
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 1374
+Average: 46.393055555555556
+Standard Deviation: 102.2099131232562
+Over 33 ms Cnt : 244
+
+
+Received Front Video Sample Cnt = 834
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1592
+Average: 42.88461538461539
+Standard Deviation: 87.5404786618125
+Over 33 ms Cnt : 254
+
+Min: 0
+Max: 801
+Average: 40.16926770708283
+Standard Deviation: 80.97766304771353
+Over 33 ms Cnt : 258
+
+Received Front Video Sample Cnt = 825
+Min: 0
+Max: 1079
+Average: 39.77063106796116
+Standard Deviation: 86.9648381215343
+Over 33 ms Cnt : 246
+
+
+
+
+Received Front Video Sample Cnt = 833
+Min: 0
+Max: 946
+Average: 40.17307692307692
+Standard Deviation: 73.96026964990318
+Over 33 ms Cnt : 257
+
+
+Received Front Video Sample Cnt = 723
+Min: 0
+Max: 1698
+Average: 46.33102493074792
+Standard Deviation: 97.69579307637608
+Over 33 ms Cnt : 248
+
+
+Received Front Video Sample Cnt = 736
+Min: 0
+Max: 1068
+Average: 45.29387755102041
+Standard Deviation: 89.33586037482472
+Over 33 ms Cnt : 255
+
+
+Received Front Video Sample Cnt = 831
+Min: 0
+Max: 1633
+Average: 40.32289156626506
+Standard Deviation: 99.40725207515204
+Over 33 ms Cnt : 240
+
+
+Received Front Video Sample Cnt = 734
+Min: 0
+Max: 1898
+Average: 45.46657571623465
+Standard Deviation: 112.06550432381967
+Over 33 ms Cnt : 235
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1043
+Average: 42.67307692307692
+Standard Deviation: 93.79389320927594
+Over 33 ms Cnt : 227
+
+
+Received Front Video Sample Cnt = 740
+Min: 0
+Max: 1116
+Average: 45.28281461434371
+Standard Deviation: 97.59652861393518
+Over 33 ms Cnt : 215
+
+
+
+Received Front Video Sample Cnt = 785
+Min: 0
+Max: 1258
+Average: 42.40561224489796
+Standard Deviation: 91.57161672107176
+Over 33 ms Cnt : 265
+
+Received Front Video Sample Cnt = 798
+Min: 0
+Max: 904
+Average: 41.939774153074026
+Standard Deviation: 75.05313140335731
+Over 33 ms Cnt : 248
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 819
+Average: 42.84871794871795
+Standard Deviation: 79.68333278670873
+Over 33 ms Cnt : 263
+
+
+
+
+Received Front Video Sample Cnt = 900
+Min: 0
+Max: 788
+Average: 36.988876529477196
+Standard Deviation: 79.90144018246289
+Over 33 ms Cnt : 229
+
+Received Front Video Sample Cnt = 840
+
+Min: 0
+Max: 697
+Average: 39.70560190703218
+Standard Deviation: 82.20885553329522
+Over 33 ms Cnt : 254
+
+
+Received Front Video Sample Cnt = 779
+Min: 0
+Max: 974
+Average: 42.29305912596401
+Standard Deviation: 76.07283398215289
+Over 33 ms Cnt : 241
+
+
+Received Front Video Sample Cnt = 837
+Min: 0
+Max: 935
+Average: 39.338516746411486
+Standard Deviation: 78.56322842754015
+Over 33 ms Cnt : 267
+
+
+Received Front Video Sample Cnt = 784
+Min: 0
+Max: 977
+Average: 42.40485312899106
+Standard Deviation: 79.76155926635585
+Over 33 ms Cnt : 247
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 948
+Average: 42.506410256410255
+Standard Deviation: 81.23703027015291
+Over 33 ms Cnt : 236
+
+
+Received Front Video Sample Cnt = 846
+Min: 0
+Max: 764
+Average: 39.127810650887575
+Standard Deviation: 72.86695500632054
+Over 33 ms Cnt : 294
+
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 709
+Average: 42.825641025641026
+Standard Deviation: 83.4117243125582
+Over 33 ms Cnt : 265
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1025
+Average: 42.845956354300384
+Standard Deviation: 96.02034654652448
+Over 33 ms Cnt : 261
+
+Received Front Video Sample Cnt = 835
+Min: 0
+Max: 699
+Average: 40.094724220623505
+Standard Deviation: 80.21755129468434
+Over 33 ms Cnt : 275
+
+
+
+Received Front Video Sample Cnt = 773
+Min: 0
+Max: 877
+Average: 43.310880829015545
+Standard Deviation: 89.65408038852567
+Over 33 ms Cnt : 250
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 955
+Average: 39.831942789034564
+Standard Deviation: 81.8535226509003
+Over 33 ms Cnt : 252
+
+
+
+Received Front Video Sample Cnt = 731
+Min: 0
+Max: 1559
+Average: 45.606849315068494
+Standard Deviation: 97.8554858833701
+Over 33 ms Cnt : 238
+
+Received Front Video Sample Cnt = 754
+Min: 0
+Max: 1254
+Average: 44.36254980079681
+Standard Deviation: 94.5566858091712
+Over 33 ms Cnt : 257
+
+Received Front Video Sample Cnt = 894
+Min: 0
+Max: 973
+Average: 37.586786114221724
+Standard Deviation: 82.17087135128546
+Over 33 ms Cnt : 275
+
+
+
+
+Received Front Video Sample Cnt = 841
+Min: 0
+Max: 740
+Average: 39.74047619047619
+Standard Deviation: 75.20716961618756
+Over 33 ms Cnt : 273
+
+
+Received Front Video Sample Cnt = 812
+Min: 0
+Max: 1030
+Average: 41.260172626387174
+Standard Deviation: 91.75464591815371
+Over 33 ms Cnt : 257
+
+Received Front Video Sample Cnt = 775
+Min: 0
+Max: 2733
+Average: 43.200258397932814
+Standard Deviation: 145.45995817219864
+Over 33 ms Cnt : 259
+
+
+Received Front Video Sample Cnt = 683
+Min: 0
+Max: 2594
+Average: 48.983870967741936
+Standard Deviation: 128.95127874966562
+Over 33 ms Cnt : 229
+
+
+Received Front Video Sample Cnt = 828
+Min: 0
+Max: 1594
+Average: 40.46916565900847
+Standard Deviation: 93.53531986658571
+Over 33 ms Cnt : 224
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 911
+Average: 42.82798459563543
+Standard Deviation: 93.1029559029341
+Over 33 ms Cnt : 254
+
+
+
+Received Front Video Sample Cnt = 764
+Min: 0
+Max: 1556
+Average: 42.12712975098296
+Standard Deviation: 95.18165476026306
+Over 33 ms Cnt : 263
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1587
+Average: 42.63157894736842
+Standard Deviation: 85.04617233572304
+Over 33 ms Cnt : 262
+
+Received Front Video Sample Cnt = 785
+Min: 0
+Max: 807
+Average: 42.74234693877551
+Standard Deviation: 76.8959338021732
+Over 33 ms Cnt : 253
+
+
+
+Received Front Video Sample Cnt = 822
+Min: 0
+Max: 993
+Average: 40.66504263093788
+Standard Deviation: 84.67702404072809
+Over 33 ms Cnt : 257
+
+
+Received Front Video Sample Cnt = 759
+Min: 0
+Max: 1526
+Average: 43.489445910290236
+Standard Deviation: 104.64161362889628
+Over 33 ms Cnt : 220
+
+
+Received Front Video Sample Cnt = 836
+Min: 0
+Max: 1154
+Average: 40.0251497005988
+Standard Deviation: 85.8660038954742
+Over 33 ms Cnt : 265
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1781
+Average: 42.89871794871795
+Standard Deviation: 92.53670788421562
+Over 33 ms Cnt : 245
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1353
+Average: 42.7599486521181
+Standard Deviation: 98.16179637475992
+Over 33 ms Cnt : 246
+
+
+Received Front Video Sample Cnt = 681
+Min: 0
+Max: 1216
+Average: 47.036764705882355
+Standard Deviation: 91.94163814522226
+Over 33 ms Cnt : 222
+
+
+Received Front Video Sample Cnt = 795
+Min: 0
+Max: 1275
+Average: 42.1183879093199
+Standard Deviation: 94.27222807816636
+Over 33 ms Cnt : 243
+
+Received Front Video Sample Cnt = 750
+Min: 0
+Max: 778
+Average: 44.82109479305741
+Standard Deviation: 92.73082934611328
+Over 33 ms Cnt : 246
+
+
+
+Received Front Video Sample Cnt = 787
+Min: 0
+Max: 935
+Average: 42.46055979643766
+Standard Deviation: 89.06279967926861
+Over 33 ms Cnt : 209
+
+
+Received Front Video Sample Cnt = 801
+Min: 0
+Max: 966
+Average: 41.805
+Standard Deviation: 85.0208619986883
+Over 33 ms Cnt : 265
+
+Received Front Video Sample Cnt = 727
+Min: 0
+Max: 1018
+Average: 46.333333333333336
+Standard Deviation: 99.13387540354333
+Over 33 ms Cnt : 248
+
+
+
+Received Front Video Sample Cnt = 754
+Min: 0
+Max: 2209
+Average: 44.16998671978752
+Standard Deviation: 122.35341796092011
+Over 33 ms Cnt : 237
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1179
+Average: 42.88205128205128
+Standard Deviation: 86.95033322003023
+Over 33 ms Cnt : 253
+
+
+
+Received Front Video Sample Cnt = 779
+Min: 0
+Max: 878
+Average: 42.88946015424165
+Standard Deviation: 79.80619595023872
+Over 33 ms Cnt : 248
+
+
+Received Front Video Sample Cnt = 719
+Min: 0
+Max: 1831
+Average: 46.29387186629526
+Standard Deviation: 120.5390573038674
+Over 33 ms Cnt : 251
+
+
+Received Front Video Sample Cnt = 772
+Min: 0
+Max: 1551
+Average: 43.416342412451364
+Standard Deviation: 103.8145942503209
+Over 33 ms Cnt : 227
+
+Received Front Video Sample Cnt = 778
+Min: 0
+Max: 1393
+Average: 43.02187902187902
+Standard Deviation: 92.44016902566617
+Over 33 ms Cnt : 283
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 1585
+Average: 39.83075089392133
+Standard Deviation: 91.39487188146806
+Over 33 ms Cnt : 225
+
+Received Front Video Sample Cnt = 775
+Min: 0
+Max: 1680
+Average: 43.248062015503876
+Received Front Video Sample Cnt = 858
+Min: 0
+Max: 839
+Average: 38.98599766627771
+Standard Deviation: 81.80140615524583
+Over 33 ms Cnt : 254
+
+
+Standard Deviation: 112.79034524039879
+Over 33 ms Cnt : 250
+
+Received Front Video Sample Cnt = 723
+Min: 0
+Max: 1441
+Average: 46.34626038781163
+Standard Deviation: 94.1547867665625
+Over 33 ms Cnt : 244
+
+
+
+
+
+
+Received Front Video Sample Cnt = 709
+Min: 0
+Max: 1992
+Average: 47.590395480225986
+Standard Deviation: 116.39746108614752
+Over 33 ms Cnt : 234
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 945
+Average: 39.81644815256257
+Standard Deviation: 81.17220568754163
+Over 33 ms Cnt : 247
+
+
+
+Received Front Video Sample Cnt = 801
+Min: 0
+Max: 1353
+Average: 41.655
+Standard Deviation: 98.18998663305744
+Over 33 ms Cnt : 252
+
+
+Received Front Video Sample Cnt = 819
+Min: 0
+Max: 1544
+Average: 40.90831295843521
+Standard Deviation: 92.61258346192109
+Over 33 ms Cnt : 257
+
+Received Front Video Sample Cnt = 824
+Min: 0
+Max: 1396
+Average: 40.60145808019441
+Standard Deviation: 98.01292645580226
+Over 33 ms Cnt : 246
+
+Received Front Video Sample Cnt = 778
+Min: 0
+Max: 915
+Average: 42.985842985842986
+Standard Deviation: 82.10475184646396
+Over 33 ms Cnt : 257
+
+
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 779
+Average: 41.504492939666235
+Standard Deviation: 73.36168453446189
+Over 33 ms Cnt : 259
+
+Received Front Video Sample Cnt = 772
+Min: 0
+Max: 929
+Average: 43.16083009079118
+
+Received Front Video Sample Cnt = 768
+Min: 0
+Max: 1603
+Average: 43.61277705345502
+Standard Deviation: 101.63274628317298
+Over 33 ms Cnt : 246
+
+Standard Deviation: 84.35255870228379
+Over 33 ms Cnt : 251
+
+
+
+Received Front Video Sample Cnt = 823
+Min: 0
+Max: 928
+Average: 40.76520681265207
+Standard Deviation: 84.1618161372296
+Over 33 ms Cnt : 253
+
+Received Front Video Sample Cnt = 852
+Min: 0
+Max: 902
+Average: 39.11398354876616
+Standard Deviation: 81.09280015446991
+Over 33 ms Cnt : 257
+
+Received Front Video Sample Cnt = 801
+Min: 0
+Max: 715
+Average: 41.8375
+Standard Deviation: 73.63651331880129
+Over 33 ms Cnt : 261
+Received Front Video Sample Cnt = 811
+Min: 0
+Max: 1537
+Average: 41.3
+Standard Deviation: 105.52172615797197
+Over 33 ms Cnt : 226
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 738
+Average: 41.243589743589745
+Standard Deviation: 78.37401876823066
+Over 33 ms Cnt : 217
+
+
+
+
+
+
+
+Received Front Video Sample Cnt = 812
+Min: 0
+Max: 982
+Average: 41.199753390875465
+Standard Deviation: 75.01161143121523
+Over 33 ms Cnt : 256
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 826
+Average: 40.66025641025641
+Standard Deviation: 71.1322979037122
+Over 33 ms Cnt : 244
+
+
+Received Front Video Sample Cnt = 797
+Min: 0
+Max: 671
+Average: 42.04396984924623
+Standard Deviation: 71.16801428736882
+Over 33 ms Cnt : 257
+
+Received Front Video Sample Cnt = 707
+Min: 0
+Max: 1029
+Average: 47.32011331444759
+Standard Deviation: 87.18153420919657
+Over 33 ms Cnt : 251
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 3323
+Average: 46.17524339360222
+Standard Deviation: 142.25999195840737
+Over 33 ms Cnt : 241
+
+
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Received Front Video Sample Cnt = 841
+Min: 0
+Max: 1545
+Average: 39.8297619047619
+Standard Deviation: 87.25011021928077
+Over 33 ms Cnt : 265
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Received Front Video Sample Cnt = 900
+Min: 0
+Received Front Video Sample Cnt = 765
+Min: 0
+Max: 1652
+Average: 43.803664921465966
+Standard Deviation: 117.73189520632043
+Over 33 ms Cnt : 244
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 837
+Average: 42.76765083440308
+Standard Deviation: 86.13849004370987
+Over 33 ms Cnt : 254
+
+Received Front Video Sample Cnt = 736
+Min: 0
+Max: 1255
+
+Received Front Video Sample Cnt = 738
+Min: 0
+Max: 2267
+Average: 45.379918588873814
+Standard Deviation: 119.41135373719798
+Over 33 ms Cnt : 240
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1566
+Average: 42.836970474967906
+Standard Deviation: 93.56546310510251
+Over 33 ms Cnt : 263
+
+
+Max: 1710
+Average: 42.88831835686778
+Standard Deviation: 113.25537324245987
+Over 33 ms Cnt : 253
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1176
+Average: 42.77564102564103
+Standard Deviation: 85.16624570004461
+Over 33 ms Cnt : 244
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 944
+Average: 42.59563543003851
+Standard Deviation: 85.62772535441766
+Over 33 ms Cnt : 240
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 830
+Average: 42.080872913992295
+Standard Deviation: 82.17081917418516
+Over 33 ms Cnt : 241
+
+
+Received Front Video Sample Cnt = 820
+Min: 0
+Max: 995
+Average: 40.747252747252745
+Standard Deviation: 85.22915086927868
+Over 33 ms Cnt : 230
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1206
+Average: 42.74487179487179
+Standard Deviation: 76.26458859589758
+Over 33 ms Cnt : 253
+
+
+Received Front Video Sample Cnt = 819
+Min: 0
+Max: 694
+Average: 39.58190709046455
+Standard Deviation: 78.46871125328718
+Over 33 ms Cnt : 261
+
+
+Received Front Video Sample Cnt = 731
+Min: 0
+Max: 1196
+Average: 45.8054794520548
+Standard Deviation: 97.69750896336527
+Over 33 ms Cnt : 273
+
+
+Received Front Video Sample Cnt = 827
+Min: 0
+Max: 837
+Average: 40.516949152542374
+Standard Deviation: 87.7474519867081
+Over 33 ms Cnt : 248
+
+
+Max: 983
+Average: 37.16796440489433
+Standard Deviation: 81.91392181200868
+Over 33 ms Cnt : 265
+
+
+Max: 754
+Average: 41.92051282051282
+Standard Deviation: 76.25946827969047
+Over 33 ms Cnt : 235
+
+
+
+
+Average: 45.44353741496599
+Standard Deviation: 98.96196896673192
+Over 33 ms Cnt : 223
+
+
+Received Front Video Sample Cnt = 758
+Min: 0
+Max: 710
+Average: 44.1783355350066
+Standard Deviation: 81.35342050995429
+Over 33 ms Cnt : 237
+
+
+Received Front Video Sample Cnt = 800
+Min: 0
+Max: 1132
+Average: 41.879849812265334
+Standard Deviation: 94.25339628026902
+Over 33 ms Cnt : 249
+
+
+Received Front Video Sample Cnt = 800
+Min: 0
+Max: 1154
+Average: 41.83103879849812
+Standard Deviation: 93.06083029646028
+Over 33 ms Cnt : 236
+
+Received Front Video Sample Cnt = 802
+Min: 0
+Max: 847
+Average: 41.833957553058674
+Standard Deviation: 72.38348868112901
+Over 33 ms Cnt : 260
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1435
+Average: 42.73684210526316
+Standard Deviation: 99.23498811418565
+Over 33 ms Cnt : 252
+
+
+
+Received Front Video Sample Cnt = 749
+Min: 0
+Max: 1657
+Average: 44.649732620320854
+Standard Deviation: 96.13565664485854
+Over 33 ms Cnt : 267
+
+
+Received Front Video Sample Cnt = 828
+Min: 0
+Max: 1935
+Average: 40.438935912938334
+Standard Deviation: 102.69483600707228
+Over 33 ms Cnt : 256
+
+
+Received Front Video Sample Cnt = 836
+Min: 0
+Max: 1116
+Average: 40.204790419161675
+Standard Deviation: 87.78472566958456
+Over 33 ms Cnt : 262
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 3412
+Average: 46.44861111111111
+Standard Deviation: 151.78113857080123
+Over 33 ms Cnt : 247
+
+
+
+Received Front Video Sample Cnt = 764
+Min: 0
+Max: 2075
+Average: 43.69200524246396
+Standard Deviation: 110.20008385341684
+Over 33 ms Cnt : 234
+
+Received Front Video Sample Cnt = 734
+Min: 0
+Max: 1674
+Average: 45.43383356070942
+Standard Deviation: 94.44806307124324
+Over 33 ms Cnt : 252
+
+
+
+Received Front Video Sample Cnt = 763
+Min: 0
+Max: 899
+Average: 43.70866141732284
+Standard Deviation: 83.85773575669505
+Over 33 ms Cnt : 245
+
+
+Received Front Video Sample Cnt = 776
+Min: 0
+Max: 1207
+Average: 43.104516129032255
+Standard Deviation: 94.40419983955435
+Over 33 ms Cnt : 235
+
+Received Front Video Sample Cnt = 719
+Min: 0
+Max: 1970
+Average: 46.598885793871865
+Standard Deviation: 119.92953176464833
+Over 33 ms Cnt : 239
+
+
+
+Received Front Video Sample Cnt = 840
+Received Front Video Sample Cnt = 776
+Min: 0
+Max: 1301
+Average: 43.05032258064516
+Standard Deviation: 93.91510948840192
+Over 33 ms Cnt : 215
+
+Min: 0
+Max: 1122
+Average: 39.81048867699642
+Standard Deviation: 90.5557919261394
+Over 33 ms Cnt : 226
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 1634
+Average: 46.38194444444444
+Standard Deviation: 102.50594810165474
+Over 33 ms Cnt : 246
+
+Received Front Video Sample Cnt = 778
+Min: 0
+Max: 1582
+Average: 42.808236808236806
+Standard Deviation: 104.5777587655362
+Over 33 ms Cnt : 245
+
+
+
+
+
+Received Front Video Sample Cnt = 841
+Min: 0
+Max: 807
+Average: 39.575
+Standard Deviation: 77.78461773353636
+Over 33 ms Cnt : 257
+
+
+Received Front Video Sample Cnt = 758
+Min: 0
+Max: 1306
+Average: 44.150594451783356
+Standard Deviation: 94.93822528981143
+Over 33 ms Cnt : 227
+
+
+Received Front Video Sample Cnt = 785
+Min: 0
+Max: 747
+Average: 42.692602040816325
+Standard Deviation: 68.36890588717195
+Over 33 ms Cnt : 272
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 902
+Average: 42.942233632862646
+Standard Deviation: 93.37174587362291
+Over 33 ms Cnt : 252
+
+Received Front Video Sample Cnt = 695
+Min: 0
+Max: 1571
+Average: 46.14553314121037
+Standard Deviation: 98.53765281268839
+Over 33 ms Cnt : 254
+
+
+
+
+Received Front Video Sample Cnt = 791
+Min: 0
+Max: 715
+Average: 42.34050632911392
+Standard Deviation: 87.30681678982162
+Over 33 ms Cnt : 255
+
+
+Received Front Video Sample Cnt = 817
+Min: 0
+Max: 790
+Average: 41.02205882352941
+Standard Deviation: 83.5969379990683
+Over 33 ms Cnt : 258
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 922
+Average: 42.790757381258025
+Standard Deviation: 78.87715618753339
+Over 33 ms Cnt : 254
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 1578
+Average: 42.96277278562259
+Standard Deviation: 92.37110452118203
+Over 33 ms Cnt : 263
+
+
+
+Received Front Video Sample Cnt = 773
+Min: 0
+Max: 1551
+Average: 43.27979274611399
+Standard Deviation: 95.77345060282391
+Over 33 ms Cnt : 232
+
+Received Front Video Sample Cnt = 794
+Min: 0
+Max: 913
+Average: 42.25094577553594
+Standard Deviation: 79.05916712449927
+Over 33 ms Cnt : 271
+
+Received Front Video Sample Cnt = 737
+Min: 0
+Max: 1254
+Average: 45.35461956521739
+Standard Deviation: 96.4650649501338
+Over 33 ms Cnt : 248
+
+
+
+
+Received Front Video Sample Cnt = 780
+Min: 0
+Max: 942
+Average: 40.31578947368421
+Standard Deviation: 86.05442284765181
+Over 33 ms Cnt : 206
+
+Received Front Video Sample Cnt = 741
+Min: 0
+Max: 907
+Average: 45.21351351351351
+Standard Deviation: 83.25670385202547
+Over 33 ms Cnt : 248
+
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 1167
+Average: 43.0608020698577
+Standard Deviation: 81.2076231796458
+Over 33 ms Cnt : 262
+
+Received Front Video Sample Cnt = 828
+Min: 0
+Max: 1613
+Average: 40.58403869407497
+Standard Deviation: 95.62454864668601
+Over 33 ms Cnt : 272
+
+Received Front Video Sample Cnt = 739
+Min: 0
+Max: 1536
+Average: 45.262872628726285
+Standard Deviation: 106.11367710995971
+Over 33 ms Cnt : 247
+
+
+Received Front Video Sample Cnt = 762
+Min: 0
+Max: 962
+Average: 43.86596583442839
+Standard Deviation: 90.55739446995338
+Over 33 ms Cnt : 237
+
+
+Received Front Video Sample Cnt = 840
+Min: 0
+Max: 927
+Average: 39.13706793802145
+Standard Deviation: 82.4191389560339
+Over 33 ms Cnt : 278
+
+
+
+
+Received Front Video Sample Cnt = 764
+Min: 0
+Max: 1779
+Average: 43.75753604193971
+Standard Deviation: 119.22663718580947
+Over 33 ms Cnt : 238
+
+Received Front Video Sample Cnt = 720
+Min: 0
+Max: 731
+Average: 44.22253129346314
+Standard Deviation: 82.01816681111384
+Over 33 ms Cnt : 234
+
+Received Front Video Sample Cnt = 751
+Min: 0
+Max: 1171
+Average: 44.168
+Standard Deviation: 95.9175676088588
+Over 33 ms Cnt : 225
+
+
+Received Front Video Sample Cnt = 684
+Min: 0
+Max: 2029
+Average: 48.805270863836014
+Standard Deviation: 120.86430505224108
+Over 33 ms Cnt : 210
+
+
+
+
+Received Front Video Sample Cnt = 862
+Min: 0
+Max: 647
+Average: 38.61788617886179
+Standard Deviation: 70.67582570994577
+Over 33 ms Cnt : 271
+
+
+Received Front Video Sample Cnt = 788
+Min: 0
+Max: 783
+Average: 42.36848792884371
+Standard Deviation: 79.10282451902536
+Over 33 ms Cnt : 267
+
+
+
+Received Front Video Sample Cnt = 781
+Min: 0
+Max: 1067
+Average: 41.67307692307692
+Standard Deviation: 80.33472949059713
+Over 33 ms Cnt : 263
+
+
+Received Front Video Sample Cnt = 774
+Min: 0
+Max: 878
+Average: 40.05174644243208
+Standard Deviation: 79.18829746593107
+Over 33 ms Cnt : 257
+
+
+Received Front Video Sample Cnt = 721
+Min: 0
+Max: 1289
+Average: 43.43888888888889
+Standard Deviation: 93.729036997844
+Over 33 ms Cnt : 242
+
+

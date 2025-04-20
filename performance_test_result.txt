@@ -1,59 +1,59 @@
---------------------------------------------------- t2.medium/Java/12C
-Client cnt : 12
-Average: 900.00
-Standard Deviation: 0.00
+--------------------------------------------------- c6i.xlarge/Java/50C
+Client cnt = 200
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/C++/12C
-Client cnt : 12
-Average: 900.00
-Standard Deviation: 0.00
+--------------------------------------------------- c6i.xlarge/C++/50C
+Client cnt = 50
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/Java/24C
-Client cnt : 24
-Average: 900.00
-Standard Deviation: 0.00
+--------------------------------------------------- c6i.xlarge/Java/100C
+Client cnt = 100
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/C++/24C
-Client cnt : 24
-Average: 900.00
-Standard Deviation: 0.00
+--------------------------------------------------- c6i.xlarge/C++/100C
+Client cnt = 100
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/Java/36C
-Client cnt : 36
-Average: 900.00
-Standard Deviation: 0.00
+--------------------------------------------------- c6i.xlarge/Java/1500C
+Client cnt = 150
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/C++/36C
-Client cnt : 36
-Average: 900.00
-Standard Deviation: 0.00
+--------------------------------------------------- c6i.xlarge/C++/150C
+Client cnt = 150
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/Java/48C
-Client cnt : 48
-Average: 723.50
-Standard Deviation: 78.52
+--------------------------------------------------- c6i.xlarge/Java/200C
+Client cnt = 200
+Average Received Video Sample Cnt per client = 866.62
+Standard Deviation = 43.78
 
---------------------------------------------------- t2.medium/C++/48C
-Client cnt : 48
-Average: 782.60
-Standard Deviation: 54.64
+--------------------------------------------------- c6i.xlarge/C++/200C
+Client cnt = 200
+Average Received Video Sample Cnt per client = 900.00
+Standard Deviation = 0.00
 
---------------------------------------------------- t2.medium/Java/60C
-Client cnt : 60
-Average: 543.28
-Standard Deviation: 71.68
+--------------------------------------------------- c6i.xlarge/Java/250C
+Client cnt = 250
+Average Received Video Sample Cnt per client = 779.13
+Standard Deviation = 42.44
 
---------------------------------------------------- t2.medium/C++/60C
-Client cnt : 60
-Average: 625.78
-Standard Deviation: 60.62
+--------------------------------------------------- c6i.xlarge/C++/250C
+Client cnt = 250
+Average Received Video Sample Cnt per client = 798.28
+Standard Deviation = 32.28
 
---------------------------------------------------- t2.medium/Java/72C
-Client cnt : 72
-Average: 479.28
-Standard Deviation: 79.29
+--------------------------------------------------- c6i.xlarge/Java/300C
+Client cnt = 300
+Average Received Video Sample Cnt per client = 496.50
+Standard Deviation = 94.10
 
---------------------------------------------------- t2.medium/C++/72C
-Client cnt : 72
-Average: 520.47
-Standard Deviation: 64.27
+--------------------------------------------------- c6i.xlarge/C++/300C
+Client cnt = 300
+Average Received Video Sample Cnt per client = 655.43
+Standard Deviation = 26.16
