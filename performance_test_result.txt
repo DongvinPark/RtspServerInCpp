@@ -18,7 +18,7 @@ Client cnt = 100
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00
 
---------------------------------------------------- c6i.xlarge/Java/1500C
+--------------------------------------------------- c6i.xlarge/Java/150C
 Client cnt = 150
 Average Received Video Sample Cnt per client = 900.00
 Standard Deviation = 0.00

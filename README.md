@@ -69,15 +69,7 @@
 <br><br/><br><br/>
 
 ## 성능 테스트 결과
-- 다수의 동시접속자들이 23 Mbps, 30 sec playtime, fps 30의 컨텐츠를 재생했을 때, 각 클라이언트들이 수신한 비디오 샘플 개수의 평균과 표준편차를 비교했습니다.
-- 사용된 EC2는 t2.medium 입니다.
-- 클라이언트 별로 수신한 비디오 샘플의 개수가 많고, 표준편차가 작을수록 좋습니다.
-- 높은 부하가 가해질 때, C++ 버전이 성능의 감소가 Java 버전 대비 천천히 진행되는 것을 알 수 있습니다.
-    - [테스트 결과 원본 데이터](https://github.com/DongvinPark/RtspServerInCpp/blob/main/performance_test_result.txt)
-    - 동시접속 클라이언트 수 별 비디오 샘플 수신 횟수 평균
-      ![Image](https://github.com/user-attachments/assets/59a44c7b-f18a-4748-9048-3b0ea8c7da3f)
-    - 동시접속 클라이언트 수 별 비디오 샘플 수신 횟수의 표준편차
-      ![Image](https://github.com/user-attachments/assets/04fd8540-1973-4c23-ab09-f79a347361eb)
+- 다음의 [문서]()에처 찾아볼 수 있습니다.
 <br><br/><br><br/>
 
 ## Install Dependencies
