@@ -565,15 +565,8 @@ void Session::closeSocket() {
 }
 
 void Session::transmitRtspRes(std::unique_ptr<Buffer> bufPtr) {
-  boost::asio::async_write(
-    *socketPtr,
-    boost::asio::buffer(bufPtr->buf),
-    [](const boost::system::error_code& ec, std::size_t bytes_transferred){
-      if (ec){
-        std::cerr << "fail to send rtsp res!";
-      }
-    }
-  );
+  boost::system::error_code ignored_error;
+  boost::asio::write(*socketPtr, boost::asio::buffer(bufPtr->buf), ignored_error);
   sentBitsSize += (bufPtr->len * 8);
 }
 
@@ -614,7 +607,9 @@ void Session::updateOptionsReqTimeMillis(const int64_t inputOptionsReqTimeMillis
 }
 
 void Session::startRtpAsyncLoop() {
-  if (isToreDown || !socketPtr || !rtpQueuePtr || inflightWrites >= maxInflight) return;
+  if (isToreDown || !socketPtr || !rtpQueuePtr || inflightWrites >= maxInflight){
+    return;
+  }
 
   // Pop next RTP packet
   RtpPacketInfo* rtpPacketInfoPtr = nullptr;

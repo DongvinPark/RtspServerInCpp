@@ -246,7 +246,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
   // 어거지
   int inflightWrites = 0;
-  const int maxInflight = 3;
+  const int maxInflight = 10;
 };
 
 #endif //SESSION_H
