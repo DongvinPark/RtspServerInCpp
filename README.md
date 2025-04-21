@@ -56,12 +56,12 @@
 
 ## 프로젝트 내부 구조
 <img width="879" alt="Image" src="https://github.com/user-attachments/assets/31875ef2-fb14-4586-af59-937aa6142564" /><br>
-- 메인 io_context와 워커 io_context 풀이 있습니다.
-- 메인 io_context는 네트워킹에 필요한 소켓을 만들고, RTSP Transaction을 담당합니다.
-- 워커 io_context는 풀은 네트워킹 이외에 필요한 모든 async task, concurrent task들을 담당합니다. 기존에 새로운 스레드를 만들어서 처리하던 task들을 스레드 없이 처리할 수 있게 해줍니다.
+- main io_context와 worker io_context pool이 있습니다.
+- main io_context는 네트워킹에 필요한 소켓을 만들고, RTSP Transaction을 담당합니다.
+- worker io_context pool은 네트워킹 이외에 필요한 모든 async task, concurrent task들을 담당합니다. 기존에 새로운 스레드를 만들어서 처리하던 task들을 스레드 없이 처리할 수 있게 해줍니다.
 - Video & Audio 샘플을 읽는 태스크들은 RTP 패킷들을 lockfree queue에 집어 넣습니다.
-- RTP Tx 스레드는 패킷들을 전송합니다.
-- Content File Meta는 싱글톤 불변 클래스이며, 서버 내 모든 세션들이 이를 참조하여 RTP 패킷들의 메타정보를 얻고 이를 참조하여 std::ifstream(==File Stream in C++)에서 실제 데이터들을 읽어들입니다. 
+- RTP Tx 스레드는 lockfree queue에서 RTP 패킷들 꺼내서 클라이언트에게 전송합니다.
+- Content File Meta는 싱글톤 불변 클래스이며, 서버 내 모든 Session들이 이를 참조하여 RTP 패킷들의 메타정보를 읽어들입니다. 이 메티정보를 참조하여 std::ifstream(==File Stream)에서 실제 데이터들을 읽어들입니다. 
 <br><br/><br><br/>
 
 ## 성능 테스트 결과
