@@ -1,7 +1,7 @@
 # 성능 테스트 결과
 
 ## 테스트 방법
-<img width="923" alt="Image" src="https://github.com/user-attachments/assets/8c309ce0-5de8-4b1a-b95e-adef05f91141" /><br>
+<img width="919" alt="Image" src="https://github.com/user-attachments/assets/2f39008a-97b7-4de5-9915-59b53d175ec4" /><br>
 - ***1 개의 컨테이너 == 1 명의 RTSP 스트리밍 시청 클라이언트가 성립함.***
 - ***순수하게 RTSP 서버에만 부하를 주기 위해서,***
   - 로컬 WIFI 라우터를 사용하지 않고 AWS 내부망 만을 사용함.
