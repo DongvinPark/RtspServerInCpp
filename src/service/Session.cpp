@@ -640,7 +640,7 @@ void Session::startRtpAsyncLoop() {
         sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
 
         // Start next one right away
-        startRtpAsyncLoop();
+        self->startRtpAsyncLoop();
       }
     });
 }
