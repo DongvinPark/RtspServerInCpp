@@ -634,19 +634,15 @@ void Session::startRtpAsyncLoop() {
   boost::asio::async_write(*socketPtr, buffer,
     [this, self, rtpPacketInfoPtr](const boost::system::error_code& ec, std::size_t bytes_transferred) {
       inflightWrites--;
+      rtpPacketInfoPtr->samplePtr->refCount -= 1;
+      allocatedBytesForSample.fetch_sub(static_cast<int64_t>(rtpPacketInfoPtr->length));
       if (!ec) {
-        rtpPacketInfoPtr->samplePtr->refCount -= 1;
-        allocatedBytesForSample.fetch_sub(static_cast<int64_t>(rtpPacketInfoPtr->length));
         sentBitsSize += static_cast<int>(rtpPacketInfoPtr->length * 8);
-      }
-      // Start next one right away
-      startRtpAsyncLoop();
-    });
 
-  // Launch the next loop ASAP (but only if under limit)
-  if (inflightWrites < maxInflight) {
-    startRtpAsyncLoop();
-  }
+        // Start next one right away
+        startRtpAsyncLoop();
+      }
+    });
 }
 
 void Session::asyncReceive() {
