@@ -42,7 +42,7 @@
 - worker io_context pool은 네트워킹 이외에 필요한 모든 async task, concurrent task, delayted task, non-blocking task 들의 스케줄링과 실행을 담당합니다. 기존에 새로운 스레드를 만들어서 처리하던 이러한 task들을 스레드 생성 없이 처리할 수 있게 해줍니다.
 - Video & Audio 샘플을 읽는 태스크들은 RTP 패킷들을 lockfree queue에 집어 넣습니다.
 - RTP Tx 스레드는 lockfree queue에서 RTP 패킷들 꺼내서 클라이언트에게 전송합니다.
-- Content File Meta는 싱글톤 불변 클래스이며, 서버 내 모든 Session들이 이를 참조하여 RTP 패킷들의 메타정보를 읽어들입니다. 이 메티정보를 참조하여 std::ifstream(==Stream Handler)에서 실제 데이터들을 읽어들입니다.
+- Content File Meta는 싱글톤 불변 클래스이며, 서버 내 모든 Session들이 이를 참조하여 RTP 패킷들의 메타정보를 읽어들입니다. 이 메티정보를 참조하여 std::ifstream(==Stream Handler)에서 비디오 스트림 재생에 필요한 데이터들을 읽어들입니다.
 <br><br/><br><br/>
 
 ## 재생 아키텍처
@@ -54,8 +54,13 @@
 
 ## Troubleshooting
 1. TEARDOWN 한 Session 제거 시 SIGSEGV 발생 문제
+   - [Async task를 수행하는 객체를 삭제하는 방법](https://github.com/DongvinPark/RtspServerInCpp/blob/main/CppTips.md#35-socket%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC-async%ED%95%9C-%EC%9E%91%EC%97%85%EC%9D%84-%EC%B2%98%EB%A6%AC%ED%95%98%EB%8A%94-%EA%B0%9D%EC%B2%B4%EB%8A%94-%EC%96%B4%EB%96%BB%EA%B2%8C-%EC%82%AD%EC%A0%9C%ED%95%B4%EC%95%BC-%ED%95%98%EB%8A%94%EA%B0%80)
 2. Out of Memory로 인한 서버 강제 종료 문제
-3. io_context의 부하 급증으로 인한 RTP 패킷 전송 성능 저하 문제
+   - [C/C++ 프로그램의 메모리 사용량 추적하기](https://github.com/DongvinPark/RtspServerInCpp/blob/main/CppTips.md#43-cc-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8%EC%9D%98-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%82%AC%EC%9A%A9%EB%9F%89%EC%9D%84-%EC%B6%94%EC%A0%81%ED%95%98%EA%B3%A0-%EA%B4%80%EB%A0%A8-%EC%9D%B4%EC%8A%88%EB%A5%BC-%EC%A7%84%EB%8B%A8%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95)
+   - [클라이언트 당 할당 가능한 샘플 사이즈 제한하기](https://github.com/DongvinPark/RtspServerInCpp/blob/main/CppTips.md#46-%EC%8A%A4%ED%8A%B8%EB%A6%AC%EB%B0%8D-%EC%84%9C%EB%B2%84%EC%97%90%EC%84%9C-%EA%B7%BC%EB%B3%B8%EC%A0%81%EC%9C%BC%EB%A1%9C-oomout-of-memory-%EB%AC%B8%EC%A0%9C%EB%A5%BC-%EC%98%88%EB%B0%A9%ED%95%98%EB%8A%94-%EB%B0%A9%EB%B2%95)
+3. RTP 패킷 전송 성능 저하 문제
+   - [worker io_context pool 을 도입하기](https://github.com/DongvinPark/RtspServerInCpp/blob/main/CppTips.md#44-boostasioio_context-pool-%EB%8F%84%EC%9E%85%EC%9D%98-%ED%95%84%EC%9A%94%EC%84%B1%EA%B3%BC-%EB%B0%A9%EB%B2%95)
+   - [while true loop 블록킹하여 spin loop 제거하기](https://github.com/DongvinPark/RtspServerInCpp/blob/main/CppTips.md#44-boostasioio_context-pool-%EB%8F%84%EC%9E%85%EC%9D%98-%ED%95%84%EC%9A%94%EC%84%B1%EA%B3%BC-%EB%B0%A9%EB%B2%95)
 <br><br/><br><br/>
 
 ## 버전 정보
