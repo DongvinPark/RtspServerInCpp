@@ -30,7 +30,9 @@
 
 ## 성능 테스트 결과
 - **_Java 버전보다 약 33% 더 많은 동시접속 클라이언트들을 감당할 수 있습니다._**
-  - Java : 150 명, C++ : 200 명
+  - c6i.xlarge EC2에서 23 Mbps 컨텐츠 스트리밍 시,
+    - Java : 150 명
+    - C++ : 200 명
 - ***[테스트 결과 보고서](https://github.com/DongvinPark/RtspServerInCpp/blob/main/PerformanceTestResult.md)***
 - ***[테스트 원본 데이터](https://github.com/DongvinPark/RtspServerInCpp/tree/main/originnal-test-results)***
 <br><br/><br><br/>
