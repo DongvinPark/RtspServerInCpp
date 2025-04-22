@@ -45,7 +45,7 @@
 - Content File Meta는 싱글톤 불변 클래스이며, 서버 내 모든 Session들이 이를 참조하여 RTP 패킷들의 메타정보를 읽어들입니다. 이 메티정보를 참조하여 std::ifstream(==Stream Handler)에서 비디오 스트림 재생에 필요한 데이터들을 읽어들입니다.
 <br><br/><br><br/>
 
-## 재생 아키텍처
+## 컨텐츠 전달 아키텍처
 <img width="815" alt="Image" src="https://github.com/user-attachments/assets/4461a3a1-63eb-4460-ac8e-18662e1d49b0" /><br>
 - 원본 컨텐츠를 Transcoder로 변환하여 AWS EFS(Elastic File System)에 업로드 합니다.
 - EFS와 마운트된 EC2에서 RTSP 스트리밍 서버가 동작합니다.
