@@ -29,6 +29,8 @@
 <br><br/><br><br/>
 
 ## 성능 테스트 결과
+- **_Java 버전보다 약 33% 더 많은 동시접속 클라이언트들을 감당할 수 있습니다._**
+  - Java : 150 명, C++ : 200 명
 - ***[테스트 결과 보고서](https://github.com/DongvinPark/RtspServerInCpp/blob/main/PerformanceTestResult.md)***
 - ***[테스트 원본 데이터](https://github.com/DongvinPark/RtspServerInCpp/tree/main/originnal-test-results)***
 <br><br/><br><br/>
@@ -48,6 +50,12 @@
 - 원본 컨텐츠를 Transcoder로 변환하여 AWS EFS(Elastic File System)에 업로드 합니다.
 - EFS와 마운트된 EC2에서 RTSP 스트리밍 서버가 동작합니다.
 - 클라이언트 디바이스 내부에서 작동하는 VR Player 인 AVPT 6.1이 RTSP 서버와 통신하면서 RTP 패킷을 수신합니다.
+<br><br/><br><br/>
+
+## Troubleshooting
+1. TEARDOWN 한 Session 제거 시 SIGSEGV 발생 문제
+2. Out of Memory로 인한 서버 강제 종료 문제
+3. io_context의 부하 급증으로 인한 RTP 패킷 전송 성능 저하 문제
 <br><br/><br><br/>
 
 ## 버전 정보

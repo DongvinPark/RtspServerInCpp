@@ -1223,7 +1223,7 @@ inline int64_t getElapsedTimeNanoSec(){
 	}
 ```
 <br><br/>
-35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
+### 35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
     <br> Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
     <br> 예를 들어서, 내가 '지금' boost asio steady timer를 .cancel() 시켰다고 해서 '즉시' 해당 타이머 태스크가 중단되고 바로 소멸되는 것이 아니다.
     <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 운영체제에 의해서 SIGSEGV 같은 segmentation falt 관련 에러 메시지를 받으면서 서버가 죽는다.
@@ -1244,8 +1244,8 @@ inline int64_t getElapsedTimeNanoSec(){
 3. 세션 객체 내에 존재하는 4 개의 boost asio steady timer를 .cancel() 시키고 일정 시간 기다리지 않고 바로 객체를 삭제한다.
 
 이러한 현상을 근거로
->> teardown 요청을 소켓에 write 한 다음,
->> 세션 내에 존재하는 모든 boost asio steady timer 들을 cancel 시켜주고,
+>> teardown 요청을 소켓에 write 한 다음, 5 초간 아무 활동도 하지 않도록 대기 시킨다.
+>> 5초가 지난 후, 세션 내에 존재하는 모든 boost asio steady timer 들을 cancel 시켜주고,
 >> 세션 내에 존재하는 모든 자원들(소켓, 파일 핸들러 등등)을 닫아주고, 
 >> 세션 내에 존재하는 모든 boost asio steady timer 태스크들이 완전히 .cancel() 될 때까지 기다란 다음,
 >> 마지막으로 세션 객체를 삭제하도록 구현 했다.
@@ -1540,7 +1540,7 @@ boost::object_pool<MyObject> pool(boost::default_user_allocator_new_delete(), 1)
 ```
 
 <br><br/>
-43. C/C++ 프로그램의 메모리 사용량을 추적하고, 관련 이슈를 진단하는 방법
+### 43. C/C++ 프로그램의 메모리 사용량을 추적하고, 관련 이슈를 진단하는 방법
     <br> valgrind를 사용하면 C/C++ 프로그램의 메모리 사용량을 시간의 흐름에 따라서 추적할 수 있다.
     <br> 그리고 이것을 그래프로 나타낼 수 있다.
     <br> 본 프로젝트를 Amazon Linux EC2에서 성능테스트를 진행하면서 실시한 메모리 검사 방법을 소개한다.
@@ -1629,7 +1629,7 @@ Number of snapshots: 97
 ```
 
 <br><br/>
-44. boost::asio::io_context pool 도입의 필요성과 방법
+### 44. boost::asio::io_context pool 도입의 필요성과 방법
     <br> io_context는 boost::asio의 핵심이다. 네트워킹(read, write, async_read, async_write), steady timer, strand, work guard 등이 전부 여기에 의존한다.
     <br> 그렇기 때문에 모든 task들이 전부 io_context에 의존할 경우 오히려 성능이 급격하게 하락하는 문제가 발생한다. io_context는 task 큐이자, scheculer이자, dispatcher이기 때문에 과도하게 task들이 몰릴 경우 task 큐가 쌓이면서 딜레이가 발생할 수밖에 없기 때문이다.
     <br> 성능 테스트 이전에는 모든 task들을 전부 1 개의 단일한 io_context에서 처리하는 구조였는데, 이 경우 동시접속자 수가 t2.medium ec2에서 36명을 초과하자 성능이 급격하게 낮아졌다.
@@ -1651,7 +1651,7 @@ io_context.run(); 함수는 boost asio work_guard 없이는 작업이 없을 때
 ```
 
 <br><br/>
-45. while(true){transmitRtp();} 루프의 위험성
+### 45. while(true){transmitRtp();} 루프의 위험성
     <br> 이런 루프를 busy-wait loop 또는 spin loop라고 한다.
     <br> 이 루프에서는 blocking, 또는 sleep 동작이 없다.
     <br> 즉, 이 루프를 실행시키는 CPU core가 다른 일을 할 수 있도록 놔주는 시간이 전혀 없다는 뜻이다.
@@ -1664,7 +1664,7 @@ void Session::start() {...} 함수 내부의 detached 된 while loop 를 참고�
 ```
 
 <br><br/>
-46. 스트리밍 서버에서 근본적으로 OOM(Out Of Memory) 문제를 예방하는 방법
+### 46. 스트리밍 서버에서 근본적으로 OOM(Out Of Memory) 문제를 예방하는 방법
     <br> 결론적으로, 비디오/오디오 샘플을 std::shared_ptr 등의 방법으로 할당하면서 byte 수를 기록해놨다가 일정 기준을 넘어가면 할당을 금지키시는 것이다.
     <br> 물론, RTP 패킷을 전송완료 했다면 byte 숫자 값을 그만큼 감소시켜야 한다.
 ```c++
