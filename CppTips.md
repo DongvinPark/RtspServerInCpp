@@ -1224,11 +1224,11 @@ inline int64_t getElapsedTimeNanoSec(){
 ```
 <br><br/>
 ### 35. socket을 이용하여 Async한 작업을 처리하는 객체는 어떻게 삭제해야 하는가?
-    <br> Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
-    <br> 예를 들어서, 내가 '지금' boost asio steady timer를 .cancel() 시켰다고 해서 '즉시' 해당 타이머 태스크가 중단되고 바로 소멸되는 것이 아니다.
-    <br> 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 운영체제에 의해서 SIGSEGV 같은 segmentation falt 관련 에러 메시지를 받으면서 서버가 죽는다.
-    <br> boost asio 라이브러리가 OS와 긴밀하게 상호작용하면서 처리하고 있는 async 태스크들이 어떻게 처리되고 있는지를 전허 고려하지 않고 해당 태스크들이 참고하고 있는 세션 객체를 삭제해버렸기 때문이다.
-    <br> 핵심은 먼저 모든 자원들을 완전히 회수한 다음, async task 들이 완전히 종료될 때까지 기다렸다가 세션 객체를 실제로 삭제시켜야 한다는 점이다.  
+- Async 하다는 것은 무엇을 뜻하는가? 핵심은 '작업들이 어떤 순서로 언제 끝날지 알 수 없다'는 것이다.
+- 예를 들어서, 내가 '지금' boost asio steady timer를 .cancel() 시켰다고 해서 '즉시' 해당 타이머 태스크가 중단되고 바로 소멸되는 것이 아니다.
+- 이것을 염두에 두지 않고 마치 sync 작업을 처리할 때처럼 순서대로 내가 원할 때 바로바로 객체들을 삭제하면 여지 없이 운영체제에 의해서 SIGSEGV 같은 segmentation falt 관련 에러 메시지를 받으면서 서버가 죽는다.
+- boost asio 라이브러리가 OS와 긴밀하게 상호작용하면서 처리하고 있는 async 태스크들이 어떻게 처리되고 있는지를 전허 고려하지 않고 해당 태스크들이 참고하고 있는 세션 객체를 삭제해버렸기 때문이다.
+- 핵심은 먼저 모든 자원들을 완전히 회수한 다음, async task 들이 완전히 종료될 때까지 기다렸다가 세션 객체를 실제로 삭제시켜야 한다는 점이다.  
 ```c++
 // 자세한 구현은 Session.h, Session.cpp, Server.h, Server.cpp 를 참조한다.
 // 여러가지 방법들과 테스트를 수행해본 결과, 핵심은 Rtsp 트랜잭션을 담당하는 boost asio steady timer의 제거 타이밍이었다.
@@ -1493,13 +1493,13 @@ int main() {
 | Required for function parameter modification | ✅ Yes | ✅ Yes | 
 
 <br><br/>
-42. boost::pool과 boost::object_pool의 위험성 : Out Of Memory 발생 가능
-    <br> 부스트 라이브러리의 pool과 object_pool은 Bad Access(Segmentation Fault)를 방지해준다.
-    <br> 그러나, 정확하게 사용하지 않으면 메모리 공간의 엄청난 낭비를 초래할 수도 있다.
-    <br> 본 프로젝트에서는 비디오 샘플을 읽어들이기 위한 공간을 3MB로 설정하고 계속 재활용하게 만들려고 했으나, pool의 동작을 정확하게 테스트하지 않고 사용했기에 엄청난 메모리 낭비가 발생했었다.
-    <br> 분명 동시접속 사용자 수가 겨우 36명 정도밖에 안 되는데, Out Of Memory 이슈로 Linux kernel에 의해서 자꾸 서버가 강제 종료됐던 것이다. 조사 결과, 1 명당 약 100 MB 씩이나 잡아먹고 있었다.
-    <br> 이 문제는 결국 boost pool과 object_pool을 전혀 사용하지 않고, std::shared_ptr로 할당한 비디오/오디오 샘플을 참조하고 있는 RTP 패킷 객체의 개수를 일일이 추적해서 해결했다. 참조 중인 RTP 패킷의 개수가 0이 된 비디오/오디오 샘플이 표준 라이브러리에 의해 자동으로 회수되게끔 코드를 전면 수정한 것이다.
-    <br> 그 결과, 클라이언트 1 명당 메모리 사용량을 약 4 MB 정도로 대폭 낮출 수 있었다.
+### 42. boost::pool과 boost::object_pool의 위험성 : Out Of Memory 발생 가능
+- 부스트 라이브러리의 pool과 object_pool은 Bad Access(Segmentation Fault)를 방지해준다.
+- 그러나, 정확하게 사용하지 않으면 메모리 공간의 엄청난 낭비를 초래할 수도 있다.
+- 본 프로젝트에서는 비디오 샘플을 읽어들이기 위한 공간을 3MB로 설정하고 계속 재활용하게 만들려고 했으나, pool의 동작을 정확하게 테스트하지 않고 사용했기에 엄청난 메모리 낭비가 발생했었다.
+- 분명 동시접속 사용자 수가 겨우 36명 정도밖에 안 되는데, Out Of Memory 이슈로 Linux kernel에 의해서 자꾸 서버가 강제 종료됐던 것이다. 조사 결과, 1 명당 약 100 MB 씩이나 잡아먹고 있었다.
+- 이 문제는 결국 boost pool과 object_pool을 전혀 사용하지 않고, std::shared_ptr로 할당한 비디오/오디오 샘플을 참조하고 있는 RTP 패킷 객체의 개수를 일일이 추적해서 해결했다. 참조 중인 RTP 패킷의 개수가 0이 된 비디오/오디오 샘플이 표준 라이브러리에 의해 자동으로 회수되게끔 코드를 전면 수정한 것이다.
+- 그 결과, 클라이언트 1 명당 메모리 사용량을 약 4 MB 정도로 대폭 낮출 수 있었다.
 ```c++
 boost pool과 object_pool은 Segmentation Fault 예방에는 좋지만,
 충분히 테스트 하지 않고 사용할 경우 매우 많은 메모리 공간을 낭비하게 만들 수 있다. 
@@ -1541,9 +1541,9 @@ boost::object_pool<MyObject> pool(boost::default_user_allocator_new_delete(), 1)
 
 <br><br/>
 ### 43. C/C++ 프로그램의 메모리 사용량을 추적하고, 관련 이슈를 진단하는 방법
-    <br> valgrind를 사용하면 C/C++ 프로그램의 메모리 사용량을 시간의 흐름에 따라서 추적할 수 있다.
-    <br> 그리고 이것을 그래프로 나타낼 수 있다.
-    <br> 본 프로젝트를 Amazon Linux EC2에서 성능테스트를 진행하면서 실시한 메모리 검사 방법을 소개한다.
+- valgrind를 사용하면 C/C++ 프로그램의 메모리 사용량을 시간의 흐름에 따라서 추적할 수 있다.
+- 그리고 이것을 그래프로 나타낼 수 있다.
+- 본 프로젝트를 Amazon Linux EC2에서 성능테스트를 진행하면서 실시한 메모리 검사 방법을 소개한다.
 ```shell
 valgrind를 설치해야 한다. Chat GPT에게 물어보면 된다.
 메모리 검사를 진행하기 전에, /tmp 디렉토리에 대한 쓰기 권한을 허용해 줘야 한다.
@@ -1630,12 +1630,12 @@ Number of snapshots: 97
 
 <br><br/>
 ### 44. boost::asio::io_context pool 도입의 필요성과 방법
-    <br> io_context는 boost::asio의 핵심이다. 네트워킹(read, write, async_read, async_write), steady timer, strand, work guard 등이 전부 여기에 의존한다.
-    <br> 그렇기 때문에 모든 task들이 전부 io_context에 의존할 경우 오히려 성능이 급격하게 하락하는 문제가 발생한다. io_context는 task 큐이자, scheculer이자, dispatcher이기 때문에 과도하게 task들이 몰릴 경우 task 큐가 쌓이면서 딜레이가 발생할 수밖에 없기 때문이다.
-    <br> 성능 테스트 이전에는 모든 task들을 전부 1 개의 단일한 io_context에서 처리하는 구조였는데, 이 경우 동시접속자 수가 t2.medium ec2에서 36명을 초과하자 성능이 급격하게 낮아졌다.
-    <br> 이 문제는 단순히 io_conext.run()을 돌리는 스레드의 개수를 늘린다고 해서 해결되지 않는다.
-    <br> io_context 인스턴스의 숫자 자체를 늘려서 io_context pool을 만들고, 각종 task들을 이 pool에 균등하게 분배시켜야 하며,
-    <br> rtp 패킷 전송과 같이 매우 많은 회수로 실행시켜야 하는 task는 io_context가 아니라 아예 별도의 detached while loop 스레드에서 실행되게 만들어서 io_context의 부하를 줄여야 해결된다.
+- io_context는 boost::asio의 핵심이다. 네트워킹(read, write, async_read, async_write), steady timer, strand, work guard 등이 전부 여기에 의존한다.
+- 그렇기 때문에 모든 task들이 전부 io_context에 의존할 경우 오히려 성능이 급격하게 하락하는 문제가 발생한다. io_context는 task 큐이자, scheculer이자, dispatcher이기 때문에 과도하게 task들이 몰릴 경우 task 큐가 쌓이면서 딜레이가 발생할 수밖에 없기 때문이다.
+- 성능 테스트 이전에는 모든 task들을 전부 1 개의 단일한 io_context에서 처리하는 구조였는데, 이 경우 동시접속자 수가 t2.medium ec2에서 36명을 초과하자 성능이 급격하게 낮아졌다.
+- 이 문제는 단순히 io_conext.run()을 돌리는 스레드의 개수를 늘린다고 해서 해결되지 않는다.
+- io_context 인스턴스의 숫자 자체를 늘려서 io_context pool을 만들고, 각종 task들을 이 pool에 균등하게 분배시켜야 하며,
+- rtp 패킷 전송과 같이 매우 많은 회수로 실행시켜야 하는 task는 io_context가 아니라 아예 별도의 detached while loop 스레드에서 실행되게 만들어서 io_context의 부하를 줄여야 해결된다.
 ```c++
 자세한 구현은 main.cpp, Server.cpp, Session.cpp 코드를 참조한다.
 이때 중요한 것은, acceptor, socket을 만드는 것에 사용되는 '메인 io_context'는
@@ -1652,12 +1652,12 @@ io_context.run(); 함수는 boost asio work_guard 없이는 작업이 없을 때
 
 <br><br/>
 ### 45. while(true){transmitRtp();} 루프의 위험성
-    <br> 이런 루프를 busy-wait loop 또는 spin loop라고 한다.
-    <br> 이 루프에서는 blocking, 또는 sleep 동작이 없다.
-    <br> 즉, 이 루프를 실행시키는 CPU core가 다른 일을 할 수 있도록 놔주는 시간이 전혀 없다는 뜻이다.
-    <br> 그 결과, 다른 일을 해야 하는 CPU가 현재의 루프에 묶이게 되면서 다은 일들의 실행이 죄다 뒤려 밀려나는 극도로 비효율적인 상황이 발생한다.
-    <br> 이러한 상황을 막기 위해서는 C++의 경우 condition variable과 mutex를 이용해서 blocking을 구현하거나, 이 프로젝트에서와 같이 queue가 비어 있을 경우 의도적으로 while 루프를 실행시키는 스레드를 잠들게 만들어야 한다.
-    <br> 결론적으로, 'blocking 동작'이 무조건 비효율적인 동작은 아닌 것이다.
+- 이런 루프를 busy-wait loop 또는 spin loop라고 한다.
+- 이 루프에서는 blocking, 또는 sleep 동작이 없다.
+- 즉, 이 루프를 실행시키는 CPU core가 다른 일을 할 수 있도록 놔주는 시간이 전혀 없다는 뜻이다.
+- 그 결과, 다른 일을 해야 하는 CPU가 현재의 루프에 묶이게 되면서 다은 일들의 실행이 죄다 뒤려 밀려나는 극도로 비효율적인 상황이 발생한다.
+- 이러한 상황을 막기 위해서는 C++의 경우 condition variable과 mutex를 이용해서 blocking을 구현하거나, 이 프로젝트에서와 같이 queue가 비어 있을 경우 의도적으로 while 루프를 실행시키는 스레드를 잠들게 만들어야 한다.
+- 결론적으로, 'blocking 동작'이 무조건 비효율적인 동작은 아닌 것이다.
 ```c++
 자세한 구현은 Session.cpp 내의
 void Session::start() {...} 함수 내부의 detached 된 while loop 를 참고한다.
