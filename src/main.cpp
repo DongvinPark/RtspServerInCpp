@@ -165,10 +165,6 @@ int main() {
     ContentsStorage contentsStorage(contentsRootPath);
     contentsStorage.init();
 
-    const ContentFileMeta& fileReader = contentsStorage.getContentFileMetaMap().at("enhypen-test-1cam-H");
-
-    const VideoAccess& videoAccess = fileReader.getConstVideoMeta().at("cam0");
-
     std::string projectRootDirPath = getProjectRoot();
 
     std::chrono::milliseconds inputIntervalMsForSessionRemoval(C::SHUTDOWN_SESSION_CLEAR_TASK_INTERVAL_MS);
